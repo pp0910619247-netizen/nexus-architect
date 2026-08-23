@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nexus Architect — The Mountain (MVP)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+<script src="twin.js"></script>
 <style>
   :root{
     --bg:#0a0e17; --panel:#111827; --panel2:#1a2333; --line:#243044;
@@ -119,6 +120,28 @@
       <table id="decayOut"></table>
     </div>
   </div>
+  <!-- ══ DIGITAL TWIN CHAT ══ -->
+  <div class="card" style="margin-top:16px">
+    <h3>🐉 Digital Twin — <span id="twinChatName" style="color:var(--acc)"></span> <span class="muted" style="font-weight:400" id="twinStats"></span></h3>
+    <div id="chatBox" style="max-height:320px;overflow-y:auto;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;min-height:120px"></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <input id="chatInput" placeholder='พิมพ์คุยกับ Twin... หรือ "จำว่า ฉันชอบกาแฟ" ' onkeydown="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()">ส่ง</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center">
+      <label style="margin:0">สมอง:</label>
+      <select id="brainSel" style="width:auto;margin:0;padding:6px 10px" onchange="brainChange()">
+        <option value="local">Local Brain (ฟรี)</option>
+        <option value="gemini">Gemini (API key ฟรี)</option>
+        <option value="openai">OpenAI</option>
+        <option value="ollama">Ollama (local LLM)</option>
+      </select>
+      <input id="apiKeyIn" placeholder="API Key (เก็บในเครื่องเท่านั้น)" style="flex:1;min-width:180px;margin:0;width:auto" type="password">
+      <button class="ghost" onclick="saveKey()">บันทึก Key</button>
+    </div>
+    <p class="muted" style="margin-top:6px">💡 Gemini key ฟรีได้ที่ aistudio.google.com — key เก็บใน localStorage ของเครื่องคุณเท่านั้น</p>
+  </div>
+
   <!-- ══ ON-CHAIN ══ -->
   <div class="card" style="margin-top:16px">
     <h3>⛓ On-Chain — Polygon Amoy (จริง 100%)</h3>
@@ -128,6 +151,24 @@
       <button class="ghost" onclick="chainSubmit()">⛰ เสนอปัญหาบน Chain (MetaMask)</button>
     </div>
     <table id="chainOut"></table>
+  </div>
+
+  <!-- ══ REWARDS ADMIN ══ -->
+  <div class="card" style="margin-top:16px">
+    <h3>⚖️ RewardSplitter Admin — 20/80 บน Chain</h3>
+    <p class="muted">เฉพาะ deployer wallet (0x74CD...E7a4) · RewardSplitter: <span style="font-family:Consolas">0xC18c...edA9</span></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+      <div style="flex:2;min-width:200px"><label>Participant address</label><input id="rwAddr" placeholder="0x..."></div>
+      <div style="flex:1;min-width:100px"><label>Points</label><input id="rwPts" type="number" value="10"></div>
+      <button class="ghost" onclick="rwAdd()">➕ Add</button>
+      <button class="ghost" onclick="rwAward()">🏅 Award</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:end">
+      <div style="flex:2;min-width:200px"><label>Solver address (รับ 20%)</label><input id="rwSolver" placeholder="0x..."></div>
+      <label style="display:flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="rwValue" style="width:auto"> ส่ง 0.01 POL พร้อม distribute</label>
+      <button onclick="rwDistribute()">💸 Distribute 20/80</button>
+    </div>
+    <p class="muted" id="rwStatus" style="margin-top:8px"></p>
   </div>
 </main>
 <footer>Nexus Architect — Open Source CC BY-SA 4.0 · Built with the Architect · <span id="ts"></span></footer>
@@ -319,6 +360,81 @@ async function chainSubmit(){
   }catch(e){ toast('ผิดพลาด: '+String(e.message||e).slice(0,60)); }
 }
 
+/* ═══════════ DIGITAL TWIN CHAT ═══════════ */
+function renderChat(){
+  const box=document.getElementById('chatBox');
+  const hist=window.Twin.mem.chat.slice(-30);
+  document.getElementById('twinChatName').textContent=window.Twin.cfg.name;
+  document.getElementById('twinStats').textContent=`· Lv ตาม XP ${window.Twin.mem.xp} · ความจำ ${window.Twin.mem.facts.length} บันทึก · สมอง: ${window.Twin.cfg.provider}`;
+  document.getElementById('brainSel').value=window.Twin.cfg.provider;
+  if(!hist.length){ box.innerHTML='<span class="muted">🐉 เริ่มบทสนทนาแรกของทวินได้เลย — มันจะจดจำทุกอย่างที่คุณบอก</span>'; return; }
+  box.innerHTML=hist.map(m=>`<div style="margin:6px 0;text-align:${m.role==='user'?'right':'left'}">
+    <span style="display:inline-block;max-width:85%;padding:7px 12px;border-radius:11px;font-size:13px;white-space:pre-wrap;
+      ${m.role==='user'?'background:var(--acc);color:#111':'background:#243044;color:var(--txt)'}">${m.text.replace(/</g,'&lt;')}</span></div>`).join('');
+  box.scrollTop=box.scrollHeight;
+}
+async function sendChat(){
+  const inp=document.getElementById('chatInput');
+  const msg=inp.value.trim(); if(!msg) return;
+  inp.value=''; renderChat();
+  const box=document.getElementById('chatBox');
+  box.insertAdjacentHTML('beforeend','<div class="muted" id="typing">🐉 กำลังคิด...</div>');
+  box.scrollTop=box.scrollHeight;
+  const reply=await window.Twin.chat(msg);
+  document.getElementById('typing')?.remove();
+  renderChat();
+}
+function brainChange(){
+  window.Twin.setCfg({provider:document.getElementById('brainSel').value});
+  renderChat(); toast('สมอง Twin: '+window.Twin.cfg.provider);
+}
+function saveKey(){
+  const k=document.getElementById('apiKeyIn').value.trim();
+  const p=window.Twin.cfg.provider;
+  if(p==='gemini') window.Twin.setCfg({geminiKey:k});
+  else if(p==='openai') window.Twin.setCfg({openaiKey:k});
+  else { toast('โหมดนี้ไม่ต้องใช้ key'); return; }
+  toast('✅ บันทึก key ลงเครื่องแล้ว (ไม่ส่งออก)');
+}
+
+/* ═══════════ REWARDS ADMIN ═══════════ */
+const SPLIT_ABI=[
+  "function addParticipant(address)",
+  "function awardPoints(address,uint256)",
+  "function distribute(address) payable",
+  "function participantCount() view returns (uint256)",
+  "function totalPoints() view returns (uint256)",
+];
+async function rwContract(){
+  const s=chainSigner(); if(!s) return null;
+  const signer=await s.getSigner();
+  return new ethers.Contract(SPLITTER, SPLIT_ABI, signer);
+}
+function rwStatus(msg,ok){ document.getElementById('rwStatus').innerHTML=`<span class="${ok?'pos':'neg'}">${msg}</span>`; }
+async function rwAdd(){
+  const c=await rwContract(); if(!c) return;
+  try{ const tx=await c.addParticipant(document.getElementById('rwAddr').value.trim());
+    rwStatus('tx: '+tx.hash.slice(0,18)+'… รอ confirm'); await tx.wait(); rwStatus('✅ เพิ่ม participant สำเร็จ',true);
+  }catch(e){ rwStatus('❌ '+String(e.message||e).slice(0,90)); }
+}
+async function rwAward(){
+  const c=await rwContract(); if(!c) return;
+  try{ const tx=await c.awardPoints(document.getElementById('rwAddr').value.trim(), document.getElementById('rwPts').value||'0');
+    rwStatus('tx: '+tx.hash.slice(0,18)+'… รอ confirm'); await tx.wait(); rwStatus('✅ award points สำเร็จ',true);
+  }catch(e){ rwStatus('❌ '+String(e.message||e).slice(0,90)); }
+}
+async function rwDistribute(){
+  const c=await rwContract(); if(!c) return;
+  try{
+    const opts={};
+    if(document.getElementById('rwValue').checked) opts.value=ethers.parseEther('0.01');
+    const tx=await c.distribute(document.getElementById('rwSolver').value.trim(), opts);
+    rwStatus('tx: '+tx.hash.slice(0,18)+'… รอ confirm'); await tx.wait();
+    rwStatus('💸 แบ่ง 20/80 สำเร็จ! ดูที่ amoy.polygonscan.com',true);
+  }catch(e){ rwStatus('❌ '+String(e.message||e).slice(0,90)); }
+}
+
+renderChat();
 document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');
 renderLevels(); runSplit();
 if(twin.name) document.getElementById('twinName').value=twin.name;
