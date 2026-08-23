@@ -1,0 +1,14 @@
+# Secrets
+.env
+**/PRIVATE_KEY*
+*privatekey*
+
+# Foundry
+contracts/cache/
+contracts/out/
+contracts/lib/
+
+# OS / Editor
+Thumbs.db
+.DS_Store
+.vscode/

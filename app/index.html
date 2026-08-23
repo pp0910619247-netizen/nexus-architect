@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus Architect — The Mountain (MVP)</title>
+<style>
+  :root{
+    --bg:#0a0e17; --panel:#111827; --panel2:#1a2333; --line:#243044;
+    --txt:#e5ecf5; --dim:#8fa0b8; --acc:#f59e0b; --acc2:#38bdf8;
+    --good:#34d399; --bad:#f87171; --violet:#a78bfa;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif}
+  body{background:var(--bg);color:var(--txt);min-height:100vh}
+  header{border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .logo{font-size:20px;font-weight:800;letter-spacing:.5px}
+  .logo b{color:var(--acc)}
+  .tag{color:var(--dim);font-size:12px}
+  .spacer{flex:1}
+  .badge{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--dim)}
+  main{max-width:1100px;margin:0 auto;padding:24px 16px 80px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .card h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .muted{color:var(--dim);font-size:13px;line-height:1.6}
+  button{cursor:pointer;border:none;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;background:var(--acc);color:#111}
+  button:hover{filter:brightness(1.1)}
+  button.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+  input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--txt);padding:10px 12px;font-size:13px;margin-top:8px}
+  textarea{resize:vertical;min-height:70px}
+  label{font-size:12px;color:var(--dim)}
+  /* Identity */
+  .lvl{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1px solid var(--line);border-radius:10px;margin-top:8px;background:var(--panel2)}
+  .lvl.active{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+  .lvl .n{font-weight:700}
+  .lvl small{display:block;color:var(--dim);font-weight:400}
+  /* Problems */
+  .prob{border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-top:10px;background:var(--panel2)}
+  .prob .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .prob .title{font-weight:700;font-size:14px}
+  .cat{font-size:11px;padding:2px 9px;border-radius:999px;background:#243044;color:var(--acc2);white-space:nowrap}
+  .cat.HUMAN{background:#3b2f12;color:var(--acc)} .cat.AI_MOTHER{background:#2b2144;color:var(--violet)}
+  .votes{display:flex;align-items:center;gap:10px;margin-top:9px}
+  .vote-btn{background:transparent;border:1px solid var(--acc);color:var(--acc);padding:4px 12px;border-radius:8px;font-size:12px}
+  .vote-btn.voted{background:var(--acc);color:#111}
+  .peak{border-color:var(--acc)!important;position:relative}
+  .peak::after{content:"🏔 MISSION PEAK";position:absolute;top:-9px;right:12px;background:var(--acc);color:#111;font-size:10px;font-weight:800;border-radius:6px;padding:2px 8px}
+  /* Sim */
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+  td.num{text-align:right;font-family:Consolas,monospace}
+  .pos{color:var(--good)} .neg{color:var(--bad)}
+  footer{text-align:center;color:var(--dim);font-size:12px;padding:26px}
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--acc);color:var(--txt);
+         padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:99}
+  #toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">⛰ NEXUS <b>ARCHITECT</b></div>
+  <span class="tag">Whitepaper v1.1 · MVP · runs 100% local</span>
+  <div class="spacer"></div>
+  <span class="badge" id="netBadge">Local Mode</span>
+  <button class="ghost" id="walletBtn">🔗 Connect Wallet</button>
+</header>
+
+<main>
+  <!-- ══ IDENTITY ══ -->
+  <div class="grid">
+    <div class="card">
+      <h3>🆔 Nexus Identity Protocol</h3>
+      <p class="muted">MVP จำลองระดับ identity ในเครื่อง (localStorage)<br>Production: Google OAuth → KYC API → NDID/ZK</p>
+      <div id="levels"></div>
+      <button class="ghost" style="width:100%;margin-top:12px" onclick="upgradeLevel()">⬆️ ยืนยันระดับถัดไป (simulated)</button>
+    </div>
+
+    <div class="card">
+      <h3>👤 Digital Twin</h3>
+      <div class="muted" id="twinInfo"></div>
+      <div style="margin-top:10px">
+        <label>ชื่อ AI ของคุณ</label>
+        <input id="twinName" placeholder="เช่น Aurora">
+        <label>สิ่งที่อยากให้ AI จำเกี่ยวกับตัวคุณ</label>
+        <textarea id="twinMem" placeholder="ความสนใจ / ทักษะ / เป้าหมาย..."></textarea>
+        <button style="width:100%;margin-top:10px" onclick="saveTwin()">บันทึกลง On-Device Memory</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MOUNTAIN ══ -->
+  <div class="card" style="margin-top:16px">
+    <h3>🏔 The Mountain — กระดานปัญหาโลก</h3>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:6px">
+      <div style="flex:2;min-width:220px"><label>ปัญหาที่ต้องการเสนอ</label><input id="pTitle" placeholder="เช่น ขยะพลาสติกในทะเลไทย"></div>
+      <div style="flex:1;min-width:150px"><label>หมวด</label>
+        <select id="pCat"><option>HUMAN</option><option>GROUP</option><option>AI_MOTHER</option><option>ANOMALY</option><option>AI_DEV</option></select></div>
+      <button onclick="submitProblem()">เสนอปัญหา (Level 3+)</button>
+    </div>
+    <div id="problemList"></div>
+  </div>
+
+  <!-- ══ ECONOMY ══ -->
+  <div class="grid">
+    <div class="card">
+      <h3>⚖️ 20/80 Reward Splitter</h3>
+      <p class="muted">จำลองการแจกโทเค็นรอบแรก — solver ได้ 20%, ที่เหลือกระจายตาม participation points</p>
+      <label>โทเค็นรวมในรอบ</label><input id="rTotal" type="number" value="100000">
+      <label>Solver ชนะ (points)</label><input id="rWin" type="number" value="100">
+      <label>Voter/Reviewer/ผู้ร่วม (points รวม)</label><input id="rPool" type="number" value="400">
+      <button style="width:100%;margin-top:12px" onclick="runSplit()">▶️ Distribute</button>
+      <table id="splitOut"></table>
+    </div>
+
+    <div class="card">
+      <h3>📉 Variable Decay v1.1 (Solution-Mined)</h3>
+      <p class="muted">WP v1.0 แบบ halve-per-block = รางวัลเป็น 0 ใน &lt;1 นาที<br>v1.1: halve เมื่อ solutions สะสม ×milestone + tail floor</p>
+      <table id="decayOut"></table>
+    </div>
+  </div>
+</main>
+<footer>Nexus Architect — Open Source CC BY-SA 4.0 · Built with the Architect · <span id="ts"></span></footer>
+<div id="toast"></div>
+
+<script>
+/* ═══════════ STATE (localStorage) ═══════════ */
+const DB = {
+  get(k,d){ try{return JSON.parse(localStorage.getItem('nx_'+k)) ?? d}catch(e){return d} },
+  set(k,v){ localStorage.setItem('nx_'+k, JSON.stringify(v)) }
+};
+let user   = DB.get('user', {level:0, name:null});
+let twin   = DB.get('twin', {name:'', mem:''});
+let probs  = DB.get('probs', seedProblems());
+
+function seedProblems(){
+  return [
+    {id:1, title:'ค่าครองชีพสูง — เข้าถึงสินค้าจำเป็นราคายุติธรรม', cat:'HUMAN', votes:42, voted:false, status:'open', by:'Architect'},
+    {id:2, title:'พิสูจน์ทฤษฎีบทคณิตศาสตร์ที่ยังแก้ไม่ได้', cat:'AI_MOTHER', votes:31, voted:false, status:'open', by:'MotherOracle'},
+    {id:3, title:'ระบบตื่นเตือนภัยธรรมชาติล่วงหน้าสำหรับชุมชน', cat:'ANOMALY', votes:27, voted:false, status:'open', by:'Architect'},
+  ];
+}
+function persist(){ DB.set('user',user); DB.set('twin',twin); DB.set('probs',probs); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+/* ═══════════ IDENTITY ═══════════ */
+const LEVELS=[
+  {l:0,n:'เงา Shadow',d:'ดาวน์โหลดแอป — อ่าน Mountain'},
+  {l:1,n:'มนุษย์ Human',d:'Google Sign-In — โหวต + แชท AI'},
+  {l:2,n:'พลเมือง Citizen',d:'KYC+Selfie — AI รับงาน ถอน $200/วัน'},
+  {l:3,n:'ธนาคาร Bank-Grade',d:'Bank API/NDID — เสนอปัญหา + Governance'},
+  {l:4,n:'อธิปไตย Sovereign',d:'Digital ID+Biometric — Validator'},
+];
+function renderLevels(){
+  document.getElementById('levels').innerHTML = LEVELS.map(x=>
+    `<div class="lvl ${user.level>=x.l?'active':''}">
+       <div class="n">${x.l>=user.level?'🔒':'✅'} Lv.${x.l} ${x.n}<small>${x.d}</small></div>
+       <span>${user.level>=x.l?'ACTIVE':''}</span></div>`).join('');
+  document.getElementById('twinInfo').innerHTML =
+    `ระดับปัจจุบัน: <b>Lv.${user.level} ${LEVELS[user.level].n}</b><br>`+
+    `Memory บนเครื่อง: <b>${(DB.get('memCount',0))} บันทึก</b> (ไม่ออกจาก device)`;
+  renderProblems();
+}
+function upgradeLevel(){
+  if(user.level>=4){ toast('ครบ Level สูงสุดแล้ว 🐉'); return; }
+  const names=['','Google Sign-In ✓ (sim)','KYC+Liveness ✓ (sim)','Bank Proof ✓ (sim)','NDID+FIDO2 ✓ (sim)'];
+  user.level++; toast(names[user.level]); persist(); renderLevels();
+}
+
+/* ═══════════ TWIN ═══════════ */
+function saveTwin(){
+  twin.name=document.getElementById('twinName').value.trim();
+  twin.mem =document.getElementById('twinMem').value.trim();
+  if(!twin.name){ toast('ตั้งชื่อ AI ก่อนนะ'); return; }
+  DB.set('memCount', DB.get('memCount',0)+1);
+  persist(); toast(`🥚 "${twin.name}" จำบันทึกแล้ว (on-device)`);
+  document.getElementById('twinInfo').innerHTML=`AI ของคุณ: <b>${twin.name}</b> · Memory ${(DB.get('memCount',0))} บันทึก`;
+}
+
+/* ═══════════ MOUNTAIN ═══════════ */
+function submitProblem(){
+  if(user.level<3){ toast('⛔ ต้อง Level 3 (Bank-Grade) ถึงจะเสนอปัญหาได้'); return; }
+  const t=document.getElementById('pTitle').value.trim();
+  if(!t){ toast('พิมพ์ชื่อปัญหาก่อน'); return; }
+  probs.unshift({id:Date.now(), title:t, cat:document.getElementById('pCat').value,
+                 votes:1, voted:true, status:'open', by:user.name||'You'});
+  document.getElementById('pTitle').value='';
+  persist(); renderProblems(); toast('⛰ ปัญหาถูกวางบนภูเขาแล้ว');
+}
+function vote(id){
+  const p=probs.find(x=>x.id===id);
+  if(user.level<1){ toast('⛔ ต้อง Level 1 (Human) ถึงจะโหวตได้'); return; }
+  if(p.voted){ toast('คุณโหวตปัญหานี้แล้ว (1 vote/คน/ปัญหา)'); return; }
+  p.votes++; p.voted=true; persist(); renderProblems(); checkPeak(); toast('🗳 +1 vote');
+}
+function checkPeak(){
+  const top=[...probs].sort((a,b)=>b.votes-a.votes)[0];
+  probs.forEach(p=>p.status=(top && p.id===top.id && top.votes>=30)?'peak':'open');
+  persist();
+}
+function renderProblems(){
+  checkPeak();
+  const el=document.getElementById('problemList');
+  const sorted=[...probs].sort((a,b)=>b.votes-a.votes);
+  el.innerHTML=sorted.map(p=>`
+    <div class="prob ${p.status==='peak'?'peak':''}">
+      <div class="top"><div><div class="title">#${p.id.toString().slice(-4)} ${p.title}</div>
+      <small class="muted">โดย ${p.by}</small></div><span class="cat ${p.cat}">${p.cat}</span></div>
+      <div class="votes"><button class="vote-btn ${p.voted?'voted':''}" onclick="vote(${p.id})">${p.voted?'▲ Voted':'▲ Vote'}</button>
+      <b>${p.votes}</b> <span class="muted">votes</span></div>
+    </div>`).join('');
+}
+
+/* ═══════════ 20/80 SIM ═══════════ */
+function runSplit(){
+  const total=+document.getElementById('rTotal').value||0;
+  const win=+document.getElementById('rWin').value||1;
+  const pool=+document.getElementById('rPool').value||1;
+  const cut=total*0.20, dist=total-cut;
+  const perVoter=dist*(pool/(win+pool))/Math.max(pool/10,1)/10; // ตัวอย่าง 10 voters
+  const rows=[
+    ['Solver (20%)', cut.toFixed(0), ''],
+    ['80% Pool รวม', dist.toFixed(0), ''],
+    ['— ผู้โหวต (10 คน)', (dist*0.35).toFixed(0)+' total', ''],
+    ['— Peer Reviewers', (dist*0.25).toFixed(0)+' total', ''],
+    ['— AI ที่ร่วมเสนอ', (dist*0.20).toFixed(0)+' total', ''],
+    ['— Impact Fund ❤️', (dist*0.20).toFixed(0)+' total', ''],
+  ];
+  document.getElementById('splitOut').innerHTML=
+    '<tr><th>รายการ</th><th style="text-align:right">Tokens</th></tr>'+
+    rows.map(r=>`<tr><td>${r[0]}</td><td class="num pos">${r[1]}</td></tr>`).join('');
+}
+
+/* ═══════════ DECAY v1.1 ═══════════ */
+(function decayTable(){
+  let r=1_000_000, supply=0, rows=[];
+  for(let s=1;s<=2000;s+=250){
+    rows.push([s, r, supply]);
+    supply+=r*250;
+    r=Math.max(r/2, 1_000_000/(2**12));
+  }
+  document.getElementById('decayOut').innerHTML=
+    '<tr><th>Solutions สะสม</th><th style="text-align:right">Reward/solution</th><th style="text-align:right">Supply ≈</th></tr>'+
+    rows.map(x=>`<tr><td>${x[0]}</td><td class="num">${x[1].toLocaleString()}</td><td class="num">${Math.round(x[2]).toLocaleString()}</td></tr>`).join('');
+})();
+
+/* ═══════════ WALLET (ethers CDN stub) ═══════════ */
+document.getElementById('walletBtn').onclick=async()=>{
+  if(typeof window.ethereum==='undefined'){ toast('ยังไม่มี MetaMask — Local Mode ทำงานได้ปกติ'); return; }
+  try{
+    const acc=(await window.ethereum.request({method:'eth_requestAccounts'}))[0];
+    document.getElementById('netBadge').textContent='Wallet: '+acc.slice(0,6)+'…'+acc.slice(-4);
+    document.getElementById('netBadge').style.color='var(--good)';
+    toast('✅ เชื่อม wallet แล้ว — พร้อม deploy contract');
+  }catch(e){ toast('ยกเลิกการเชื่อมต่อ'); }
+};
+
+document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');
+renderLevels(); runSplit();
+if(twin.name) document.getElementById('twinName').value=twin.name;
+if(twin.mem)  document.getElementById('twinMem').value=twin.mem;
+</script>
+</body>
+</html>
