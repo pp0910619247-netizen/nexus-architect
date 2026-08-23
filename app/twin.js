@@ -69,15 +69,52 @@ class TwinEngine {
       `ใส่ Gemini API key ในช่องตั้งค่าเพื่อปลุกสมองเต็มรูปแบบ`;
   }
 
+  /* ── AES-GCM key vault (API keys ถูกเข้ารหัสก่อนเก็บ) ── */
+  async _deviceKey() {
+    if (this._dk) return this._dk;
+    let raw = localStorage.getItem('twin_dk');
+    if (!raw) {
+      const k = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+      const exp = new Uint8Array(await crypto.subtle.exportKey('raw', k));
+      raw = btoa(String.fromCharCode(...exp));
+      localStorage.setItem('twin_dk', raw);
+    }
+    const bytes = Uint8Array.from(atob(raw), c => c.charCodeAt(0));
+    this._dk = await crypto.subtle.importKey('raw', bytes, 'AES-GCM', false, ['encrypt', 'decrypt']);
+    return this._dk;
+  }
+  async enc(t) {
+    const k = await this._deviceKey();
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, new TextEncoder().encode(t));
+    return btoa(String.fromCharCode(...iv)) + '.' + btoa(String.fromCharCode(...new Uint8Array(ct)));
+  }
+  async dec(t) {
+    try {
+      const [ivS, ctS] = String(t).split('.');
+      if (!ctS) return '';
+      const iv = Uint8Array.from(atob(ivS), c => c.charCodeAt(0));
+      const ct = Uint8Array.from(atob(ctS), c => c.charCodeAt(0));
+      const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, await this._deviceKey(), ct);
+      return new TextDecoder().decode(pt);
+    } catch { return ''; }
+  }
+
   /* ── Adapters ── */
   async chat(userMsg) {
     this.mem.chat.push({ role: 'user', text: userMsg, at: Date.now() });
     let reply;
     try {
-      if (this.cfg.provider === 'gemini' && this.cfg.geminiKey) reply = await this._gemini(userMsg);
-      else if (this.cfg.provider === 'openai' && this.cfg.openaiKey) reply = await this._openai(userMsg);
+      if (this.cfg.provider === 'gemini') {
+        const key = await this.dec(this.cfg.geminiKeyEnc || '');
+        reply = key ? await this._gemini(userMsg, key) : (window.NexusBrain ? window.NexusBrain.respond(userMsg).text : this.localBrain(userMsg)) + '\n(ยังไม่มี key — ใช้ Local Brain)';
+      }
+      else if (this.cfg.provider === 'openai') {
+        const key = await this.dec(this.cfg.openaiKeyEnc || '');
+        reply = key ? await this._openai(userMsg, key) : (window.NexusBrain ? window.NexusBrain.respond(userMsg).text : this.localBrain(userMsg)) + '\n(ยังไม่มี key — ใช้ Local Brain)';
+      }
       else if (this.cfg.provider === 'ollama') reply = await this._ollama(userMsg);
-      else reply = this.localBrain(userMsg);
+      else reply = (window.NexusBrain ? window.NexusBrain.respond(userMsg).text : this.localBrain(userMsg));
     } catch (e) {
       reply = '⚠️ ' + this.cfg.provider + ' error: ' + String(e.message || e).slice(0, 80) + '\n' + this.localBrain(userMsg);
     }
@@ -93,8 +130,8 @@ class TwinEngine {
     return `คุณคือ "${this.cfg.name}" Digital Twin ส่วนตัวของผู้ใช้ในระบบ Nexus Architect (แพลตฟอร์มแก้ปัญหาโลกแบบกระจายศูนย์) ตอบเป็นภาษาไทย กระชับ เป็นมิตร ใช้ข้อมูลความจำนี้ถ้าเกี่ยวข้อง:\n${facts || '(ยังไม่มี)'}`;
   }
 
-  async _gemini(msg) {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.cfg.geminiKey}`, {
+  async _gemini(msg, key) {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(key)}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: this._context() + '\n\nผู้ใช้: ' + msg }] }] })
     });
@@ -103,10 +140,10 @@ class TwinEngine {
     return j.candidates?.[0]?.content?.parts?.[0]?.text || '(ว่างเปล่า)';
   }
 
-  async _openai(msg) {
+  async _openai(msg, key) {
     const r = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.cfg.openaiKey },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
       body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: this._context() }, { role: 'user', content: msg }] })
     });
     if (!r.ok) throw new Error('OpenAI ' + r.status);

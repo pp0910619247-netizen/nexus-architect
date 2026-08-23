@@ -3,8 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src *; font-src 'self'; object-src 'none'; base-uri 'self'">
+<meta name="theme-color" content="#0a0e17">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
 <title>Nexus Architect — The Mountain (MVP)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+<script src="nexus-core.js"></script>
 <script src="twin.js"></script>
 <style>
   :root{
@@ -255,8 +260,8 @@ function renderProblems(){
   const sorted=[...probs].sort((a,b)=>b.votes-a.votes);
   el.innerHTML=sorted.map(p=>`
     <div class="prob ${p.status==='peak'?'peak':''}">
-      <div class="top"><div><div class="title">#${p.id.toString().slice(-4)} ${p.title}</div>
-      <small class="muted">โดย ${p.by}</small></div><span class="cat ${p.cat}">${p.cat}</span></div>
+      <div class="top"><div><div class="title">#${String(p.id).slice(-4)} ${esc(p.title)}</div>
+      <small class="muted">โดย ${esc(p.by)}</small></div><span class="cat ${esc(p.cat)}">${esc(p.cat)}</span></div>
       <div class="votes"><button class="vote-btn ${p.voted?'voted':''}" onclick="vote(${p.id})">${p.voted?'▲ Voted':'▲ Vote'}</button>
       <b>${p.votes}</b> <span class="muted">votes</span></div>
     </div>`).join('');
@@ -336,7 +341,7 @@ async function readChain(){
     const start=Math.max(1,total-4);
     for(let i=start;i<=total;i++){
       const p=await c.problems(i);
-      rows+=`<tr><td>#${i}</td><td>${p.title}</td><td><span class="cat ${p.category}">${p.category}</span></td><td class="num">${p.votes}</td></tr>`;
+      rows+=`<tr><td>#${i}</td><td>${esc(p.title)}</td><td><span class="cat ${esc(p.category)}">${esc(p.category)}</span></td><td class="num">${p.votes}</td></tr>`;
     }
     out.innerHTML=rows||'<tr><td>ยังไม่มีปัญหาบน chain — เป็นคนแรกที่เสนอสิ!</td></tr>';
     toast(`⛓ อ่านสำเร็จ: มี ${total} ปัญหาบน Amoy`);
@@ -361,6 +366,16 @@ async function chainSubmit(){
 }
 
 /* ═══════════ DIGITAL TWIN CHAT ═══════════ */
+/* ── XSS guard: escape ทุก user-content ก่อน render ── */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+/* ── Rate limit: 20 ข้อความ/นาที ── */
+let _chatTimes=[];
+function rateOK(){
+  const now=Date.now();
+  _chatTimes=_chatTimes.filter(t=>now-t<60000);
+  if(_chatTimes.length>=20){ toast('⏱ ช้าๆ หน่อย — จำกัด 20 ข้อความ/นาที'); return false; }
+  _chatTimes.push(now); return true;
+}
 function renderChat(){
   const box=document.getElementById('chatBox');
   const hist=window.Twin.mem.chat.slice(-30);
@@ -370,12 +385,13 @@ function renderChat(){
   if(!hist.length){ box.innerHTML='<span class="muted">🐉 เริ่มบทสนทนาแรกของทวินได้เลย — มันจะจดจำทุกอย่างที่คุณบอก</span>'; return; }
   box.innerHTML=hist.map(m=>`<div style="margin:6px 0;text-align:${m.role==='user'?'right':'left'}">
     <span style="display:inline-block;max-width:85%;padding:7px 12px;border-radius:11px;font-size:13px;white-space:pre-wrap;
-      ${m.role==='user'?'background:var(--acc);color:#111':'background:#243044;color:var(--txt)'}">${m.text.replace(/</g,'&lt;')}</span></div>`).join('');
+      ${m.role==='user'?'background:var(--acc);color:#111':'background:#243044;color:var(--txt)'}">${esc(m.text)}</span></div>`).join('');
   box.scrollTop=box.scrollHeight;
 }
 async function sendChat(){
+  if(!rateOK()) return;
   const inp=document.getElementById('chatInput');
-  const msg=inp.value.trim(); if(!msg) return;
+  const msg=inp.value.trim().slice(0,1000); if(!msg) return;
   inp.value=''; renderChat();
   const box=document.getElementById('chatBox');
   box.insertAdjacentHTML('beforeend','<div class="muted" id="typing">🐉 กำลังคิด...</div>');
@@ -388,13 +404,13 @@ function brainChange(){
   window.Twin.setCfg({provider:document.getElementById('brainSel').value});
   renderChat(); toast('สมอง Twin: '+window.Twin.cfg.provider);
 }
-function saveKey(){
-  const k=document.getElementById('apiKeyIn').value.trim();
+async function saveKey(){
+  const k=document.getElementById('apiKeyIn').value.trim().slice(0,200);
   const p=window.Twin.cfg.provider;
-  if(p==='gemini') window.Twin.setCfg({geminiKey:k});
-  else if(p==='openai') window.Twin.setCfg({openaiKey:k});
+  if(p==='gemini') window.Twin.setCfg({geminiKeyEnc: await window.Twin.enc(k)});
+  else if(p==='openai') window.Twin.setCfg({openaiKeyEnc: await window.Twin.enc(k)});
   else { toast('โหมดนี้ไม่ต้องใช้ key'); return; }
-  toast('✅ บันทึก key ลงเครื่องแล้ว (ไม่ส่งออก)');
+  toast('🔐 บันทึก key (เข้ารหัส AES-GCM) แล้ว');
 }
 
 /* ═══════════ REWARDS ADMIN ═══════════ */
@@ -410,7 +426,7 @@ async function rwContract(){
   const signer=await s.getSigner();
   return new ethers.Contract(SPLITTER, SPLIT_ABI, signer);
 }
-function rwStatus(msg,ok){ document.getElementById('rwStatus').innerHTML=`<span class="${ok?'pos':'neg'}">${msg}</span>`; }
+function rwStatus(msg,ok){ document.getElementById('rwStatus').innerHTML=`<span class="${ok?'pos':'neg'}">${esc(msg)}</span>`; }
 async function rwAdd(){
   const c=await rwContract(); if(!c) return;
   try{ const tx=await c.addParticipant(document.getElementById('rwAddr').value.trim());
@@ -435,6 +451,7 @@ async function rwDistribute(){
 }
 
 renderChat();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');
 renderLevels(); runSplit();
 if(twin.name) document.getElementById('twinName').value=twin.name;
