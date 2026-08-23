@@ -10,6 +10,7 @@
 <title>Nexus Architect — The Mountain (MVP)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script src="nexus-core.js"></script>
+<script src="nexus-gov.js"></script>
 <script src="twin.js"></script>
 <style>
   :root{
@@ -128,10 +129,14 @@
   <!-- ══ DIGITAL TWIN CHAT ══ -->
   <div class="card" style="margin-top:16px">
     <h3>🐉 Digital Twin — <span id="twinChatName" style="color:var(--acc)"></span> <span class="muted" style="font-weight:400" id="twinStats"></span></h3>
+    <p class="muted" id="lifecycleInfo" style="margin-bottom:8px"></p>
     <div id="chatBox" style="max-height:320px;overflow-y:auto;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;min-height:120px"></div>
     <div style="display:flex;gap:8px;margin-top:10px">
       <input id="chatInput" placeholder='พิมพ์คุยกับ Twin... หรือ "จำว่า ฉันชอบกาแฟ" ' onkeydown="if(event.key==='Enter')sendChat()">
       <button onclick="sendChat()">ส่ง</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="ghost" onclick="twinProposeProblem()">🐉 เสนอโจทย์สู่ Mountain (AI Mother)</button>
     </div>
     <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center">
       <label style="margin:0">สมอง:</label>
@@ -174,6 +179,34 @@
       <button onclick="rwDistribute()">💸 Distribute 20/80</button>
     </div>
     <p class="muted" id="rwStatus" style="margin-top:8px"></p>
+  </div>
+
+  <!-- ═══ GOVERNANCE + REWARD ENGINE + HRW ═══ -->
+  <div class="grid">
+    <div class="card">
+      <h3>🏛 DAO Governance — 1 มนุษย์ 1 เสียง</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+        <div style="flex:2;min-width:180px"><label>Proposal</label><input id="propTitle" placeholder="เช่น ลด milestone เหลือ 200"></div>
+        <div style="flex:1;min-width:120px"><label>ประเภท</label>
+          <select id="propType" style="margin-top:8px"><option value="milestone">ปรับ Decay milestone</option><option value="treasury">ปรับ Treasury split</option></select></div>
+        <button onclick="createProposal()">📜 เสนอ (Lv.3+)</button>
+      </div>
+      <div id="proposalList" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h3>📉 Reward Engine v1.1 — Solution-Mined</h3>
+      <label>Solutions สะสมที่แก้สำเร็จ</label>
+      <input id="reSolutions" type="number" value="800" oninput="renderRewardEngine()">
+      <table id="reOut"></table>
+      <p class="muted">Halving ทุกครบ 250 solutions · Tail floor กันรางวัล = 0 · Treasury 50/50</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>🛡 Human Rights Watch Module</h3>
+    <p class="muted">โจทย์ที่ตรวจพบเนื้อหาสิทธิมนุษยชน → ต้องการ supermajority + ตรวจสอบจากแหล่งข้อมูลอิสระก่อนขึ้น Mission Peak</p>
+    <div id="hrwList"></div>
   </div>
 </main>
 <footer>Nexus Architect — Open Source CC BY-SA 4.0 · Built with the Architect · <span id="ts"></span></footer>
@@ -241,13 +274,13 @@ function submitProblem(){
   probs.unshift({id:Date.now(), title:t, cat:document.getElementById('pCat').value,
                  votes:1, voted:true, status:'open', by:user.name||'You'});
   document.getElementById('pTitle').value='';
-  persist(); renderProblems(); toast('⛰ ปัญหาถูกวางบนภูเขาแล้ว');
+  persist(); renderProblems(); renderHRW(); toast('⛰ ปัญหาถูกวางบนภูเขาแล้ว');
 }
 function vote(id){
   const p=probs.find(x=>x.id===id);
   if(user.level<1){ toast('⛔ ต้อง Level 1 (Human) ถึงจะโหวตได้'); return; }
   if(p.voted){ toast('คุณโหวตปัญหานี้แล้ว (1 vote/คน/ปัญหา)'); return; }
-  p.votes++; p.voted=true; persist(); renderProblems(); checkPeak(); toast('🗳 +1 vote');
+  p.votes++; p.voted=true; persist(); renderProblems(); checkPeak(); renderHRW(); toast('🗳 +1 vote');
 }
 function checkPeak(){
   const top=[...probs].sort((a,b)=>b.votes-a.votes)[0];
@@ -390,6 +423,11 @@ function renderChat(){
 }
 async function sendChat(){
   if(!rateOK()) return;
+  const bot=NexusGov.botCheck();
+  if(bot.botlike){
+    toast('🤖 ตรวจพบพฤติกรรมบอท: '+bot.reason+' — Soft Reset!');
+    toast(NexusGov.softReset()); renderChat(); return;
+  }
   const inp=document.getElementById('chatInput');
   const msg=inp.value.trim().slice(0,1000); if(!msg) return;
   inp.value=''; renderChat();
@@ -450,7 +488,75 @@ async function rwDistribute(){
   }catch(e){ rwStatus('❌ '+String(e.message||e).slice(0,90)); }
 }
 
-renderChat();
+/* ═══════════ GOVERNANCE / REWARD ENGINE / HRW / LIFECYCLE / AI-MOTHER ═══════════ */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function createProposal(){
+  const t=document.getElementById('propTitle').value.trim().slice(0,200);
+  if(!t){ toast('พิมพ์ชื่อ proposal ก่อน'); return; }
+  const r=NexusGov.propose(t, document.getElementById('propType').value);
+  toast(r.msg); document.getElementById('propTitle').value=''; renderProposals();
+}
+function renderProposals(){
+  const ps=NexusGov.getProposals();
+  const el=document.getElementById('proposalList');
+  if(!ps.length){ el.innerHTML='<span class="muted">ยังไม่มี proposal — คนแรกของ DAO ได้เปรียบเสมอ</span>'; return; }
+  el.innerHTML=ps.slice(-5).reverse().map(p=>{
+    const total=p.yes+p.no, pct= total? Math.round(p.yes/total*100):0;
+    const badge=p.status==='passed'?'<span class="pos">✅ PASSED</span>':p.status==='rejected'?'<span class="neg">❌ REJECTED</span>':'<span class="muted">active</span>';
+    return `<div class="prob"><div class="top"><div class="title">${esc(p.title)}</div>${badge}</div>
+      <div class="votes"><button class="vote-btn" onclick="govVote(${p.id},true)">👍 ${p.yes}</button>
+      <button class="vote-btn" onclick="govVote(${p.id},false)">👎 ${p.no}</button>
+      <span class="muted">${pct}% yes (ต้อง ≥67%)</span></div></div>`;
+  }).join('');
+}
+function govVote(id,yes){
+  if(!rateOK()) return;
+  const r=NexusGov.voteProposal(id,yes); toast(r.msg); renderProposals();
+}
+function renderRewardEngine(){
+  const s=+document.getElementById('reSolutions').value||0;
+  const r=NexusGov.rewardFor(s);
+  const nextHalving=NexusGov.economy.milestone-(s%NexusGov.economy.milestone);
+  const split=NexusGov.split20x80(r*10); // ตัวอย่าง 10 solutions/รอบ
+  document.getElementById('reOut').innerHTML=`
+    <tr><td>Reward/solution ปัจจุบัน</td><td class="num pos">${Math.round(r).toLocaleString()}</td></tr>
+    <tr><td>อีก ${nextHalving} solutions → halving</td><td class="num">${Math.round(Math.max(r/2,NexusGov.economy.R0/NexusGov.economy.tailFloorDiv)).toLocaleString()}</td></tr>
+    <tr><td>Solver ได้ (20%) ต่อ 10 ไม้</td><td class="num">${Math.round(split.solver).toLocaleString()}</td></tr>
+    <tr><td>Impact Fund ❤️ (80%×20%)</td><td class="num">${Math.round(split.impactFund).toLocaleString()}</td></tr>`;
+}
+function renderLifecycle(){
+  const lc=NexusGov.lifecycle();
+  document.getElementById('lifecycleInfo').innerHTML=
+    `${lc.icon} ระยะ: <b>${lc.name}</b> · ทำได้: ${lc.can.join(', ')}${lc.next?` · <span style="color:var(--acc)">${lc.next}</span>`:''}`;
+}
+function renderHRW(){
+  const probs=JSON.parse(localStorage.getItem('nx_probs')||'[]');
+  const hrw=probs.filter(p=>NexusGov.isHumanRights(p.title));
+  const el=document.getElementById('hrwList');
+  if(!hrw.length){ el.innerHTML='<span class="muted">ไม่พบโจทย์ที่เกี่ยวกับสิทธิมนุษยชนในขณะนี้</span>'; return; }
+  el.innerHTML=hrw.map(p=>{
+    const src=NexusGov.factCheckSources(p.title).map(s=>`<a href="${s.url}" target="_blank" rel="noopener" style="color:var(--acc2);font-size:12px;margin-right:10px">🔎 ${s.name}</a>`).join('');
+    const need=NexusGov.hrwThreshold(30);
+    return `<div class="prob"><div class="top"><div class="title">⚠️ ${esc(p.title)}</div><span class="cat HUMAN">HRW FLAGGED</span></div>
+      <div class="muted" style="margin-top:6px">ต้องการ ${need} votes (supermajority 67%+base) กว่าจะขึ้น Mission Peak</div>
+      <div style="margin-top:6px">${src}</div></div>`;
+  }).join('');
+}
+function twinProposeProblem(){
+  if(!rateOK()) return;
+  const ideas=[
+    {t:'ระบบจัดการขยะอัจฉริยะสำหรับเทศบาล', c:'ANOMALY'},
+    {t:'AI ตรวจจับข่าวปลอมเชิงสิทธิมนุษยชน', c:'AI_MOTHER'},
+    {t:'ลดช่องว่างการเข้าถึงการศึกษาในถิ่นห่างไกล', c:'HUMAN'},
+    {t:'ออกแบบ consensus algorithm ประหยัดพลังงาน', c:'AI_DEV'},
+  ];
+  const pick=ideas[Math.floor(Math.random()*ideas.length)];
+  probs.unshift({id:Date.now(), title:pick.t, cat:pick.c, votes:1, voted:true, status:'open', by:(window.Twin.cfg.name||'AI')+' (AI Mother Oracle)'});
+  persist(); renderProblems(); renderHRW();
+  toast('🐉 AI Mother เสนอโจทย์ใหม่: '+pick.t);
+}
+
+renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');
 renderLevels(); runSplit();
