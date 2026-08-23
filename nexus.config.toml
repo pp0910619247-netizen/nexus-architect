@@ -1,0 +1,21 @@
+# Nexus Architect — Project Config
+# ⚠️ PUBLIC ADDRESS ONLY — ห้ามใส่ private key ในไฟล์นี้เด็ดขาด
+
+[wallet]
+address = "0x74CD6E9a955fD2339F4e746B083a9e7D6845E7a4"
+network = "polygon-amoy"        # chainId 80002
+role    = "admin/deployer"
+
+[rpc]
+amoy    = "https://polygon-amoy.drpc.org"
+amoy_alt = "https://polygon-amoy-bor-rpc.publicnode.com"
+mainnet = "https://polygon-bor-rpc.publicnode.com"
+
+[contracts]
+# Deployed on Polygon Amoy (chainId 80002) — 2026-08-24
+problem_registry = "0x65A56978A60733B28cD1FD61C760AB5dC8FD3081"
+reward_splitter  = "0xC18c89ED248aa8f40B2840b9Fe88892E221FedA9"
+
+[status]
+balance_checked = "2026-08-24: deployed 2 contracts (0.1 POL used ~0.005)"
+next_step       = "เชื่อม app/index.html กับ contracts → GitHub push → Gitcoin Grant"

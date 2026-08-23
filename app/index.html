@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nexus Architect — The Mountain (MVP)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <style>
   :root{
     --bg:#0a0e17; --panel:#111827; --panel2:#1a2333; --line:#243044;
@@ -117,6 +118,16 @@
       <p class="muted">WP v1.0 แบบ halve-per-block = รางวัลเป็น 0 ใน &lt;1 นาที<br>v1.1: halve เมื่อ solutions สะสม ×milestone + tail floor</p>
       <table id="decayOut"></table>
     </div>
+  </div>
+  <!-- ══ ON-CHAIN ══ -->
+  <div class="card" style="margin-top:16px">
+    <h3>⛓ On-Chain — Polygon Amoy (จริง 100%)</h3>
+    <p class="muted">ProblemRegistry: <span style="font-family:Consolas" id="regAddr"></span></p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="ghost" onclick="readChain()">📖 อ่านภูเขาจาก Blockchain</button>
+      <button class="ghost" onclick="chainSubmit()">⛰ เสนอปัญหาบน Chain (MetaMask)</button>
+    </div>
+    <table id="chainOut"></table>
   </div>
 </main>
 <footer>Nexus Architect — Open Source CC BY-SA 4.0 · Built with the Architect · <span id="ts"></span></footer>
@@ -253,6 +264,60 @@ document.getElementById('walletBtn').onclick=async()=>{
     toast('✅ เชื่อม wallet แล้ว — พร้อม deploy contract');
   }catch(e){ toast('ยกเลิกการเชื่อมต่อ'); }
 };
+
+/* ═══════════ ON-CHAIN (Polygon Amoy) ═══════════ */
+const REGISTRY = "0x65A56978A60733B28cD1FD61C760AB5dC8FD3081";
+const SPLITTER = "0xC18c89ED248aa8f40B2840b9Fe88892E221FedA9";
+const AMOY_RPC = "https://polygon-amoy.drpc.org";
+const ABI = [
+  "function problemCount() view returns (uint256)",
+  "function problems(uint256) view returns (uint256 id, address proposer, string title, string category, uint256 votes, uint8 status, uint64 createdAt)",
+  "function submitProblem(string,string) returns (uint256)",
+  "function vote(uint256)",
+];
+document.getElementById('regAddr').textContent =
+  REGISTRY.slice(0,10)+'…'+REGISTRY.slice(-6)+' · RewardSplitter: '+SPLITTER.slice(0,10)+'…';
+
+function chainProvider(){ return new ethers.JsonRpcProvider(AMOY_RPC); }
+function chainSigner(){
+  if(typeof window.ethereum==='undefined'){ toast('ต้องติดตั้ง MetaMask ก่อน'); return null; }
+  return new ethers.BrowserProvider(window.ethereum);
+}
+
+async function readChain(){
+  const out=document.getElementById('chainOut');
+  out.innerHTML='<tr><td>กำลังอ่าน...</td></tr>';
+  try{
+    const c=new ethers.Contract(REGISTRY, ABI, chainProvider());
+    const n=await c.problemCount();
+    let rows=`<tr><th>Chain Problem #</th><th>หัวข้อ</th><th>หมวด</th><th style="text-align:right">Votes</th></tr>`;
+    const total=Number(n);
+    const start=Math.max(1,total-4);
+    for(let i=start;i<=total;i++){
+      const p=await c.problems(i);
+      rows+=`<tr><td>#${i}</td><td>${p.title}</td><td><span class="cat ${p.category}">${p.category}</span></td><td class="num">${p.votes}</td></tr>`;
+    }
+    out.innerHTML=rows||'<tr><td>ยังไม่มีปัญหาบน chain — เป็นคนแรกที่เสนอสิ!</td></tr>';
+    toast(`⛓ อ่านสำเร็จ: มี ${total} ปัญหาบน Amoy`);
+  }catch(e){ out.innerHTML=`<tr><td class="neg">อ่านไม่สำเร็จ: ${String(e.message||e).slice(0,80)}</td></tr>`; }
+}
+
+async function chainSubmit(){
+  const s=chainSigner(); if(!s) return;
+  const t=document.getElementById('pTitle').value.trim();
+  const cat=document.getElementById('pCat').value;
+  if(!t){ toast('พิมพ์ชื่อปัญหาในช่องด้านบนก่อน'); return; }
+  try{
+    toast('รอยืนยันใน MetaMask...');
+    const signer=await s.getSigner();
+    const c=new ethers.Contract(REGISTRY, ABI, signer);
+    const tx=await c.submitProblem(t, cat);
+    toast('ส่งแล้ว รอ confirm...');
+    await tx.wait();
+    toast('⛓ ปัญหาขึ้น blockchain จริงแล้ว!');
+    readChain();
+  }catch(e){ toast('ผิดพลาด: '+String(e.message||e).slice(0,60)); }
+}
 
 document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');
 renderLevels(); runSplit();

@@ -1,0 +1,20 @@
+// Hardhat 3 (ESM) config — Nexus Architect
+import { defineConfig } from "hardhat/config";
+import hardhatToolbox from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
+
+export default defineConfig({
+  plugins: [hardhatToolbox],
+  paths: { sources: "./contracts_sol", tests: "./test", cache: "./cache", artifacts: "./artifacts" },
+  solidity: {
+    version: "0.8.24",
+    settings: { optimizer: { enabled: true, runs: 200 } },
+  },
+  networks: {
+    amoy: {
+      type: "http",
+      url: process.env.AMOY_RPC || "https://polygon-amoy.drpc.org",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 80002,
+    },
+  },
+});
