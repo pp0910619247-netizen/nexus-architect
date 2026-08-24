@@ -11,7 +11,8 @@ const NexusIdentity = {
   save(s) { localStorage.setItem('nx_identity', JSON.stringify(s)); },
 
   /* ─── Lv.1a: Google Sign-In (Google Identity Services) ─── */
-  googleClientId() { return localStorage.getItem('nx_google_cid') || ''; },
+  DEFAULT_GOOGLE_CID: '606896270808-ml9liolba086ntg5ko8s0sas9hd1pi8e.apps.googleusercontent.com',
+  googleClientId() { return localStorage.getItem('nx_google_cid') || this.DEFAULT_GOOGLE_CID; },
   saveGoogleClientId(v) { localStorage.setItem('nx_google_cid', String(v || '').trim()); },
   _gisLoaded: false,
 

@@ -86,10 +86,10 @@
       <p class="muted">MVP จำลองระดับ identity ในเครื่อง (localStorage)<br>Production: Google OAuth → KYC API → NDID/ZK</p>
       <div id="levels"></div>
       <div style="display:flex;gap:6px;margin-top:10px">
-        <input id="gidIn" placeholder="Google Client ID (…apps.googleusercontent.com)" style="flex:1;margin:0" type="password" autocomplete="off">
+        <input id="gidIn" placeholder="Google Client ID (มี default แล้ว — เว้นว่างได้)" style="flex:1;margin:0" type="password" autocomplete="off">
         <button class="ghost" onclick="googleFlow()">🔵 Google Sign-In (Lv.1)</button>
       </div>
-      <p class="muted" id="gidHint" style="margin-top:4px">Client ID ฟรี: console.cloud.google.com → Credentials → OAuth Client ID (Web) → ใส่ origin ของเว็บนี้ใน Authorized JavaScript origins</p>
+      <p class="muted" id="gidHint" style="margin-top:4px">ใช้ Client ID ของระบบได้ทันที · จะใส่ของตัวเองก็ได้ (console.cloud.google.com → Credentials → OAuth Web client → origin ใส่ URL เว็บนี้)</p>
       <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
         <button class="ghost" style="flex:1" onclick="realPasskey()">🔐 Passkey จริง (Lv.1)</button>
         <button class="ghost" style="flex:1" onclick="realWallet()">✍️ เซ็น Wallet จริง (Lv.2)</button>
