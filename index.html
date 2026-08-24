@@ -114,7 +114,7 @@
 
   <!-- ══ MOUNTAIN ══ -->
   <div class="card" style="margin-top:16px">
-    <h3>🏔 The Mountain — กระดานปัญหาโลก</h3>
+    <h3>🏔 The Mountain — กระดานปัญหาโลก 🌙 <span class="muted" style="font-weight:400;font-size:12px">culling เที่ยงคืน: ต้อง &gt;10 โหวตหรือหาย</span></h3>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:6px">
       <div style="flex:2;min-width:220px"><label>ปัญหาที่ต้องการเสนอ</label><input id="pTitle" placeholder="เช่น ขยะพลาสติกในทะเลไทย"></div>
       <div style="flex:1;min-width:150px"><label>หมวด</label>
@@ -343,6 +343,10 @@ function saveTwin(){
 }
 
 /* ═══════════ MOUNTAIN ═══════════ */
+const SURVIVE_VOTES = 10; // ต้องได้ "มากกว่า" 10 โหวตก่อนเที่ยงคืนถึงจะรอด
+let _showGrave=false;
+function endOfDay(ts){ const d=new Date(ts); d.setHours(24,0,0,0); return d.getTime(); }
+
 function submitProblem(){
   if(user.level<2){ toast('⛔ ต้อง Level 2 (พลเมือง — ยืนยันบัตร+ใบหน้า) ถึงจะเสนอปัญหาได้'); return; }
   const t=document.getElementById('pTitle').value.trim();
@@ -350,31 +354,76 @@ function submitProblem(){
   probs.unshift({id:Date.now(), title:t, cat:document.getElementById('pCat').value,
                  votes:1, voted:true, status:'open', by:user.name||'You'});
   document.getElementById('pTitle').value='';
-  persist(); renderProblems(); renderHRW(); toast('⛰ ปัญหาถูกวางบนภูเขาแล้ว');
+  persist(); renderProblems(); renderHRW(); toast('⛰ ขึ้นภูเขาแล้ว — เก็บ 11 โหวตก่อนเที่ยงคืน!');
 }
 function vote(id){
   const p=probs.find(x=>x.id===id);
   if(user.level<1){ toast('⛔ ต้อง Level 1 (Human) ถึงจะโหวตได้'); return; }
   if(p.voted){ toast('คุณโหวตปัญหานี้แล้ว (1 vote/คน/ปัญหา)'); return; }
-  p.votes++; p.voted=true; persist(); renderProblems(); checkPeak(); renderHRW(); toast('🗳 +1 vote');
+  p.votes++; p.voted=true;
+  persist(); renderProblems(); checkPeak(); renderHRW(); toast('🗳 +1 vote');
+}
+
+/* ── Daily Culling: เกินเที่ยงคืนแล้วโหวตไม่ผ่าน 10+ → หายจากภูเขา ── */
+function cullExpired(){
+  let culled=0;
+  const today = new Date(); today.setHours(0,0,0,0);
+  probs.forEach(p=>{
+    if(p.status==='expired') return;
+    if(!p.deadline) p.deadline=endOfDay(Number(p.id)||Date.now());
+    if(Date.now()>p.deadline && p.votes<=SURVIVE_VOTES){
+      // ยกเว้นวันที่โพสต์วันนี้ (กัน timezone edge) — ปกติ deadline คือเที่ยงคืนวันโพสต์อยู่แล้ว
+      p.status='expired'; p.expiredAt=Date.now(); culled++;
+    }
+  });
+  if(culled) persist();
+  return culled;
+}
+function toggleGrave(){ _showGrave=!_showGrave; renderProblems(); }
+function _fmtLeft(ms){
+  const h=Math.floor(ms/3600000), m=Math.floor(ms%3600000/60000);
+  return h>0 ? `${h} ชม. ${m} น.` : `${m} นาที`;
 }
 function checkPeak(){
-  const top=[...probs].sort((a,b)=>b.votes-a.votes)[0];
-  probs.forEach(p=>p.status=(top && p.id===top.id && top.votes>=30)?'peak':'open');
+  const active=probs.filter(p=>p.status!=='expired');
+  const top=[...active].sort((a,b)=>b.votes-a.votes)[0];
+  probs.forEach(p=>{
+    if(p.status==='expired') return;
+    p.status=(top && p.id===top.id && top.votes>=30)?'peak':'open';
+  });
   persist();
 }
 function renderProblems(){
-  checkPeak();
+  cullExpired(); checkPeak();
   const el=document.getElementById('problemList');
-  const sorted=[...probs].sort((a,b)=>b.votes-a.votes);
-  el.innerHTML=sorted.map(p=>`
+  const alive=probs.filter(p=>p.status!=='expired');
+  const dead=probs.filter(p=>p.status==='expired');
+  const sorted=[...alive].sort((a,b)=>b.votes-a.votes);
+  let html=`<div class="muted" style="font-size:12px;margin-bottom:6px">📜 กติกาภูเขา: แต่ละโจทย์มีเวลา <b>ถึงเที่ยงคืนของวันที่โพสต์</b> — ต้องได้ <b>มากกว่า ${SURVIVE_VOTES} โหวต</b> ไม่งั้นถูกล้างออก 🌙
+    ${dead.length?`<button class="vote-btn" style="margin-left:8px" onclick="toggleGrave()">☠️ culled (${dead.length})${_showGrave?' ▲':' ▼'}</button>`:''}</div>`;
+  html+=sorted.map(p=>{
+    const left=p.deadline-Date.now();
+    const need=Math.max(0,SURVIVE_VOTES+1-p.votes);
+    const survive=p.votes>SURVIVE_VOTES;
+    return `
     <div class="prob ${p.status==='peak'?'peak':''}">
       <div class="top"><div><div class="title">#${String(p.id).slice(-4)} ${esc(p.title)}</div>
       <small class="muted">โดย ${esc(p.by)}</small></div><span class="cat ${esc(p.cat)}">${esc(p.cat)}</span></div>
       <div class="votes"><button class="vote-btn ${p.voted?'voted':''}" onclick="vote(${p.id})">${p.voted?'▲ Voted':'▲ Vote'}</button>
-      <b>${p.votes}</b> <span class="muted">votes</span></div>
-    </div>`).join('');
+      <b>${p.votes}</b> <span class="muted">votes</span>
+      ${survive?'<span style="color:var(--good);font-size:12px">✓ รอดแล้ว</span>':`<span class="${left<6*3600000?'neg':'muted'}" style="font-size:12px">⏳ เหลือ ${_fmtLeft(left)} · ต้องอีก ${need} โหวต</span>`}</div>
+    </div>`;
+  }).join('');
+  if(_showGrave&&dead.length) html+='<div class="muted" style="margin-top:8px">☠️ โจทย์ที่ถูกล้าง:</div>'+dead.map(p=>`
+    <div class="prob" style="opacity:.45"><div class="top"><div><div class="title">#${String(p.id).slice(-4)} ${esc(p.title)}</div>
+    <small class="muted">โดย ${esc(p.by)} · หายเมื่อ ${new Date(p.expiredAt||p.deadline).toLocaleString('th-TH')}</small></div>
+    <span class="cat">CULLED @${p.votes}</span></div></div>`).join('');
+  if(!sorted.length&&!dead.length) html+='<span class="muted">ภูเขาว่างเปล่า — เสนอโจทย์แรกได้เลย</span>';
+  else if(!sorted.length) html+='<span class="muted">ไม่มีโจทย์ที่รอด — ภูเขารอโจทย์ใหม่</span>';
+  el.innerHTML=html;
 }
+/* ตรวจ culling ทุก 60 วิ — เที่ยงคืนโจทย์หายทันทีแบบสดๆ */
+setInterval(()=>{ if(cullExpired()) { renderProblems(); renderHRW(); } }, 60000);
 
 /* ═══════════ 20/80 SIM ═══════════ */
 function runSplit(){
