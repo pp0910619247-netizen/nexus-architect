@@ -123,14 +123,24 @@ class TwinEngine {
       }
       else if (this.cfg.provider === 'ollama') reply = await this._ollama(userMsg);
       else {
-        const br = window.NexusBrain ? window.NexusBrain.respond(userMsg) : { text: this.localBrain(userMsg), intent: 'local' };
-        reply = br.text;
-        // ── ความรู้รอบด้าน: ถ้าสมอง local ไม่รู้ → ค้น Wikipedia ทันที ──
-        if ((br.intent === 'unknown' || br.conf < 0.35) && window.NexusBrain) {
+        // ── ดึงราคา crypto สด (CoinGecko ฟรี ไม่มี key) ก่อนเข้าสมอง ──
+        if (/ราคา|เท่าไหร่|price/i.test(userMsg) && /btc|bitcoin|eth|ethereum|คริปโต|crypto|เหรียญ/i.test(userMsg)) {
           try {
-            const wiki = await NexusBrain.wikiSearch(userMsg);
-            if (wiki) reply = wiki.text;
-          } catch (e) { /* offline ก็ยังมีคำตอบเดิม */ }
+            const pr = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd,thb&include_24hr_change=true');
+            const pj = await pr.json();
+            const f = (x) => pj[x] ? `$${pj[x].usd.toLocaleString()} (฿${pj[x].thb.toLocaleString()}) ${pj[x].usd_24h_change >= 0 ? '📈+' : '📉'}${pj[x].usd_24h_change.toFixed(1)}%` : 'N/A';
+            reply = `💰 ราคาสด (CoinGecko):\n• BTC: ${f('bitcoin')}\n• ETH: ${f('ethereum')}\n• SOL: ${f('solana')}\n\nข้อมูลเมื่อ ${new Date().toLocaleTimeString('th-TH')} — ไม่ใช่คำแนะนำการลงทุนนะ`;
+          } catch (e) { reply = 'ดึงราคาไม่สำเร็จ (เน็ต/Coingecko ล่ม)'; }
+        } else {
+          const br = window.NexusBrain ? window.NexusBrain.respond(userMsg) : { text: this.localBrain(userMsg), intent: 'local' };
+          reply = br.text;
+          // ── ความรู้รอบด้าน: ถ้าสมอง local ไม่รู้ → ค้น Wikipedia ทันที ──
+          if ((br.intent === 'unknown' || br.conf < 0.35) && window.NexusBrain) {
+            try {
+              const wiki = await NexusBrain.wikiSearch(userMsg);
+              if (wiki) reply = wiki.text;
+            } catch (e) { /* offline ก็ยังมีคำตอบเดิม */ }
+          }
         }
       }
     } catch (e) {
