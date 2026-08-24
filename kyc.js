@@ -199,4 +199,26 @@ async function await_sha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
+/* ══ 6) Remote KYC provider adapter (Lv.2 regulated — Q3 roadmap) ══
+   Sumsub/Persona/Onfido ต้องมี server-side token (API secret ห้ามอยู่ใน browser เด็ดขาด)
+   Operator ต้องรัน proxy เล็กๆ: POST / → {token, url, userId} แล้วเก็บ endpoint ใน nx_kyc_proxy
+   ผลยืนยันจริงเดินทางผ่าน provider webhook → server → sign on-chain proof */
+NexusKYC.remote = {
+  providers: ['sumsub', 'persona', 'onfido'],
+  async start(provider = 'sumsub') {
+    if (!this.providers.includes(provider)) return { ok: false, msg: 'provider ไม่รู้จัก: ' + provider };
+    const proxyUrl = localStorage.getItem('nx_kyc_proxy') || '';
+    if (!proxyUrl) return { ok: false, msg: 'ตั้งค่า nx_kyc_proxy ก่อน (endpoint ที่คืน {token,url,userId} จาก provider API)' };
+    try {
+      const r = await fetch(proxyUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider }) });
+      const j = await r.json();
+      if (!j.token || !j.url) return { ok: false, msg: 'proxy ตอบไม่ตรง format {token,url,userId}' };
+      const w = window.open(j.url, '_blank', 'width=480,height=720');
+      if (!w) return { ok: false, msg: 'popup ถูกบล็อก — อนุญาตแล้วลองใหม่' };
+      localStorage.setItem('nx_kyc_remote', JSON.stringify({ provider, userId: j.userId || '', at: Date.now() }));
+      return { ok: true, msg: 'เปิดหน้ายืนยัน ' + provider + ' แล้ว — สถานะจะอัปเดตผ่าน webhook' };
+    } catch (e) { return { ok: false, msg: 'proxy error: ' + String(e.message || e).slice(0, 60) }; }
+  },
+};
+
 window.NexusKYC = NexusKYC;

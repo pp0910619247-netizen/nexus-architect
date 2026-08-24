@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src *; font-src 'self'; object-src 'none'; base-uri 'self'; media-src 'self' blob:">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://lh3.googleusercontent.com; connect-src *; font-src 'self'; object-src 'none'; base-uri 'self'; media-src 'self' blob:; frame-src https://accounts.google.com">
 <meta name="theme-color" content="#0a0e17">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
@@ -74,6 +74,7 @@
   <span class="tag">Whitepaper v1.1 · MVP · runs 100% local</span>
   <div class="spacer"></div>
   <span class="badge" id="netBadge">Local Mode</span>
+  <a href="waitlist.html" style="text-decoration:none"><button class="ghost">✨ Waitlist</button></a>
   <button class="ghost" id="walletBtn">🔗 Connect Wallet</button>
 </header>
 
@@ -84,7 +85,12 @@
       <h3>🆔 Nexus Identity Protocol</h3>
       <p class="muted">MVP จำลองระดับ identity ในเครื่อง (localStorage)<br>Production: Google OAuth → KYC API → NDID/ZK</p>
       <div id="levels"></div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <input id="gidIn" placeholder="Google Client ID (…apps.googleusercontent.com)" style="flex:1;margin:0" type="password" autocomplete="off">
+        <button class="ghost" onclick="googleFlow()">🔵 Google Sign-In (Lv.1)</button>
+      </div>
+      <p class="muted" id="gidHint" style="margin-top:4px">Client ID ฟรี: console.cloud.google.com → Credentials → OAuth Client ID (Web) → ใส่ origin ของเว็บนี้ใน Authorized JavaScript origins</p>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
         <button class="ghost" style="flex:1" onclick="realPasskey()">🔐 Passkey จริง (Lv.1)</button>
         <button class="ghost" style="flex:1" onclick="realWallet()">✍️ เซ็น Wallet จริง (Lv.2)</button>
       </div>
@@ -293,8 +299,21 @@ function upgradeLevel(){
 /* ── Identity จริง: Passkey (WebAuthn) + Wallet Signature ── */
 async function realPasskey(){
   const r=await NexusIdentity.registerPasskey();
-  if(r.ok){ user.level=Math.max(user.level,1); persist(); renderLevels(); }
-  toast(r.msg); renderIdentitySummary();
+  toast(r.msg); if(r.ok){ user.level=Math.max(user.level,1); persist(); renderLevels(); renderIdentitySummary(); }
+}
+
+async function googleFlow(){
+  try{
+    const inp=document.getElementById('gidIn');
+    if(inp.value.trim()) NexusIdentity.saveGoogleClientId(inp.value.trim());
+    const init=await NexusIdentity.googleFlow(async(credential)=>{
+      const r=await NexusIdentity.verifyGoogleCredential(credential);
+      toast(r.msg);
+      if(r.ok){ user.level=Math.max(user.level,1); persist(); renderLevels(); renderIdentitySummary(); }
+    });
+    if(!init.ok){ toast('⛔ '+init.msg); return; }
+    google.accounts.id.prompt(); // One Tap
+  }catch(e){ toast('Google Sign-In error: '+String(e.message||e).slice(0,70)); }
 }
 async function realWallet(){
   const r=await NexusIdentity.walletProof();
@@ -706,7 +725,7 @@ function startKYC(){
     const r=await K.scanLiveFace(document.getElementById('cam'),t=>{document.getElementById('scanStatus').textContent=t;});
     if(_stream) _stream.getTracks().forEach(t=>t.stop());
     if(!r.ok){ document.getElementById('scanStatus').innerHTML='<span class="bad">'+r.msg+'</span>'; document.getElementById('scanBtn').disabled=false; return; }
-    selfieDesc=r.descriptor; document.getElementById('scanStatus').innerHTML='<span class="ok">✓ liveness ผ่าน (กระพริบตา+หันหน้า+anti-photo)</span>'; stepCheck();
+    selfieDesc=r.descriptor; document.getElementById('scanStatus').innerHTML='<span class="ok">✓ liveness ผ่าน (กระพริบตา+หันหน้า+anti-photo)</span>'; window._kycLive=(r.liveness&&r.liveness.blink&&r.liveness.turn)?'blink+turn':'partial'; stepCheck();
   }
   function stepCheck(){
     if(idHash&&idDesc&&selfieDesc){
@@ -714,7 +733,7 @@ function startKYC(){
       const el=document.getElementById('finalResult');
       if(c.match){
         el.innerHTML='<span class="ok">✅ ยืนยันสำเร็จ! คะแนนเทียบหน้า '+c.score+'% (distance '+c.distance+', threshold มาตรฐาน 0.6)</span><br><span class="muted">เก็บเฉพาะ: hash เอกสาร + score + ผล liveness — ไม่มีรูปถูกเก็บ</span>';
-        localStorage.setItem('nx_kyc',JSON.stringify({idHash:idHash,matchScore:c.score,distance:c.distance,liveness:'blink+turn',at:Date.now()}));
+        localStorage.setItem('nx_kyc',JSON.stringify({idHash:idHash,matchScore:c.score,distance:c.distance,liveness:window._kycLive||'blink+turn',at:Date.now()}));
         setTimeout(()=>{ window.opener&&window.opener.postMessage({type:'nexus_kyc_ok',score:c.score},'*'); window.close(); },1800);
       } else el.innerHTML='<span class="bad">❌ หน้าบนบัตรไม่ตรงกับหน้าสด (score '+c.score+'%) — ลองรูปบัตรที่ชัดกว่านี้</span>';
     } else document.getElementById('finalResult').textContent='เหลือขั้นตอน: '+[!idHash&&'เลขบัตร',!idDesc&&'รูปบัตร',!selfieDesc&&'แสกนหน้า'].filter(Boolean).join(', ');

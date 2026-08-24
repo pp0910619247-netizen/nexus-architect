@@ -59,6 +59,10 @@ class NexusBrain {
       this.centroids[intent] = this._buildCentroid(intent);
     }
 
+    /* deterministic rule cache: coin + price wording = price */
+    const COIN = 'btc|bitcoin|eth|ethereum|sol|solana|xrp|doge|คริปโต|crypto|เหรียญ|ทองคำ?';
+    this._priceRe = new RegExp(`(?:${COIN}).*?(?:ราคา|เท่าไหร่|price|กี่บาท)|(?:ราคา|price).*?(?:${COIN})`, 'i');
+
     this.skills = [];
     this._registerCoreSkills();
   }
@@ -132,9 +136,7 @@ class NexusBrain {
   /* ── classify ด้วยโมเดลที่เทรนไว้ ── */
   classify(msg) {
     // deterministic rule: coin + price wording = price (แม่นกว่า centroid สำหรับประโยคสั้น)
-    const COIN = 'btc|bitcoin|eth|ethereum|sol|solana|xrp|doge|คริปโต|crypto|เหรียญ|ทองคำ?';
-    if (new RegExp(`(?:${COIN}).*?(?:ราคา|เท่าไหร่|price|กี่บาท)|(?:ราคา|price).*?(?:${COIN})`, 'i').test(msg))
-      return { intent: 'price', confidence: 0.92 };
+    if (this._priceRe.test(msg)) return { intent: 'price', confidence: 0.92 };
     const tokens = this._tokenize(msg);
     let best = null, bestScore = 0;
     for (const [intent, centroid] of Object.entries(this.centroids)) {

@@ -1,7 +1,8 @@
-/* Nexus Service Worker v1.0 — offline-first app shell */
-const CACHE = 'nexus-v1';
+/* Nexus Service Worker v1.2 — offline-first app shell */
+const CACHE = 'nexus-v3';
 const ASSETS = [
-  './', './index.html', './twin.js', './nexus-core.js',
+  './', './index.html', './twin.js', './nexus-core.js', './nexus-gov.js',
+  './nexus-memory.js', './identity.js', './kyc.js',
   './manifest.json', './icons/icon-192.png', './icons/icon-512.png',
   'https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js'
 ];
