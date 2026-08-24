@@ -16,5 +16,8 @@
   },
   "paths": {
     "sources": "contracts_sol"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.6.1"
   }
 }
