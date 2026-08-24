@@ -12,9 +12,12 @@ amoy_alt = "https://polygon-amoy-bor-rpc.publicnode.com"
 mainnet = "https://polygon-bor-rpc.publicnode.com"
 
 [contracts]
-# Deployed on Polygon Amoy (chainId 80002) — 2026-08-24
-problem_registry = "0x65A56978A60733B28cD1FD61C760AB5dC8FD3081"
-reward_splitter  = "0xC18c89ED248aa8f40B2840b9Fe88892E221FedA9"
+# Deployed on Polygon Amoy (chainId 80002) — 2026-08-24 (ชุดที่ 2)
+problem_registry = "0x5dDA958680e4Cf99200906bF7F357310D51F9157"
+reward_splitter  = "0x97fb5CEada36C721a4b82BF6a6ddFa565AC79ecF"
+# รอ deploy: รัน deploy-market.ps1 แล้ววาง address ด้านล่าง
+nexus_token      = ""
+job_board        = ""
 
 [status]
 balance_checked = "2026-08-24: deployed 2 contracts (0.1 POL used ~0.005)"
