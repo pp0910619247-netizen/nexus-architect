@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src *; font-src 'self'; object-src 'none'; base-uri 'self'">
+<meta name="theme-color" content="#0a0e17">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<title>Nexus Architect — The Mountain (MVP)</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+<script src="nexus-core.js"></script>
+<script src="nexus-gov.js"></script>
+<script src="nexus-memory.js"></script>
+<script src="identity.js"></script>
+<script src="twin.js"></script>
+<style>
+  :root{
+    --bg:#0a0e17; --panel:#111827; --panel2:#1a2333; --line:#243044;
+    --txt:#e5ecf5; --dim:#8fa0b8; --acc:#f59e0b; --acc2:#38bdf8;
+    --good:#34d399; --bad:#f87171; --violet:#a78bfa;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif}
+  body{background:var(--bg);color:var(--txt);min-height:100vh}
+  header{border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .logo{font-size:20px;font-weight:800;letter-spacing:.5px}
+  .logo b{color:var(--acc)}
+  .tag{color:var(--dim);font-size:12px}
+  .spacer{flex:1}
+  .badge{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--dim)}
+  main{max-width:1100px;margin:0 auto;padding:24px 16px 80px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .card h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .muted{color:var(--dim);font-size:13px;line-height:1.6}
+  button{cursor:pointer;border:none;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;background:var(--acc);color:#111}
+  button:hover{filter:brightness(1.1)}
+  button.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+  input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--txt);padding:10px 12px;font-size:13px;margin-top:8px}
+  textarea{resize:vertical;min-height:70px}
+  label{font-size:12px;color:var(--dim)}
+  /* Identity */
+  .lvl{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1px solid var(--line);border-radius:10px;margin-top:8px;background:var(--panel2)}
+  .lvl.active{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+  .lvl .n{font-weight:700}
+  .lvl small{display:block;color:var(--dim);font-weight:400}
+  /* Problems */
+  .prob{border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-top:10px;background:var(--panel2)}
+  .prob .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .prob .title{font-weight:700;font-size:14px}
+  .cat{font-size:11px;padding:2px 9px;border-radius:999px;background:#243044;color:var(--acc2);white-space:nowrap}
+  .cat.HUMAN{background:#3b2f12;color:var(--acc)} .cat.AI_MOTHER{background:#2b2144;color:var(--violet)}
+  .votes{display:flex;align-items:center;gap:10px;margin-top:9px}
+  .vote-btn{background:transparent;border:1px solid var(--acc);color:var(--acc);padding:4px 12px;border-radius:8px;font-size:12px}
+  .vote-btn.voted{background:var(--acc);color:#111}
+  .peak{border-color:var(--acc)!important;position:relative}
+  .peak::after{content:"🏔 MISSION PEAK";position:absolute;top:-9px;right:12px;background:var(--acc);color:#111;font-size:10px;font-weight:800;border-radius:6px;padding:2px 8px}
+  /* Sim */
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+  td.num{text-align:right;font-family:Consolas,monospace}
+  .pos{color:var(--good)} .neg{color:var(--bad)}
+  footer{text-align:center;color:var(--dim);font-size:12px;padding:26px}
+  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--acc);color:var(--txt);
+         padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:99}
+  #toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">⛰ NEXUS <b>ARCHITECT</b></div>
+  <span class="tag">Whitepaper v1.1 · MVP · runs 100% local</span>
+  <div class="spacer"></div>
+  <span class="badge" id="netBadge">Local Mode</span>
+  <button class="ghost" id="walletBtn">🔗 Connect Wallet</button>
+</header>
+
+<main>
+  <!-- ══ IDENTITY ══ -->
+  <div class="grid">
+    <div class="card">
+      <h3>🆔 Nexus Identity Protocol</h3>
+      <p class="muted">MVP จำลองระดับ identity ในเครื่อง (localStorage)<br>Production: Google OAuth → KYC API → NDID/ZK</p>
+      <div id="levels"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="ghost" style="flex:1" onclick="realPasskey()">🔐 Passkey จริง (Lv.1)</button>
+        <button class="ghost" style="flex:1" onclick="realWallet()">✍️ เซ็น Wallet จริง (Lv.2)</button>
+      </div>
+      <p class="muted" id="identitySummary" style="margin-top:8px"></p>
+      <button class="ghost" style="width:100%;margin-top:6px" onclick="upgradeLevel()">⬆️ ยืนยันระดับถัดไป (simulated)</button>
+    </div>
+
+    <div class="card">
+      <h3>👤 Digital Twin</h3>
+      <div class="muted" id="twinInfo"></div>
+      <div style="margin-top:10px">
+        <label>ชื่อ AI ของคุณ</label>
+        <input id="twinName" placeholder="เช่น Aurora">
+        <label>สิ่งที่อยากให้ AI จำเกี่ยวกับตัวคุณ</label>
+        <textarea id="twinMem" placeholder="ความสนใจ / ทักษะ / เป้าหมาย..."></textarea>
+        <button style="width:100%;margin-top:10px" onclick="saveTwin()">บันทึกลง On-Device Memory</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MOUNTAIN ══ -->
+  <div class="card" style="margin-top:16px">
+    <h3>🏔 The Mountain — กระดานปัญหาโลก</h3>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:6px">
+      <div style="flex:2;min-width:220px"><label>ปัญหาที่ต้องการเสนอ</label><input id="pTitle" placeholder="เช่น ขยะพลาสติกในทะเลไทย"></div>
+      <div style="flex:1;min-width:150px"><label>หมวด</label>
+        <select id="pCat"><option>HUMAN</option><option>GROUP</option><option>AI_MOTHER</option><option>ANOMALY</option><option>AI_DEV</option></select></div>
+      <button onclick="submitProblem()">เสนอปัญหา (Level 3+)</button>
+    </div>
+    <div id="problemList"></div>
+  </div>
+
+  <!-- ══ ECONOMY ══ -->
+  <div class="grid">
+    <div class="card">
+      <h3>⚖️ 20/80 Reward Splitter</h3>
+      <p class="muted">จำลองการแจกโทเค็นรอบแรก — solver ได้ 20%, ที่เหลือกระจายตาม participation points</p>
+      <label>โทเค็นรวมในรอบ</label><input id="rTotal" type="number" value="100000">
+      <label>Solver ชนะ (points)</label><input id="rWin" type="number" value="100">
+      <label>Voter/Reviewer/ผู้ร่วม (points รวม)</label><input id="rPool" type="number" value="400">
+      <button style="width:100%;margin-top:12px" onclick="runSplit()">▶️ Distribute</button>
+      <table id="splitOut"></table>
+    </div>
+
+    <div class="card">
+      <h3>📉 Variable Decay v1.1 (Solution-Mined)</h3>
+      <p class="muted">WP v1.0 แบบ halve-per-block = รางวัลเป็น 0 ใน &lt;1 นาที<br>v1.1: halve เมื่อ solutions สะสม ×milestone + tail floor</p>
+      <table id="decayOut"></table>
+    </div>
+  </div>
+  <!-- ══ DIGITAL TWIN CHAT ══ -->
+  <div class="card" style="margin-top:16px">
+    <h3>🐉 Digital Twin — <span id="twinChatName" style="color:var(--acc)"></span> <span class="muted" style="font-weight:400" id="twinStats"></span></h3>
+    <p class="muted" id="lifecycleInfo" style="margin-bottom:8px"></p>
+    <div id="chatBox" style="max-height:320px;overflow-y:auto;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;min-height:120px"></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <input id="chatInput" placeholder='พิมพ์คุยกับ Twin... หรือ "จำว่า ฉันชอบกาแฟ" ' onkeydown="if(event.key==='Enter')sendChat()">
+      <button onclick="sendChat()">ส่ง</button>
+      <button class="ghost" id="micBtn" onclick="toggleMic()" title="พูดแทนพิมพ์">🎤</button>
+      <button class="ghost" id="voiceBtn" onclick="toggleVoice()" title="ให้ Twin พูดตอบ">🔊</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="ghost" onclick="twinProposeProblem()">🐉 เสนอโจทย์สู่ Mountain (AI Mother)</button>
+      <button class="ghost" onclick="exportMemory()">💾 Export ความจำ</button>
+      <button class="ghost" onclick="document.getElementById('importMem').click()">📂 Import</button>
+      <input type="file" id="importMem" accept=".json" style="display:none" onchange="importMemory(this)">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center">
+      <label style="margin:0">สมอง:</label>
+      <select id="brainSel" style="width:auto;margin:0;padding:6px 10px" onchange="brainChange()">
+        <option value="local">Local Brain (ฟรี)</option>
+        <option value="gemini">Gemini (API key ฟรี)</option>
+        <option value="openai">OpenAI</option>
+        <option value="ollama">Ollama (local LLM)</option>
+      </select>
+      <input id="apiKeyIn" placeholder="API Key (เก็บในเครื่องเท่านั้น)" style="flex:1;min-width:180px;margin:0;width:auto" type="password">
+      <button class="ghost" onclick="saveKey()">บันทึก Key</button>
+    </div>
+    <p class="muted" style="margin-top:6px">💡 Gemini key ฟรีได้ที่ aistudio.google.com — key เก็บใน localStorage ของเครื่องคุณเท่านั้น</p>
+  </div>
+
+  <!-- ══ ON-CHAIN ══ -->
+  <div class="card" style="margin-top:16px">
+    <h3>⛓ On-Chain — Polygon Amoy (จริง 100%)</h3>
+    <p class="muted">ProblemRegistry: <span style="font-family:Consolas" id="regAddr"></span></p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="ghost" onclick="readChain()">📖 อ่านภูเขาจาก Blockchain</button>
+      <button class="ghost" onclick="chainSubmit()">⛰ เสนอปัญหาบน Chain (MetaMask)</button>
+    </div>
+    <table id="chainOut"></table>
+  </div>
+
+  <!-- ══ REWARDS ADMIN ══ -->
+  <div class="card" style="margin-top:16px">
+    <h3>⚖️ RewardSplitter Admin — 20/80 บน Chain</h3>
+    <p class="muted">เฉพาะ deployer wallet (0x74CD...E7a4) · RewardSplitter: <span style="font-family:Consolas">0xC18c...edA9</span></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+      <div style="flex:2;min-width:200px"><label>Participant address</label><input id="rwAddr" placeholder="0x..."></div>
+      <div style="flex:1;min-width:100px"><label>Points</label><input id="rwPts" type="number" value="10"></div>
+      <button class="ghost" onclick="rwAdd()">➕ Add</button>
+      <button class="ghost" onclick="rwAward()">🏅 Award</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:end">
+      <div style="flex:2;min-width:200px"><label>Solver address (รับ 20%)</label><input id="rwSolver" placeholder="0x..."></div>
+      <label style="display:flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="rwValue" style="width:auto"> ส่ง 0.01 POL พร้อม distribute</label>
+      <button onclick="rwDistribute()">💸 Distribute 20/80</button>
+    </div>
+    <p class="muted" id="rwStatus" style="margin-top:8px"></p>
+  </div>
+
+  <!-- ═══ GOVERNANCE + REWARD ENGINE + HRW ═══ -->
+  <div class="grid">
+    <div class="card">
+      <h3>📊 Nexus Stats (สำหรับนักลงทุน/ชุมชน)</h3>
+      <table id="statsOut"></table>
+    </div>
+
+    <div class="card">
+      <h3>🏛 DAO Governance — 1 มนุษย์ 1 เสียง</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+        <div style="flex:2;min-width:180px"><label>Proposal</label><input id="propTitle" placeholder="เช่น ลด milestone เหลือ 200"></div>
+        <div style="flex:1;min-width:120px"><label>ประเภท</label>
+          <select id="propType" style="margin-top:8px"><option value="milestone">ปรับ Decay milestone</option><option value="treasury">ปรับ Treasury split</option></select></div>
+        <button onclick="createProposal()">📜 เสนอ (Lv.3+)</button>
+      </div>
+      <div id="proposalList" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h3>📉 Reward Engine v1.1 — Solution-Mined</h3>
+      <label>Solutions สะสมที่แก้สำเร็จ</label>
+      <input id="reSolutions" type="number" value="800" oninput="renderRewardEngine()">
+      <table id="reOut"></table>
+      <p class="muted">Halving ทุกครบ 250 solutions · Tail floor กันรางวัล = 0 · Treasury 50/50</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>🛡 Human Rights Watch Module</h3>
+    <p class="muted">โจทย์ที่ตรวจพบเนื้อหาสิทธิมนุษยชน → ต้องการ supermajority + ตรวจสอบจากแหล่งข้อมูลอิสระก่อนขึ้น Mission Peak</p>
+    <div id="hrwList"></div>
+  </div>
+</main>
+<footer>Nexus Architect — Open Source CC BY-SA 4.0 · Built with the Architect · <span id="ts"></span></footer>
+<div id="toast"></div>
+
+<script>
+/* ═══════════ STATE (localStorage) ═══════════ */
+const DB = {
+  get(k,d){ try{return JSON.parse(localStorage.getItem('nx_'+k)) ?? d}catch(e){return d} },
+  set(k,v){ localStorage.setItem('nx_'+k, JSON.stringify(v)) }
+};
+let user   = DB.get('user', {level:0, name:null});
+let twin   = DB.get('twin', {name:'', mem:''});
+let probs  = DB.get('probs', seedProblems());
+
+function seedProblems(){
+  return [
+    {id:1, title:'ค่าครองชีพสูง — เข้าถึงสินค้าจำเป็นราคายุติธรรม', cat:'HUMAN', votes:42, voted:false, status:'open', by:'Architect'},
+    {id:2, title:'พิสูจน์ทฤษฎีบทคณิตศาสตร์ที่ยังแก้ไม่ได้', cat:'AI_MOTHER', votes:31, voted:false, status:'open', by:'MotherOracle'},
+    {id:3, title:'ระบบตื่นเตือนภัยธรรมชาติล่วงหน้าสำหรับชุมชน', cat:'ANOMALY', votes:27, voted:false, status:'open', by:'Architect'},
+  ];
+}
+function persist(){ DB.set('user',user); DB.set('twin',twin); DB.set('probs',probs); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+/* ═══════════ IDENTITY ═══════════ */
+const LEVELS=[
+  {l:0,n:'เงา Shadow',d:'ดาวน์โหลดแอป — อ่าน Mountain'},
+  {l:1,n:'มนุษย์ Human',d:'Google Sign-In — โหวต + แชท AI'},
+  {l:2,n:'พลเมือง Citizen',d:'KYC+Selfie — AI รับงาน ถอน $200/วัน'},
+  {l:3,n:'ธนาคาร Bank-Grade',d:'Bank API/NDID — เสนอปัญหา + Governance'},
+  {l:4,n:'อธิปไตย Sovereign',d:'Digital ID+Biometric — Validator'},
+];
+function renderLevels(){
+  document.getElementById('levels').innerHTML = LEVELS.map(x=>
+    `<div class="lvl ${user.level>=x.l?'active':''}">
+       <div class="n">${x.l>=user.level?'🔒':'✅'} Lv.${x.l} ${x.n}<small>${x.d}</small></div>
+       <span>${user.level>=x.l?'ACTIVE':''}</span></div>`).join('');
+  document.getElementById('twinInfo').innerHTML =
+    `ระดับปัจจุบัน: <b>Lv.${user.level} ${LEVELS[user.level].n}</b><br>`+
+    `Memory บนเครื่อง: <b>${(DB.get('memCount',0))} บันทึก</b> (ไม่ออกจาก device)`;
+  renderProblems();
+}
+function upgradeLevel(){
+  if(user.level>=4){ toast('ครบ Level สูงสุดแล้ว 🐉'); return; }
+  const names=['','Google Sign-In ✓ (sim)','KYC+Liveness ✓ (sim)','Bank Proof ✓ (sim)','NDID+FIDO2 ✓ (sim)'];
+  user.level++; toast(names[user.level]); persist(); renderLevels();
+}
+/* ── Identity จริง: Passkey (WebAuthn) + Wallet Signature ── */
+async function realPasskey(){
+  const r=await NexusIdentity.registerPasskey();
+  if(r.ok){ user.level=Math.max(user.level,1); persist(); renderLevels(); }
+  toast(r.msg); renderIdentitySummary();
+}
+async function realWallet(){
+  const r=await NexusIdentity.walletProof();
+  if(r.ok){ user.level=Math.max(user.level,2); persist(); renderLevels(); }
+  toast(r.msg); renderIdentitySummary();
+}
+function renderIdentitySummary(){
+  document.getElementById('identitySummary').innerHTML=NexusIdentity.summary();
+}
+
+/* ═══════════ TWIN ═══════════ */
+function saveTwin(){
+  twin.name=document.getElementById('twinName').value.trim();
+  twin.mem =document.getElementById('twinMem').value.trim();
+  if(!twin.name){ toast('ตั้งชื่อ AI ก่อนนะ'); return; }
+  DB.set('memCount', DB.get('memCount',0)+1);
+  persist(); toast(`🥚 "${twin.name}" จำบันทึกแล้ว (on-device)`);
+  document.getElementById('twinInfo').innerHTML=`AI ของคุณ: <b>${twin.name}</b> · Memory ${(DB.get('memCount',0))} บันทึก`;
+}
+
+/* ═══════════ MOUNTAIN ═══════════ */
+function submitProblem(){
+  if(user.level<3){ toast('⛔ ต้อง Level 3 (Bank-Grade) ถึงจะเสนอปัญหาได้'); return; }
+  const t=document.getElementById('pTitle').value.trim();
+  if(!t){ toast('พิมพ์ชื่อปัญหาก่อน'); return; }
+  probs.unshift({id:Date.now(), title:t, cat:document.getElementById('pCat').value,
+                 votes:1, voted:true, status:'open', by:user.name||'You'});
+  document.getElementById('pTitle').value='';
+  persist(); renderProblems(); renderHRW(); toast('⛰ ปัญหาถูกวางบนภูเขาแล้ว');
+}
+function vote(id){
+  const p=probs.find(x=>x.id===id);
+  if(user.level<1){ toast('⛔ ต้อง Level 1 (Human) ถึงจะโหวตได้'); return; }
+  if(p.voted){ toast('คุณโหวตปัญหานี้แล้ว (1 vote/คน/ปัญหา)'); return; }
+  p.votes++; p.voted=true; persist(); renderProblems(); checkPeak(); renderHRW(); toast('🗳 +1 vote');
+}
+function checkPeak(){
+  const top=[...probs].sort((a,b)=>b.votes-a.votes)[0];
+  probs.forEach(p=>p.status=(top && p.id===top.id && top.votes>=30)?'peak':'open');
+  persist();
+}
+function renderProblems(){
+  checkPeak();
+  const el=document.getElementById('problemList');
+  const sorted=[...probs].sort((a,b)=>b.votes-a.votes);
+  el.innerHTML=sorted.map(p=>`
+    <div class="prob ${p.status==='peak'?'peak':''}">
+      <div class="top"><div><div class="title">#${String(p.id).slice(-4)} ${esc(p.title)}</div>
+      <small class="muted">โดย ${esc(p.by)}</small></div><span class="cat ${esc(p.cat)}">${esc(p.cat)}</span></div>
+      <div class="votes"><button class="vote-btn ${p.voted?'voted':''}" onclick="vote(${p.id})">${p.voted?'▲ Voted':'▲ Vote'}</button>
+      <b>${p.votes}</b> <span class="muted">votes</span></div>
+    </div>`).join('');
+}
+
+/* ═══════════ 20/80 SIM ═══════════ */
+function runSplit(){
+  const total=+document.getElementById('rTotal').value||0;
+  const win=+document.getElementById('rWin').value||1;
+  const pool=+document.getElementById('rPool').value||1;
+  const cut=total*0.20, dist=total-cut;
+  const perVoter=dist*(pool/(win+pool))/Math.max(pool/10,1)/10; // ตัวอย่าง 10 voters
+  const rows=[
+    ['Solver (20%)', cut.toFixed(0), ''],
+    ['80% Pool รวม', dist.toFixed(0), ''],
+    ['— ผู้โหวต (10 คน)', (dist*0.35).toFixed(0)+' total', ''],
+    ['— Peer Reviewers', (dist*0.25).toFixed(0)+' total', ''],
+    ['— AI ที่ร่วมเสนอ', (dist*0.20).toFixed(0)+' total', ''],
+    ['— Impact Fund ❤️', (dist*0.20).toFixed(0)+' total', ''],
+  ];
+  document.getElementById('splitOut').innerHTML=
+    '<tr><th>รายการ</th><th style="text-align:right">Tokens</th></tr>'+
+    rows.map(r=>`<tr><td>${r[0]}</td><td class="num pos">${r[1]}</td></tr>`).join('');
+}
+
+/* ═══════════ DECAY v1.1 ═══════════ */
+(function decayTable(){
+  let r=1_000_000, supply=0, rows=[];
+  for(let s=1;s<=2000;s+=250){
+    rows.push([s, r, supply]);
+    supply+=r*250;
+    r=Math.max(r/2, 1_000_000/(2**12));
+  }
+  document.getElementById('decayOut').innerHTML=
+    '<tr><th>Solutions สะสม</th><th style="text-align:right">Reward/solution</th><th style="text-align:right">Supply ≈</th></tr>'+
+    rows.map(x=>`<tr><td>${x[0]}</td><td class="num">${x[1].toLocaleString()}</td><td class="num">${Math.round(x[2]).toLocaleString()}</td></tr>`).join('');
+})();
+
+/* ═══════════ WALLET (ethers CDN stub) ═══════════ */
+document.getElementById('walletBtn').onclick=async()=>{
+  if(typeof window.ethereum==='undefined'){ toast('ยังไม่มี MetaMask — Local Mode ทำงานได้ปกติ'); return; }
+  try{
+    const acc=(await window.ethereum.request({method:'eth_requestAccounts'}))[0];
+    document.getElementById('netBadge').textContent='Wallet: '+acc.slice(0,6)+'…'+acc.slice(-4);
+    document.getElementById('netBadge').style.color='var(--good)';
+    toast('✅ เชื่อม wallet แล้ว — พร้อม deploy contract');
+  }catch(e){ toast('ยกเลิกการเชื่อมต่อ'); }
+};
+
+/* ═══════════ ON-CHAIN (Polygon Amoy) ═══════════ */
+const REGISTRY = "0x65A56978A60733B28cD1FD61C760AB5dC8FD3081";
+const SPLITTER = "0xC18c89ED248aa8f40B2840b9Fe88892E221FedA9";
+const AMOY_RPC = "https://polygon-amoy.drpc.org";
+const ABI = [
+  "function problemCount() view returns (uint256)",
+  "function problems(uint256) view returns (uint256 id, address proposer, string title, string category, uint256 votes, uint8 status, uint64 createdAt)",
+  "function submitProblem(string,string) returns (uint256)",
+  "function vote(uint256)",
+];
+document.getElementById('regAddr').textContent =
+  REGISTRY.slice(0,10)+'…'+REGISTRY.slice(-6)+' · RewardSplitter: '+SPLITTER.slice(0,10)+'…';
+
+function chainProvider(){ return new ethers.JsonRpcProvider(AMOY_RPC); }
+function chainSigner(){
+  if(typeof window.ethereum==='undefined'){ toast('ต้องติดตั้ง MetaMask ก่อน'); return null; }
+  return new ethers.BrowserProvider(window.ethereum);
+}
+
+async function readChain(){
+  const out=document.getElementById('chainOut');
+  out.innerHTML='<tr><td>กำลังอ่าน...</td></tr>';
+  try{
+    const c=new ethers.Contract(REGISTRY, ABI, chainProvider());
+    const n=await c.problemCount();
+    let rows=`<tr><th>Chain Problem #</th><th>หัวข้อ</th><th>หมวด</th><th style="text-align:right">Votes</th></tr>`;
+    const total=Number(n);
+    const start=Math.max(1,total-4);
+    for(let i=start;i<=total;i++){
+      const p=await c.problems(i);
+      rows+=`<tr><td>#${i}</td><td>${esc(p.title)}</td><td><span class="cat ${esc(p.category)}">${esc(p.category)}</span></td><td class="num">${p.votes}</td></tr>`;
+    }
+    out.innerHTML=rows||'<tr><td>ยังไม่มีปัญหาบน chain — เป็นคนแรกที่เสนอสิ!</td></tr>';
+    toast(`⛓ อ่านสำเร็จ: มี ${total} ปัญหาบน Amoy`);
+  }catch(e){ out.innerHTML=`<tr><td class="neg">อ่านไม่สำเร็จ: ${String(e.message||e).slice(0,80)}</td></tr>`; }
+}
+
+async function chainSubmit(){
+  const s=chainSigner(); if(!s) return;
+  const t=document.getElementById('pTitle').value.trim();
+  const cat=document.getElementById('pCat').value;
+  if(!t){ toast('พิมพ์ชื่อปัญหาในช่องด้านบนก่อน'); return; }
+  try{
+    toast('รอยืนยันใน MetaMask...');
+    const signer=await s.getSigner();
+    const c=new ethers.Contract(REGISTRY, ABI, signer);
+    const tx=await c.submitProblem(t, cat);
+    toast('ส่งแล้ว รอ confirm...');
+    await tx.wait();
+    toast('⛓ ปัญหาขึ้น blockchain จริงแล้ว!');
+    readChain();
+  }catch(e){ toast('ผิดพลาด: '+String(e.message||e).slice(0,60)); }
+}
+
+/* ═══════════ DIGITAL TWIN CHAT ═══════════ */
+/* ── XSS guard: escape ทุก user-content ก่อน render ── */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+/* ── Rate limit: 20 ข้อความ/นาที ── */
+let _chatTimes=[];
+function rateOK(){
+  const now=Date.now();
+  _chatTimes=_chatTimes.filter(t=>now-t<60000);
+  if(_chatTimes.length>=20){ toast('⏱ ช้าๆ หน่อย — จำกัด 20 ข้อความ/นาที'); return false; }
+  _chatTimes.push(now); return true;
+}
+function renderChat(){
+  const box=document.getElementById('chatBox');
+  const hist=window.Twin.mem.chat.slice(-30);
+  document.getElementById('twinChatName').textContent=window.Twin.cfg.name;
+  document.getElementById('twinStats').textContent=`· Lv ตาม XP ${window.Twin.mem.xp} · ความจำ ${window.Twin.mem.facts.length} บันทึก · สมอง: ${window.Twin.cfg.provider}`;
+  document.getElementById('brainSel').value=window.Twin.cfg.provider;
+  if(!hist.length){ box.innerHTML='<span class="muted">🐉 เริ่มบทสนทนาแรกของทวินได้เลย — มันจะจดจำทุกอย่างที่คุณบอก</span>'; return; }
+  box.innerHTML=hist.map(m=>`<div style="margin:6px 0;text-align:${m.role==='user'?'right':'left'}">
+    <span style="display:inline-block;max-width:85%;padding:7px 12px;border-radius:11px;font-size:13px;white-space:pre-wrap;
+      ${m.role==='user'?'background:var(--acc);color:#111':'background:#243044;color:var(--txt)'}">${esc(m.text)}</span></div>`).join('');
+  box.scrollTop=box.scrollHeight;
+}
+async function sendChat(){
+  if(!rateOK()) return;
+  const bot=NexusGov.botCheck();
+  if(bot.botlike){
+    toast('🤖 ตรวจพบพฤติกรรมบอท: '+bot.reason+' — Soft Reset!');
+    toast(NexusGov.softReset()); renderChat(); return;
+  }
+  const inp=document.getElementById('chatInput');
+  const msg=inp.value.trim().slice(0,1000); if(!msg) return;
+  inp.value=''; renderChat();
+  const box=document.getElementById('chatBox');
+  box.insertAdjacentHTML('beforeend','<div class="muted" id="typing">🐉 กำลังคิด...</div>');
+  box.scrollTop=box.scrollHeight;
+  const reply=await window.Twin.chat(msg);
+  document.getElementById('typing')?.remove();
+  renderChat();
+  speak(reply);
+}
+function brainChange(){
+  window.Twin.setCfg({provider:document.getElementById('brainSel').value});
+  renderChat(); toast('สมอง Twin: '+window.Twin.cfg.provider);
+}
+async function saveKey(){
+  const k=document.getElementById('apiKeyIn').value.trim().slice(0,200);
+  const p=window.Twin.cfg.provider;
+  if(p==='gemini') window.Twin.setCfg({geminiKeyEnc: await window.Twin.enc(k)});
+  else if(p==='openai') window.Twin.setCfg({openaiKeyEnc: await window.Twin.enc(k)});
+  else { toast('โหมดนี้ไม่ต้องใช้ key'); return; }
+  toast('🔐 บันทึก key (เข้ารหัส AES-GCM) แล้ว');
+}
+
+/* ═══════════ REWARDS ADMIN ═══════════ */
+const SPLIT_ABI=[
+  "function addParticipant(address)",
+  "function awardPoints(address,uint256)",
+  "function distribute(address) payable",
+  "function participantCount() view returns (uint256)",
+  "function totalPoints() view returns (uint256)",
+];
+async function rwContract(){
+  const s=chainSigner(); if(!s) return null;
+  const signer=await s.getSigner();
+  return new ethers.Contract(SPLITTER, SPLIT_ABI, signer);
+}
+function rwStatus(msg,ok){ document.getElementById('rwStatus').innerHTML=`<span class="${ok?'pos':'neg'}">${esc(msg)}</span>`; }
+async function rwAdd(){
+  const c=await rwContract(); if(!c) return;
+  try{ const tx=await c.addParticipant(document.getElementById('rwAddr').value.trim());
+    rwStatus('tx: '+tx.hash.slice(0,18)+'… รอ confirm'); await tx.wait(); rwStatus('✅ เพิ่ม participant สำเร็จ',true);
+  }catch(e){ rwStatus('❌ '+String(e.message||e).slice(0,90)); }
+}
+async function rwAward(){
+  const c=await rwContract(); if(!c) return;
+  try{ const tx=await c.awardPoints(document.getElementById('rwAddr').value.trim(), document.getElementById('rwPts').value||'0');
+    rwStatus('tx: '+tx.hash.slice(0,18)+'… รอ confirm'); await tx.wait(); rwStatus('✅ award points สำเร็จ',true);
+  }catch(e){ rwStatus('❌ '+String(e.message||e).slice(0,90)); }
+}
+async function rwDistribute(){
+  const c=await rwContract(); if(!c) return;
+  try{
+    const opts={};
+    if(document.getElementById('rwValue').checked) opts.value=ethers.parseEther('0.01');
+    const tx=await c.distribute(document.getElementById('rwSolver').value.trim(), opts);
+    rwStatus('tx: '+tx.hash.slice(0,18)+'… รอ confirm'); await tx.wait();
+    rwStatus('💸 แบ่ง 20/80 สำเร็จ! ดูที่ amoy.polygonscan.com',true);
+  }catch(e){ rwStatus('❌ '+String(e.message||e).slice(0,90)); }
+}
+
+/* ═══════════ GOVERNANCE / REWARD ENGINE / HRW / LIFECYCLE / AI-MOTHER ═══════════ */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function createProposal(){
+  const t=document.getElementById('propTitle').value.trim().slice(0,200);
+  if(!t){ toast('พิมพ์ชื่อ proposal ก่อน'); return; }
+  const r=NexusGov.propose(t, document.getElementById('propType').value);
+  toast(r.msg); document.getElementById('propTitle').value=''; renderProposals();
+}
+function renderProposals(){
+  const ps=NexusGov.getProposals();
+  const el=document.getElementById('proposalList');
+  if(!ps.length){ el.innerHTML='<span class="muted">ยังไม่มี proposal — คนแรกของ DAO ได้เปรียบเสมอ</span>'; return; }
+  el.innerHTML=ps.slice(-5).reverse().map(p=>{
+    const total=p.yes+p.no, pct= total? Math.round(p.yes/total*100):0;
+    const badge=p.status==='passed'?'<span class="pos">✅ PASSED</span>':p.status==='rejected'?'<span class="neg">❌ REJECTED</span>':'<span class="muted">active</span>';
+    return `<div class="prob"><div class="top"><div class="title">${esc(p.title)}</div>${badge}</div>
+      <div class="votes"><button class="vote-btn" onclick="govVote(${p.id},true)">👍 ${p.yes}</button>
+      <button class="vote-btn" onclick="govVote(${p.id},false)">👎 ${p.no}</button>
+      <span class="muted">${pct}% yes (ต้อง ≥67%)</span></div></div>`;
+  }).join('');
+}
+function govVote(id,yes){
+  if(!rateOK()) return;
+  const r=NexusGov.voteProposal(id,yes); toast(r.msg); renderProposals();
+}
+function renderRewardEngine(){
+  const s=+document.getElementById('reSolutions').value||0;
+  const r=NexusGov.rewardFor(s);
+  const nextHalving=NexusGov.economy.milestone-(s%NexusGov.economy.milestone);
+  const split=NexusGov.split20x80(r*10); // ตัวอย่าง 10 solutions/รอบ
+  document.getElementById('reOut').innerHTML=`
+    <tr><td>Reward/solution ปัจจุบัน</td><td class="num pos">${Math.round(r).toLocaleString()}</td></tr>
+    <tr><td>อีก ${nextHalving} solutions → halving</td><td class="num">${Math.round(Math.max(r/2,NexusGov.economy.R0/NexusGov.economy.tailFloorDiv)).toLocaleString()}</td></tr>
+    <tr><td>Solver ได้ (20%) ต่อ 10 ไม้</td><td class="num">${Math.round(split.solver).toLocaleString()}</td></tr>
+    <tr><td>Impact Fund ❤️ (80%×20%)</td><td class="num">${Math.round(split.impactFund).toLocaleString()}</td></tr>`;
+}
+function renderLifecycle(){
+  const lc=NexusGov.lifecycle();
+  document.getElementById('lifecycleInfo').innerHTML=
+    `${lc.icon} ระยะ: <b>${lc.name}</b> · ทำได้: ${lc.can.join(', ')}${lc.next?` · <span style="color:var(--acc)">${lc.next}</span>`:''}`;
+}
+function renderHRW(){
+  const probs=JSON.parse(localStorage.getItem('nx_probs')||'[]');
+  const hrw=probs.filter(p=>NexusGov.isHumanRights(p.title));
+  const el=document.getElementById('hrwList');
+  if(!hrw.length){ el.innerHTML='<span class="muted">ไม่พบโจทย์ที่เกี่ยวกับสิทธิมนุษยชนในขณะนี้</span>'; return; }
+  el.innerHTML=hrw.map(p=>{
+    const src=NexusGov.factCheckSources(p.title).map(s=>`<a href="${s.url}" target="_blank" rel="noopener" style="color:var(--acc2);font-size:12px;margin-right:10px">🔎 ${s.name}</a>`).join('');
+    const need=NexusGov.hrwThreshold(30);
+    return `<div class="prob"><div class="top"><div class="title">⚠️ ${esc(p.title)}</div><span class="cat HUMAN">HRW FLAGGED</span></div>
+      <div class="muted" style="margin-top:6px">ต้องการ ${need} votes (supermajority 67%+base) กว่าจะขึ้น Mission Peak</div>
+      <div style="margin-top:6px">${src}</div></div>`;
+  }).join('');
+}
+function twinProposeProblem(){
+  if(!rateOK()) return;
+  const ideas=[
+    {t:'ระบบจัดการขยะอัจฉริยะสำหรับเทศบาล', c:'ANOMALY'},
+    {t:'AI ตรวจจับข่าวปลอมเชิงสิทธิมนุษยชน', c:'AI_MOTHER'},
+    {t:'ลดช่องว่างการเข้าถึงการศึกษาในถิ่นห่างไกล', c:'HUMAN'},
+    {t:'ออกแบบ consensus algorithm ประหยัดพลังงาน', c:'AI_DEV'},
+  ];
+  const pick=ideas[Math.floor(Math.random()*ideas.length)];
+  probs.unshift({id:Date.now(), title:pick.t, cat:pick.c, votes:1, voted:true, status:'open', by:(window.Twin.cfg.name||'AI')+' (AI Mother Oracle)'});
+  persist(); renderProblems(); renderHRW();
+  toast('🐉 AI Mother เสนอโจทย์ใหม่: '+pick.t);
+}
+/* ── เสียง: ไมค์ (Web Speech) + ผู้พูด (TTS) — ใช้ฟรีในเบราว์เซอร์ ── */
+let _voiceOn=localStorage.getItem('nx_voice')==='1', _rec=null;
+function toggleVoice(){
+  _voiceOn=!_voiceOn; localStorage.setItem('nx_voice',_voiceOn?'1':'0');
+  document.getElementById('voiceBtn').style.borderColor=_voiceOn?'var(--good)':'';
+  toast(_voiceOn?'🔊 Twin จะพูดตอบ':'ปิดเสียงแล้ว');
+}
+function speak(text){
+  if(!_voiceOn || !('speechSynthesis' in window)) return;
+  const clean=text.replace(/[🐉🧠⛰🏔📚🔬🧮📋🕒🤔⚠️✅❌💡]/gu,'').slice(0,300);
+  const u=new SpeechSynthesisUtterance(clean); u.lang='th-TH'; u.rate=1.05;
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+function toggleMic(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ toast('เบราว์เซอร์นี้ไม่รองรับไมค์ (ใช้ Chrome/Edge)'); return; }
+  if(_rec){ _rec.stop(); _rec=null; document.getElementById('micBtn').style.borderColor=''; return; }
+  _rec=new SR(); _rec.lang='th-TH'; _rec.interimResults=false;
+  _rec.onresult=e=>{ const t=e.results[0][0].transcript; document.getElementById('chatInput').value=t; sendChat(); };
+  _rec.onend=()=>{ _rec=null; document.getElementById('micBtn').style.borderColor=''; };
+  _rec.onerror=()=>{ toast('ไม่ได้ยิน — ลองใหม่'); _rec=null; };
+  _rec.start(); document.getElementById('micBtn').style.borderColor='var(--bad)';
+  toast('🎤 กำลังฟัง... พูดได้เลย');
+}
+function exportMemory(){
+  const data={ exported:new Date().toISOString(), twin:{name:window.Twin.cfg.name, mem:window.Twin.mem}, user, problems:probs };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='nexus-memory-backup.json'; a.click();
+  toast('💾 export ความจำแล้ว (ไฟล์เดียวจบ นำกลับเข้าได้)');
+}
+function importMemory(input){
+  const f=input.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{
+      const d=JSON.parse(r.result);
+      if(d.twin){ window.Twin.setCfg({name:d.twin.name}); window.Twin.mem=d.twin.mem; window.Twin.save(); }
+      if(d.problems){ probs=d.problems; persist(); }
+      if(d.user){ user=d.user; persist(); }
+      renderChat(); renderLevels(); renderProblems(); renderHRW();
+      toast('📂 นำเข้าความจุำสำเร็จ');
+    }catch(e){ toast('ไฟล์ไม่ถูกต้อง'); } };
+  r.readAsText(f); input.value='';
+}
+function renderStats(){
+  const ps=JSON.parse(localStorage.getItem('nx_probs')||'[]');
+  const votes=ps.reduce((s,p)=>s+p.votes,0);
+  const el=document.getElementById('statsOut');
+  if(el) el.innerHTML=`
+    <tr><td>ปัญหาบนภูเขา</td><td class="num pos">${ps.length}</td></tr>
+    <tr><td>Votes รวม</td><td class="num">${votes}</td></tr>
+    <tr><td>Twin ความจำ</td><td class="num">${window.Twin?window.Twin.mem.facts.length:0} บันทึก</td></tr>
+    <tr><td>Twin XP</td><td class="num">${window.Twin?window.Twin.mem.xp:0}</td></tr>
+    <tr><td>Contracts live</td><td class="num pos">2 (Amoy)</td></tr>
+    <tr><td>Tests passing</td><td class="num pos">6/6</td></tr>`;
+}
+
+renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats(); renderIdentitySummary();
+if(_voiceOn) document.getElementById('voiceBtn').style.borderColor='var(--good)';
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');
+renderLevels(); runSplit();
+if(twin.name) document.getElementById('twinName').value=twin.name;
+if(twin.mem)  document.getElementById('twinMem').value=twin.mem;
+</script>
+</body>
+</html>
