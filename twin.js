@@ -122,7 +122,17 @@ class TwinEngine {
         reply = key ? await this._openai(userMsg, key) : (window.NexusBrain ? window.NexusBrain.respond(userMsg).text : this.localBrain(userMsg)) + '\n(ยังไม่มี key — ใช้ Local Brain)';
       }
       else if (this.cfg.provider === 'ollama') reply = await this._ollama(userMsg);
-      else reply = (window.NexusBrain ? window.NexusBrain.respond(userMsg).text : this.localBrain(userMsg));
+      else {
+        const br = window.NexusBrain ? window.NexusBrain.respond(userMsg) : { text: this.localBrain(userMsg), intent: 'local' };
+        reply = br.text;
+        // ── ความรู้รอบด้าน: ถ้าสมอง local ไม่รู้ → ค้น Wikipedia ทันที ──
+        if ((br.intent === 'unknown' || br.conf < 0.35) && window.NexusBrain) {
+          try {
+            const wiki = await NexusBrain.wikiSearch(userMsg);
+            if (wiki) reply = wiki.text;
+          } catch (e) { /* offline ก็ยังมีคำตอบเดิม */ }
+        }
+      }
     } catch (e) {
       reply = '⚠️ ' + this.cfg.provider + ' error: ' + String(e.message || e).slice(0, 80) + '\n' + this.localBrain(userMsg);
     }
