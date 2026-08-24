@@ -89,6 +89,10 @@ class NexusBrain {
 
   /* ── classify ด้วยโมเดลที่เทรนไว้ ── */
   classify(msg) {
+    // deterministic rule: coin + price wording = price (แม่นกว่า centroid สำหรับประโยคสั้น)
+    const COIN = 'btc|bitcoin|eth|ethereum|sol|solana|xrp|doge|คริปโต|crypto|เหรียญ|ทองคำ?';
+    if (new RegExp(`(?:${COIN}).*?(?:ราคา|เท่าไหร่|price|กี่บาท)|(?:ราคา|price).*?(?:${COIN})`, 'i').test(msg))
+      return { intent: 'price', confidence: 0.92 };
     const tokens = this._tokenize(msg);
     let best = null, bestScore = 0;
     for (const [intent, centroid] of Object.entries(this.centroids)) {
@@ -101,7 +105,7 @@ class NexusBrain {
   /* ── Main respond ── */
   respond(msg) {
     const { intent, confidence } = this.classify(msg);
-    // regex override สำหรับ intent ที่ต้องแม่นยำ (มี capture group)
+    // regex override สำหรับ intent ที่ต้องแม่นยำ (มี capture group) — price จัดการใน classify() แล้ว
     const precise = [
       [/^(?:จำว่า|จำไว้|remember)\s*[:：]?\s*(.+)/i, 'remember'],
       [/^(?:คำนวณ|calc)\s+(.+)/i, 'math'],
