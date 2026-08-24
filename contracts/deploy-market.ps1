@@ -1,4 +1,4 @@
-# Nexus - Deploy NEX Token + JobBoard (ตลาดงาน escrow 10%)
+﻿# Nexus - Deploy NEX Token + JobBoard (ตลาดงาน escrow 10%)
 # Run: powershell -ExecutionPolicy Bypass -File deploy-market.ps1
 # Private key is asked on screen and NEVER saved anywhere.
 
@@ -25,7 +25,7 @@ Write-Host "Deploying NexusToken + JobBoard..." -ForegroundColor Cyan
 Write-Host ""
 
 Set-Location $PSScriptRoot
-npx hardhat run deploy-market.js --network amoy
+npx hardhat run deploy-jobboard.js --network amoy
 
 Remove-Item Env:\PRIVATE_KEY -ErrorAction SilentlyContinue
 Write-Host ""
