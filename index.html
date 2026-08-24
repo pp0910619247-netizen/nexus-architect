@@ -647,18 +647,26 @@ function startKYC(){
   .ok{color:#34d399}.bad{color:#f87171}.muted{color:#8fa0b8;font-size:12px}</style></head><body>
   <h2>🪪 Nexus KYC — ยืนยันตัวตนจริง</h2>
   <p class="muted">ประมวลผล 100% บนเครื่องคุณ · ไม่อัปโหลดรูป/เลขบัตรขึ้นเซิร์ฟเวอร์ใด</p>
-  <div class="step"><h3>1️⃣ เลขบัตรประชาชน</h3>
-    <input id="thaiId" maxlength="13" placeholder="1-XXXX-XXXXX-XX-X" inputmode="numeric">
-    <div id="idResult" class="muted"></div>
-    <button onclick="checkId()">ตรวจเลขบัตร</button></div>
+  <div class="step"><h3>1️⃣ เอกสารยืนยัน</h3>
+    <input id="thaiId" maxlength="13" placeholder="เลขบัตรประชาชน 13 หลัก" inputmode="numeric">
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <label style="flex:1">วันเกิด<input type="date" id="idBirth"></label>
+      <label style="flex:1">บัตรหมดอายุ<input type="date" id="idExp"></label>
+    </div>
+    <button onclick="checkId()">ตรวจเลขบัตร (checksum + อายุ 18+ + วันหมดอายุ)</button>
+    <details style="margin-top:10px"><summary class="muted" style="cursor:pointer;color:#f59e0b">🌐 ใช้ Passport แทน? (MRZ ICAO 9303)</summary>
+      <textarea id="mrz" rows="2" placeholder="P<THN... (2 บรรทัดจากท้ายหนังสือเดินทาง)" style="margin-top:6px;font-family:Consolas,monospace;font-size:11px"></textarea>
+      <button class="ghost" onclick="checkMrz()">ตรวจ MRZ (passport สากล)</button>
+    </details>
+    <div id="idResult" class="muted"></div></div>
   <div class="step"><h3>2️⃣ รูปหน้าบนบัตร</h3>
     <input type="file" accept="image/*" id="idPhoto" style="color:#8fa0b8">
     <img id="idPrev" style="display:none;margin-top:8px"><div id="idFaceResult" class="muted"></div></div>
-  <div class="step"><h3>3️⃣ แสกนหน้าสด (3 เฟรม + anti-photo)</h3>
+  <div class="step"><h3>3️⃣ Active Liveness (anti-spoof)</h3>
     <video id="cam" autoplay muted playsinline></video>
-    <div id="scanStatus" class="muted">กดปุ่มเพื่อเริ่มกล้อง</div>
+    <div id="scanStatus" class="muted">ระบบจะสุ่มสั่ง: กระพริบตา + หันหน้าซ้าย→ขวา (กันรูปถ่าย/วิดีโอ)</div>
     <button class="ghost" onclick="startCam()">📷 เปิดกล้อง</button>
-    <button id="scanBtn" style="display:none" onclick="doScan()">🤳 แสกนหน้า 3 เฟรม</button></div>
+    <button id="scanBtn" style="display:none" onclick="doScan()">🤳 เริ่มแสกน liveness</button></div>
   <div class="step"><h3>4️⃣ ผลลัพธ์</h3><div id="finalResult" class="muted">รอขั้นตอนก่อนหน้า...</div></div>
   <script src="https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/dist/face-api.min.js"><\/script>
   <script src="${location.origin}${location.pathname}kyc.js"><\/script>
@@ -666,7 +674,15 @@ function startKYC(){
   <script>
   const K=window.NexusKYC; let idHash=null,idDesc=null,selfieDesc=null;
   async function checkId(){
-    const r=K.verifyThaiID(document.getElementById('thaiId').value);
+    const r=await K.verifyThaiID(document.getElementById('thaiId').value,{
+      birth:document.getElementById('idBirth').value||undefined,
+      expiry:document.getElementById('idExp').value||undefined});
+    document.getElementById('idResult').innerHTML=r.ok?'<span class="ok">'+r.msg+'</span>':'<span class="bad">'+r.msg+'</span>';
+    if(r.ok){ idHash=r.idHash; stepCheck(); }
+  }
+  async function checkMrz(){
+    const lines=document.getElementById('mrz').value.trim().split('\n');
+    const r=await K.verifyMRZ(lines[0],lines[1]);
     document.getElementById('idResult').innerHTML=r.ok?'<span class="ok">'+r.msg+'</span>':'<span class="bad">'+r.msg+'</span>';
     if(r.ok){ idHash=r.idHash; stepCheck(); }
   }
@@ -687,18 +703,18 @@ function startKYC(){
   }
   async function doScan(){
     document.getElementById('scanBtn').disabled=true;
-    const r=await K.scanLiveFace(document.getElementById('cam'),i=>{document.getElementById('scanStatus').textContent='แสกนเฟรม '+i+'/3...';});
+    const r=await K.scanLiveFace(document.getElementById('cam'),t=>{document.getElementById('scanStatus').textContent=t;});
     if(_stream) _stream.getTracks().forEach(t=>t.stop());
     if(!r.ok){ document.getElementById('scanStatus').innerHTML='<span class="bad">'+r.msg+'</span>'; document.getElementById('scanBtn').disabled=false; return; }
-    selfieDesc=r.descriptor; document.getElementById('scanStatus').innerHTML='<span class="ok">✓ แสกนหน้าสดผ่าน (anti-photo ผ่าน)</span>'; stepCheck();
+    selfieDesc=r.descriptor; document.getElementById('scanStatus').innerHTML='<span class="ok">✓ liveness ผ่าน (กระพริบตา+หันหน้า+anti-photo)</span>'; stepCheck();
   }
   function stepCheck(){
     if(idHash&&idDesc&&selfieDesc){
       const c=K.compareFaces(idDesc,selfieDesc);
       const el=document.getElementById('finalResult');
       if(c.match){
-        el.innerHTML='<span class="ok">✅ ยืนยันสำเร็จ! คะแนนเทียบหน้า '+c.score+'% (distance '+c.distance+')</span><br><span class="muted">เก็บเฉพาะ: hash ของเลขบัตร + คะแนน — ไม่มีรูปถูกเก็บ</span>';
-        localStorage.setItem('nx_kyc',JSON.stringify({idHash:idHash,matchScore:c.score,distance:c.distance,at:Date.now()}));
+        el.innerHTML='<span class="ok">✅ ยืนยันสำเร็จ! คะแนนเทียบหน้า '+c.score+'% (distance '+c.distance+', threshold มาตรฐาน 0.6)</span><br><span class="muted">เก็บเฉพาะ: hash เอกสาร + score + ผล liveness — ไม่มีรูปถูกเก็บ</span>';
+        localStorage.setItem('nx_kyc',JSON.stringify({idHash:idHash,matchScore:c.score,distance:c.distance,liveness:'blink+turn',at:Date.now()}));
         setTimeout(()=>{ window.opener&&window.opener.postMessage({type:'nexus_kyc_ok',score:c.score},'*'); window.close(); },1800);
       } else el.innerHTML='<span class="bad">❌ หน้าบนบัตรไม่ตรงกับหน้าสด (score '+c.score+'%) — ลองรูปบัตรที่ชัดกว่านี้</span>';
     } else document.getElementById('finalResult').textContent='เหลือขั้นตอน: '+[!idHash&&'เลขบัตร',!idDesc&&'รูปบัตร',!selfieDesc&&'แสกนหน้า'].filter(Boolean).join(', ');

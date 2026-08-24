@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════
-   NEXUS LONG-TERM MEMORY v1.0
+   NEXUS LONG-TERM MEMORY v1.1
    - ความจำ 3 ชั้น: Working (chat) → Episodic (สรุปบทสนทนา) → Semantic (ความจำถาวร)
-   - สกัดความจำอัตโนมัติจากบทสนทนา (auto-extraction)
+   - สกัดความจำอัตโนมัติจากบทสนทนา (auto-extraction, กรองคำถาม/ปฏิเสธ)
    - ค้นแบบถ่วงน้ำหนัก: tag match + keywords + importance + recency + access count
    - Consolidation: ย่อยความจำเก่าเป็น episodic notes เหมือนการนอนหลับ
    ═══════════════════════════════════════════════════════════ */
@@ -18,29 +18,39 @@ class NexusMemory {
 
   /* ── สกัดความจำจากประโยคอัตโนมัติ (TH/EN patterns) ── */
   static PATTERNS = [
-    { re: /(?:ฉัน|ผม|เรา|กู|i)\s*(?:ชอบ|รัก|like|love)\s*(.+)/i, type: 'preference', tags: ['ชอบ'], imp: 0.8 },
-    { re: /(?:ฉัน|ผม|เรา|i)\s*(?:เกลียด|ไม่ชอบ|hate|dislike)\s*(.+)/i, type: 'preference', tags: ['ไม่ชอบ'], imp: 0.8 },
-    { re: /(?:ฉัน|ผม|ดิฉัน)\s*(?:ชื่อ|my name is)\s*(\S+)/i, type: 'person', tags: ['ชื่อ'], imp: 1.0 },
-    { re: /(?:ฉัน|ผม|เรา|i)\s*(?:ทำงาน|work)\s*(?:เป็น|as)?\s*(.+)/i, type: 'fact', tags: ['งาน'], imp: 0.9 },
-    { re: /(?:ฉัน|ผม|เรา|i)\s*(?:อยู่|อยู่ที่|live in)\s*(.+)/i, type: 'fact', tags: ['ที่อยู่'], imp: 0.9 },
-    { re: /(?:เป้าหมาย|goal|ฉัน|ผม)\s*(?:ของฉัน|ของผม)?\s*(?:คือ|is|อยาก|want to)\s*(.+)/i, type: 'goal', tags: ['เป้าหมาย'], imp: 1.0 },
-    { re: /(?:จำว่า|จำไว้|remember)\s*[:：]?\s*(.+)/i, type: 'fact', tags: ['สั่งจำ'], imp: 1.0 },
-    { re: /(?:ครอบครัว|family|แฟน|wife|husband|ลูก)\s*(.+)/i, type: 'person', tags: ['ครอบครัว'], imp: 0.7 },
+    { re: /(?:ฉัน|ผม|เรา|กู|i)\s*(?:ชอบ|รัก|like|love)\s*(.{2,})/i, type: 'preference', tags: ['ชอบ'], imp: 0.8 },
+    { re: /(?:ฉัน|ผม|เรา|i)\s*(?:เกลียด|ไม่ชอบ|hate|dislike)\s*(.{2,})/i, type: 'preference', tags: ['ไม่ชอบ'], imp: 0.8 },
+    { re: /(?:ฉัน|ผม|ดิฉัน|แฟน|พ่อ|แม่)\s*(?:ชื่อ|my name is)\s*([\p{L}\s]{1,40})/u, type: 'person', tags: ['ชื่อ'], imp: 1.0 },
+    { re: /(?:ฉัน|ผม|เรา|i)\s*(?:ทำงาน|work)\s*(?:เป็น|as)?\s*(.{2,})/i, type: 'fact', tags: ['งาน'], imp: 0.9 },
+    { re: /(?:ฉัน|ผม|เรา|i)\s*(?:อยู่|live in|based in)\s*(?:ที่)?\s*(.{2,})/i, type: 'fact', tags: ['ที่อยู่'], imp: 0.9 },
+    { re: /(?:เป้าหมาย|goal)\s*(?:ของฉัน|ของผม|of mine)?\s*(?:คือ|is|อยาก|want to)?\s*(.{2,})/i, type: 'goal', tags: ['เป้าหมาย'], imp: 1.0 },
+    { re: /(?:ฉัน|ผม|เรา|i)\s*(?:อยาก|want to|wanna)\s*(.{2,})/i, type: 'goal', tags: ['ความฝัน'], imp: 0.7 },
+    { re: /(?:จำว่า|จำไว้|remember)\s*[:：]?\s*(.{2,})/i, type: 'fact', tags: ['สั่งจำ'], imp: 1.0 },
+    { re: /(?:เกิด|born)\s*(?:วันที่|on)?\s*(\d{1,2}[\/\-\.]\d{1,2}(?:[\/\-\.]\d{2,4})?)/i, type: 'fact', tags: ['วันเกิด'], imp: 0.95 },
+    { re: /(?:ฉัน|ผม)\s*(?:เรียน|study|graduated)\s*(?:จบ)?\s*(.{2,})/i, type: 'fact', tags: ['การศึกษา'], imp: 0.75 },
+    { re: /(?:สัตว์เลี้ยง|pet|แมว|cat|หมา|dog)\s*(?:ชื่อ)?\s*(.{0,30})?$/i, type: 'person', tags: ['สัตว์เลี้ยง'], imp: 0.6 },
   ];
 
+  /* ── กรอง noise: คำถาม / ปฏิเสธ / สั่งลืม ── */
+  static NOISE = /\?|ไหม|หรือเปล่า|หรือยัง|เท่าไหร่|กี่|อะไรนะ|don'?t know|ไม่รู้|ไม่แน่ใจ|maybe|มั้ง/i;
+
   extract(text) {
+    if (NexusMemory.NOISE.test(text)) return [];           // ไม่จำคำถาม/ความไม่แน่ใจ
     const found = [];
     for (const p of NexusMemory.PATTERNS) {
       const m = text.match(p.re);
-      if (m) found.push(this.add(m[1].trim().slice(0, 200), p.type, p.tags, p.imp));
+      if (!m) continue;
+      let val = (m[1] || '').trim().slice(0, 200);
+      if (!val || val.length < 2) continue;
+      found.push(this.add(val, p.type, p.tags, p.imp));
     }
     return found;
   }
 
-  /* ── เพิ่มความจำถาวร ── */
+  /* ── เพิ่มความจำถาวร (dedupe แบบ normalize) ── */
   add(text, type = 'fact', tags = [], importance = 0.6) {
-    // รวมความจำซ้ำ (dedupe คร่าวๆ)
-    const dup = this.store.semantic.find(s => s.text.toLowerCase() === text.toLowerCase());
+    const key = text.toLowerCase().replace(/\s+/g, ' ').trim();
+    const dup = this.store.semantic.find(s => s.text.toLowerCase().replace(/\s+/g, ' ') === key);
     if (dup) { dup.accessCount++; dup.lastAccess = Date.now(); dup.importance = Math.min(1, dup.importance + 0.1); this.save(); return dup; }
     const item = {
       id: Date.now() + '_' + Math.random().toString(36).slice(2, 6),
@@ -53,6 +63,14 @@ class NexusMemory {
     if (this.store.semantic.length > 500) this._prune();
     this.save();
     return item;
+  }
+
+  /* ── ลืมตามคำ (GDPR-style: เจ้าของสั่งลบได้) ── */
+  forget(q) {
+    const before = this.store.semantic.length;
+    this.store.semantic = this.store.semantic.filter(s => !s.text.toLowerCase().includes(String(q).toLowerCase()));
+    this.save();
+    return before - this.store.semantic.length;
   }
 
   /* ── ค้นความจำแบบถ่วงน้ำหนัก ── */
