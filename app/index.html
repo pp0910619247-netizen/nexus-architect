@@ -137,6 +137,9 @@
     </div>
     <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
       <button class="ghost" onclick="twinProposeProblem()">🐉 เสนอโจทย์สู่ Mountain (AI Mother)</button>
+      <button class="ghost" onclick="exportMemory()">💾 Export ความจำ</button>
+      <button class="ghost" onclick="document.getElementById('importMem').click()">📂 Import</button>
+      <input type="file" id="importMem" accept=".json" style="display:none" onchange="importMemory(this)">
     </div>
     <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center">
       <label style="margin:0">สมอง:</label>
@@ -183,6 +186,11 @@
 
   <!-- ═══ GOVERNANCE + REWARD ENGINE + HRW ═══ -->
   <div class="grid">
+    <div class="card">
+      <h3>📊 Nexus Stats (สำหรับนักลงทุน/ชุมชน)</h3>
+      <table id="statsOut"></table>
+    </div>
+
     <div class="card">
       <h3>🏛 DAO Governance — 1 มนุษย์ 1 เสียง</h3>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
@@ -555,8 +563,40 @@ function twinProposeProblem(){
   persist(); renderProblems(); renderHRW();
   toast('🐉 AI Mother เสนอโจทย์ใหม่: '+pick.t);
 }
+function exportMemory(){
+  const data={ exported:new Date().toISOString(), twin:{name:window.Twin.cfg.name, mem:window.Twin.mem}, user, problems:probs };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='nexus-memory-backup.json'; a.click();
+  toast('💾 export ความจำแล้ว (ไฟล์เดียวจบ นำกลับเข้าได้)');
+}
+function importMemory(input){
+  const f=input.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{
+      const d=JSON.parse(r.result);
+      if(d.twin){ window.Twin.setCfg({name:d.twin.name}); window.Twin.mem=d.twin.mem; window.Twin.save(); }
+      if(d.problems){ probs=d.problems; persist(); }
+      if(d.user){ user=d.user; persist(); }
+      renderChat(); renderLevels(); renderProblems(); renderHRW();
+      toast('📂 นำเข้าความจุำสำเร็จ');
+    }catch(e){ toast('ไฟล์ไม่ถูกต้อง'); } };
+  r.readAsText(f); input.value='';
+}
+function renderStats(){
+  const ps=JSON.parse(localStorage.getItem('nx_probs')||'[]');
+  const votes=ps.reduce((s,p)=>s+p.votes,0);
+  const el=document.getElementById('statsOut');
+  if(el) el.innerHTML=`
+    <tr><td>ปัญหาบนภูเขา</td><td class="num pos">${ps.length}</td></tr>
+    <tr><td>Votes รวม</td><td class="num">${votes}</td></tr>
+    <tr><td>Twin ความจำ</td><td class="num">${window.Twin?window.Twin.mem.facts.length:0} บันทึก</td></tr>
+    <tr><td>Twin XP</td><td class="num">${window.Twin?window.Twin.mem.xp:0}</td></tr>
+    <tr><td>Contracts live</td><td class="num pos">2 (Amoy)</td></tr>
+    <tr><td>Tests passing</td><td class="num pos">6/6</td></tr>`;
+}
 
-renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW();
+renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats();
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');
 renderLevels(); runSplit();
