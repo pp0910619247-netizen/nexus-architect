@@ -466,9 +466,11 @@ function renderChat(){
   document.getElementById('twinStats').textContent=`· Lv ตาม XP ${window.Twin.mem.xp} · ความจำ ${window.Twin.mem.facts.length} บันทึก · สมอง: ${window.Twin.cfg.provider}`;
   document.getElementById('brainSel').value=window.Twin.cfg.provider;
   if(!hist.length){ box.innerHTML='<span class="muted">🐉 เริ่มบทสนทนาแรกของทวินได้เลย — มันจะจดจำทุกอย่างที่คุณบอก</span>'; return; }
-  box.innerHTML=hist.map(m=>`<div style="margin:6px 0;text-align:${m.role==='user'?'right':'left'}">
+  box.innerHTML=hist.map((m,mi)=>`<div style="margin:6px 0;text-align:${m.role==='user'?'right':'left'}">
     <span style="display:inline-block;max-width:85%;padding:7px 12px;border-radius:11px;font-size:13px;white-space:pre-wrap;
-      ${m.role==='user'?'background:var(--acc);color:#111':'background:#243044;color:var(--txt)'}">${esc(m.text)}</span></div>`).join('');
+      ${m.role==='user'?'background:var(--acc);color:#111':'background:#243044;color:var(--txt)'}">${esc(m.text)}</span>
+    ${m.role==='twin'?`<div style="font-size:11px;margin-top:2px"><a href="javascript:void(0)" onclick="chatFeedback(${JSON.stringify(m.text).replace(/"/g,'&quot;')},true)" style="color:var(--good);text-decoration:none">👍</a>
+    <a href="javascript:void(0)" onclick="chatFeedback(${JSON.stringify(m.text).replace(/"/g,'&quot;')},false)" style="color:var(--dim);text-decoration:none">👎</a> <span class="muted">สอน AI</span></div>`:''}</div>`).join('');
   box.scrollTop=box.scrollHeight;
 }
 async function sendChat(){
@@ -711,6 +713,12 @@ window.addEventListener('message',e=>{
     renderIdentitySummary(); toast('🪪 KYC ผ่าน! Lv.2 CITIZEN (REAL) — score '+e.data.score+'%');
   }
 });
+/* ── เทรน AI จาก feedback: 👍 = ยืนยัน intent / 👎 = ถอนออก (online learning) ── */
+function chatFeedback(text, positive){
+  const c=window.NexusBrain.classify(text);
+  const ok=window.NexusBrain.feedback(text.slice(0,120), c.intent, positive);
+  toast(ok ? (positive?`👍 เทรนแล้ว — จับ "${c.intent}" แม่นขึ้น`:`👎 ปรับโมเดล "${c.intent}" แล้ว`) : 'ข้อความนี้ยังไม่ผูก intent');
+}
 function exportMemory(){
   const data={ exported:new Date().toISOString(), twin:{name:window.Twin.cfg.name, mem:window.Twin.mem}, user, problems:probs };
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});

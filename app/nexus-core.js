@@ -25,13 +25,20 @@ class NexusBrain {
       mood: ['รู้สึกเหนื่อย','เครียด','เซ็ง','เบื่อ','tired','stressed','ไม่ไหว','หมดแรง','sad','เหงา'],
       invest: ['ลงทุนยังไง','business model','รายได้จากอะไร','นักลงทุนสนใจไหม','มูลค่าระบบ','ทำเงินยังไง','revenue model'],
       job: ['หางาน','รับงาน','มีงานอะไร','งานบนตลาด','job','หางานทำ','อยากทำงาน','ค่าจ้าง','freelance'],
+      price: ['ราคา bitcoin','btc เท่าไหร่','eth ราคา','ราคาคริปโต','crypto price','bitcoin ตอนนี้','ราคาเหรียญ','เหรียญไหนน่าสน','ราคาทองวันนี้','btc price','ราคา eth วันนี้','bitcoin กี่บาท','ราคา solana','เช็คราคาคริป','ดูราคาเหรียญ','เปิดราคาเหรียญ'],
+      followup: ['ทำไม','อธิบายเพิ่ม','เพิ่มเติม','แล้วไงต่อ','why','explain more','บอกต่ออีก','ยกตัวอย่าง','ตัวอย่างคือ','ทำไมเป็นแบบนั้น','อธิบายให้ละเอียด','ขยายความ','แล้วต่อมา','เล่าต่อสิ','แปลว่าอะไร','หมายความว่า'],
+      bye: ['ลาก่อน','bye','เดี๋ยวมาใหม่','ไปละ','ฝันดี','goodnight','เจอกัน'],
     };
 
     /* ── TRAINING: สร้าง centroid ต่อ intent (เทรนตอนโหลด) ── */
     this.centroids = {};
+    // โหลดผลการเรียนรู้จาก feedback ที่เก็บไว้ (online learning ต่อเนื่อง)
+    this.learned = JSON.parse(localStorage.getItem('nexus_learned') || '{}'); // {intent: [texts]}
     for (const [intent, examples] of Object.entries(this.TRAINING)) {
       const vec = {};
-      for (const ex of examples) this._addVec(vec, this._tokenize(ex));
+      for (const ex of examples) this._addVec(vec, this._tokenize(ex), 1.0);
+      // ถ่วงน้ำหนัก feedback ที่ผู้ใช้เคยให้ (น้ำหนักสูงกว่า = เรียนรู้จากคุณมากกว่า)
+      for (const ex of (this.learned[intent] || [])) this._addVec(vec, this._tokenize(ex), 2.0);
       const norm = Math.sqrt(Object.values(vec).reduce((s, v) => s + v * v, 0)) || 1;
       for (const k in vec) vec[k] /= norm;
       this.centroids[intent] = vec;
@@ -39,6 +46,28 @@ class NexusBrain {
 
     this.skills = [];
     this._registerCoreSkills();
+  }
+
+  /* ── Online Learning: 👍 = สอนว่าข้อความนี้อยู่ intent นี้ / 👎 = ถอดออก ── */
+  feedback(text, intent, positive) {
+    if (!intent || !this.TRAINING[intent]) return false;
+    const list = this.learned[intent] || (this.learned[intent] = []);
+    if (positive) {
+      if (!list.includes(text)) list.push(text);
+      if (list.length > 50) list.shift();
+    } else {
+      const idx = list.indexOf(text);
+      if (idx >= 0) list.splice(idx, 1);
+    }
+    localStorage.setItem('nexus_learned', JSON.stringify(this.learned));
+    // retrain centroid ของ intent นั้นทันที
+    const vec = {};
+    for (const ex of this.TRAINING[intent]) this._addVec(vec, this._tokenize(ex), 1.0);
+    for (const ex of list) this._addVec(vec, this._tokenize(ex), 2.0);
+    const norm = Math.sqrt(Object.values(vec).reduce((s, v) => s + v * v, 0)) || 1;
+    for (const k in vec) vec[k] /= norm;
+    this.centroids[intent] = vec;
+    return true;
   }
 
   /* ── tokenizer + vector ops ── */
@@ -189,6 +218,12 @@ class NexusBrain {
     this.skills['mood'] = () => ({ text: `เหนื่อยก็พักได้ครับ 🌿 การพักคือส่วนหนึ่งของงานที่ดี\nลอง: หายใจลึกๆ 4-7-8 (หายใจเข้า 4 วินาที กลั้ว 7 ปล่อย 8)\nหรือเดิน 5 นาที — แล้วค่อยกลับมา ผมอยู่ตรงนี้เสมอ`, conf: 0.9 });
     this.skills['invest'] = () => ({ text: `💼 โมเดลรายได้ Nexus: 1) Transaction fee 1% จาก reward distribution 2) B2B Problem Sponsorship 3) Twin Pro subscription 4) White-label identity\nTraction จริง: contracts live บน Amoy, tests 6/6, MVP ใช้งานได้ — ดู INVESTOR_ONEPAGER.md`, conf: 0.9 });
     this.skills['job'] = () => ({ text: `💼 ตลาดงาน NEX: โพสต์งาน = เงินล็อก escrow ใน contract · ผู้รับงาน (คน/AI) ส่งงาน → นายจ้างอนุมัติ → ได้เงิน 90% (ระบบหัก 10%)\nกดปุ่ม "🐉 ให้ AI หางานที่เหมาะกับคุณ" ในการ์ดตลาดงาน — ผมจับคู่จากความจำระยะยาวของคุณ`, conf: 0.9 });
+    this.skills['price'] = () => ({ text: '__PRICE__', conf: 0.9 }); // ดึงราคาสดใน twin.js (async)
+    this.skills['followup'] = () => {
+      const last = window.NexusLTM?.getLastTopic();
+      return { text: `🔍 ต่อจากเรื่อง "${last || 'ที่คุยล่าสุด'}":\nลองถามเจาะจงขึ้น เช่น "${last ? last.split(' ')[0] : 'เรื่องนั้น'}" ใช้ยังไง / ค่าใช้จ่าย / ข้อเสีย — หรือผมค้นวิกิพีเดียให้ก็ได้`, conf: 0.75 };
+    };
+    this.skills['bye'] = () => ({ text: `${P().emoji} แล้วเจอกันนะครับ! ความจำทั้งหมด ${window.NexusLTM?.count() || 0} รายการ ผมเก็บไว้ให้เสมอ — กลับมาเมื่อไหร่ก็รู้จักกันเหมือนเดิม 👋`, conf: 0.95 });
   }
 
   /* bridge */
