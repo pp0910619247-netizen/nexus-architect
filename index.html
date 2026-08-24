@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src *; font-src 'self'; object-src 'none'; base-uri 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src *; font-src 'self'; object-src 'none'; base-uri 'self'; media-src 'self' blob:">
 <meta name="theme-color" content="#0a0e17">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
@@ -13,6 +13,8 @@
 <script src="nexus-gov.js"></script>
 <script src="nexus-memory.js"></script>
 <script src="identity.js"></script>
+<script src="kyc.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script src="twin.js"></script>
 <style>
   :root{
@@ -86,6 +88,7 @@
         <button class="ghost" style="flex:1" onclick="realPasskey()">🔐 Passkey จริง (Lv.1)</button>
         <button class="ghost" style="flex:1" onclick="realWallet()">✍️ เซ็น Wallet จริง (Lv.2)</button>
       </div>
+      <button style="width:100%;margin-top:8px" onclick="startKYC()">🪪 ยืนยันบัตรประชาชน + แสกนหน้า (Lv.2 REAL)</button>
       <p class="muted" id="identitySummary" style="margin-top:8px"></p>
       <button class="ghost" style="width:100%;margin-top:6px" onclick="upgradeLevel()">⬆️ ยืนยันระดับถัดไป (simulated)</button>
     </div>
@@ -611,6 +614,87 @@ function toggleMic(){
   _rec.start(); document.getElementById('micBtn').style.borderColor='var(--bad)';
   toast('🎤 กำลังฟัง... พูดได้เลย');
 }
+/* ── KYC-Lite: บัตรประชาชน + แสกนหน้า (มาตรฐานสากล, on-device) ── */
+let _kycStep=0,_kycIdHash=null,_kycSelfie=null,_kycStream=null;
+function startKYC(){
+  const w=window.open('','_blank','width=480,height=680');
+  if(!w){ toast('ป็อปอัปถูกบล็อก — อนุญาต popup แล้วลองใหม่'); return; }
+  w.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>Nexus KYC</title>
+  <style>body{font-family:'Segoe UI',Tahoma;background:#0a0e17;color:#e5ecf5;padding:20px}
+  .step{background:#111827;border:1px solid #243044;border-radius:12px;padding:16px;margin-bottom:12px}
+  h3{margin:0 0 8px;color:#f59e0b}input{width:100%;padding:10px;background:#1a2333;border:1px solid #243044;
+  color:#fff;border-radius:8px;font-size:16px;letter-spacing:2px}button{background:#f59e0b;border:0;padding:10px 16px;
+  border-radius:8px;font-weight:700;cursor:pointer;width:100%;margin-top:8px}.ghost{background:#1a2333;color:#e5ecf5;border:1px solid #243044}
+  video{width:100%;border-radius:10px;background:#000}img{max-width:100%;border-radius:10px}
+  .ok{color:#34d399}.bad{color:#f87171}.muted{color:#8fa0b8;font-size:12px}</style></head><body>
+  <h2>🪪 Nexus KYC — ยืนยันตัวตนจริง</h2>
+  <p class="muted">ประมวลผล 100% บนเครื่องคุณ · ไม่อัปโหลดรูป/เลขบัตรขึ้นเซิร์ฟเวอร์ใด</p>
+  <div class="step"><h3>1️⃣ เลขบัตรประชาชน</h3>
+    <input id="thaiId" maxlength="13" placeholder="1-XXXX-XXXXX-XX-X" inputmode="numeric">
+    <div id="idResult" class="muted"></div>
+    <button onclick="checkId()">ตรวจเลขบัตร</button></div>
+  <div class="step"><h3>2️⃣ รูปหน้าบนบัตร</h3>
+    <input type="file" accept="image/*" id="idPhoto" style="color:#8fa0b8">
+    <img id="idPrev" style="display:none;margin-top:8px"><div id="idFaceResult" class="muted"></div></div>
+  <div class="step"><h3>3️⃣ แสกนหน้าสด (3 เฟรม + anti-photo)</h3>
+    <video id="cam" autoplay muted playsinline></video>
+    <div id="scanStatus" class="muted">กดปุ่มเพื่อเริ่มกล้อง</div>
+    <button class="ghost" onclick="startCam()">📷 เปิดกล้อง</button>
+    <button id="scanBtn" style="display:none" onclick="doScan()">🤳 แสกนหน้า 3 เฟรม</button></div>
+  <div class="step"><h3>4️⃣ ผลลัพธ์</h3><div id="finalResult" class="muted">รอขั้นตอนก่อนหน้า...</div></div>
+  <script src="https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/dist/face-api.min.js"><\/script>
+  <script src="${location.origin}${location.pathname}kyc.js"><\/script>
+  <script src="${location.origin}${location.pathname}nexus-memory.js"><\/script>
+  <script>
+  const K=window.NexusKYC; let idHash=null,idDesc=null,selfieDesc=null;
+  async function checkId(){
+    const r=K.verifyThaiID(document.getElementById('thaiId').value);
+    document.getElementById('idResult').innerHTML=r.ok?'<span class="ok">'+r.msg+'</span>':'<span class="bad">'+r.msg+'</span>';
+    if(r.ok){ idHash=r.idHash; stepCheck(); }
+  }
+  document.getElementById('idPhoto').onchange=e=>{
+    const f=e.target.files[0]; if(!f) return;
+    const img=document.getElementById('idPrev'); img.src=URL.createObjectURL(f); img.style.display='block';
+    img.onload=async()=>{ document.getElementById('idFaceResult').textContent='กำลังตรวจหน้าบนบัตร...';
+      try{ const r=await K.faceFromImage(img);
+        document.getElementById('idFaceResult').innerHTML=r.ok?'<span class="ok">✓ พบใบหน้าบนบัตร</span>':'<span class="bad">'+r.msg+'</span>';
+        if(r.ok){ idDesc=r.descriptor; stepCheck(); } }catch(err){ document.getElementById('idFaceResult').textContent='โหลดโมเดลไม่สำเร็จ: '+err.message; } };
+  };
+  async function startCam(){
+    try{ _stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
+      document.getElementById('cam').srcObject=_stream;
+      document.getElementById('scanStatus').textContent='กล้องพร้อม — หน้าตรงกล้องแล้วกดแสกน';
+      document.getElementById('scanBtn').style.display='block';
+    }catch(e){ document.getElementById('scanStatus').textContent='เปิดกล้องไม่ได้: '+e.message; }
+  }
+  async function doScan(){
+    document.getElementById('scanBtn').disabled=true;
+    const r=await K.scanLiveFace(document.getElementById('cam'),i=>{document.getElementById('scanStatus').textContent='แสกนเฟรม '+i+'/3...';});
+    if(_stream) _stream.getTracks().forEach(t=>t.stop());
+    if(!r.ok){ document.getElementById('scanStatus').innerHTML='<span class="bad">'+r.msg+'</span>'; document.getElementById('scanBtn').disabled=false; return; }
+    selfieDesc=r.descriptor; document.getElementById('scanStatus').innerHTML='<span class="ok">✓ แสกนหน้าสดผ่าน (anti-photo ผ่าน)</span>'; stepCheck();
+  }
+  function stepCheck(){
+    if(idHash&&idDesc&&selfieDesc){
+      const c=K.compareFaces(idDesc,selfieDesc);
+      const el=document.getElementById('finalResult');
+      if(c.match){
+        el.innerHTML='<span class="ok">✅ ยืนยันสำเร็จ! คะแนนเทียบหน้า '+c.score+'% (distance '+c.distance+')</span><br><span class="muted">เก็บเฉพาะ: hash ของเลขบัตร + คะแนน — ไม่มีรูปถูกเก็บ</span>';
+        localStorage.setItem('nx_kyc',JSON.stringify({idHash:idHash,matchScore:c.score,distance:c.distance,at:Date.now()}));
+        setTimeout(()=>{ window.opener&&window.opener.postMessage({type:'nexus_kyc_ok',score:c.score},'*'); window.close(); },1800);
+      } else el.innerHTML='<span class="bad">❌ หน้าบนบัตรไม่ตรงกับหน้าสด (score '+c.score+'%) — ลองรูปบัตรที่ชัดกว่านี้</span>';
+    } else document.getElementById('finalResult').textContent='เหลือขั้นตอน: '+[!idHash&&'เลขบัตร',!idDesc&&'รูปบัตร',!selfieDesc&&'แสกนหน้า'].filter(Boolean).join(', ');
+  }
+  <\/script></body></html>`);
+  w.document.close();
+}
+window.addEventListener('message',e=>{
+  if(e.data&&e.data.type==='nexus_kyc_ok'){
+    user.level=Math.max(user.level,2); persist(); renderLevels();
+    const s=NexusIdentity.state; s.kycScore=e.data.score; NexusIdentity.save(s);
+    renderIdentitySummary(); toast('🪪 KYC ผ่าน! Lv.2 CITIZEN (REAL) — score '+e.data.score+'%');
+  }
+});
 function exportMemory(){
   const data={ exported:new Date().toISOString(), twin:{name:window.Twin.cfg.name, mem:window.Twin.mem}, user, problems:probs };
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
