@@ -24,6 +24,7 @@ class NexusBrain {
       thanks: ['ขอบคุณ','thank you','thanks','เก่งมาก','ทำได้ดี','ยอดเยี่ยม','great job'],
       mood: ['รู้สึกเหนื่อย','เครียด','เซ็ง','เบื่อ','tired','stressed','ไม่ไหว','หมดแรง','sad','เหงา'],
       invest: ['ลงทุนยังไง','business model','รายได้จากอะไร','นักลงทุนสนใจไหม','มูลค่าระบบ','ทำเงินยังไง','revenue model'],
+      job: ['หางาน','รับงาน','มีงานอะไร','งานบนตลาด','job','หางานทำ','อยากทำงาน','ค่าจ้าง','freelance'],
     };
 
     /* ── TRAINING: สร้าง centroid ต่อ intent (เทรนตอนโหลด) ── */
@@ -92,6 +93,29 @@ class NexusBrain {
     const mems = window.NexusLTM ? window.NexusLTM.search(msg, 2) : [];
     if (mems.length) return { text: `จากความจำระยะยาวของผม:\n• ${mems.map(m => m.text).join('\n• ')}`, conf: 0.7, intent: 'recall' };
     return { text: `🤔 ยังไม่ชัวร์ว่าคุณถามอะไร (ความมั่นใจ ${(confidence * 100).toFixed(0)}%)\nพิมพ์ "help" ดูทั้งหมด · หรือใส่ Gemini key เพื่อปลุกสมองเต็มรูปแบบ`, conf: confidence, intent: 'unknown' };
+  }
+
+  /* ── ความรู้รอบด้าน: Wikipedia API (ฟรี ไม่มี key, CORS ok) ── */
+  static async wikiSearch(query) {
+    const clean = query.replace(/^(คืออะไร|อะไร|บอกหน่อย|หาข้อมูล|ค้นหา|tell me about|what is|search)\s*/i, '').trim().slice(0, 120);
+    if (!clean) return null;
+    const langs = ['th', 'en'];
+    for (const lang of langs) {
+      try {
+        const url = `https://${lang}.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=extracts&exintro=1&explaintext=1&redirects=1&generator=search&gsrsearch=${encodeURIComponent(clean)}&gsrlimit=1`;
+        const r = await fetch(url);
+        if (!r.ok) continue;
+        const j = await r.json();
+        const pages = j.query && j.query.pages;
+        if (!pages) continue;
+        const page = Object.values(pages)[0];
+        if (page && page.extract) {
+          const text = page.extract.split('\n')[0].slice(0, 600);
+          return { text: `📚 ${page.title} (วิกิพีเดีย${lang === 'en' ? ' อังกฤษ' : ''}):\n${text}\n\n🔗 ${lang}.wikipedia.org/wiki/${encodeURIComponent(page.title.replace(/ /g, '_'))}`, conf: 0.8, source: 'wikipedia' };
+        }
+      } catch (e) { /* ต่อภาษาถัดไป */ }
+    }
+    return null;
   }
 
   /* ── Personality ตาม XP ── */
@@ -164,6 +188,7 @@ class NexusBrain {
     this.skills['thanks'] = () => ({ text: `${P().emoji} ยินดีครับ! ยิ่งคุยกันยิ่งผมเก่งขึ้น — XP ตอนนี้ ${this.xp()}`, conf: 0.95 });
     this.skills['mood'] = () => ({ text: `เหนื่อยก็พักได้ครับ 🌿 การพักคือส่วนหนึ่งของงานที่ดี\nลอง: หายใจลึกๆ 4-7-8 (หายใจเข้า 4 วินาที กลั้ว 7 ปล่อย 8)\nหรือเดิน 5 นาที — แล้วค่อยกลับมา ผมอยู่ตรงนี้เสมอ`, conf: 0.9 });
     this.skills['invest'] = () => ({ text: `💼 โมเดลรายได้ Nexus: 1) Transaction fee 1% จาก reward distribution 2) B2B Problem Sponsorship 3) Twin Pro subscription 4) White-label identity\nTraction จริง: contracts live บน Amoy, tests 6/6, MVP ใช้งานได้ — ดู INVESTOR_ONEPAGER.md`, conf: 0.9 });
+    this.skills['job'] = () => ({ text: `💼 ตลาดงาน NEX: โพสต์งาน = เงินล็อก escrow ใน contract · ผู้รับงาน (คน/AI) ส่งงาน → นายจ้างอนุมัติ → ได้เงิน 90% (ระบบหัก 10%)\nกดปุ่ม "🐉 ให้ AI หางานที่เหมาะกับคุณ" ในการ์ดตลาดงาน — ผมจับคู่จากความจำระยะยาวของคุณ`, conf: 0.9 });
   }
 
   /* bridge */

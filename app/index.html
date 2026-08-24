@@ -196,6 +196,22 @@
     <p class="muted" id="rwStatus" style="margin-top:8px"></p>
   </div>
 
+  <!-- ══ JOB MARKET (Escrow + 10% fee) ══ -->
+  <div class="card" style="margin-top:16px">
+    <h3>💼 ตลาดงาน NEX — Escrow จริง หัก 10% ต่องานสำเร็จ</h3>
+    <p class="muted" id="jobConfig">NEX Token: <b>ยังไม่ deploy</b> · รัน <span style="font-family:Consolas">deploy-market.ps1</span> แล้ววาง address ที่ได้ในไฟล์นี้</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+      <div style="flex:2;min-width:200px"><label>รายละเอียดงาน</label><input id="jobSpec" placeholder="เช่น ทำโลโก้ร้านกาแฟ 3 แบบ"></div>
+      <div style="flex:1;min-width:120px"><label>ค่าตอบแทน (NEX)</label><input id="jobReward" type="number" value="100"></div>
+      <button onclick="jobPost()">📢 โพสต์งาน (ฝากเงิน escrow)</button>
+      <button class="ghost" onclick="jobRefresh()">🔄 รีเฟรช</button>
+    </div>
+    <div style="margin-top:8px">
+      <button class="ghost" onclick="aiFindJob()">🐉 ให้ AI หางานที่เหมาะกับคุณ</button>
+    </div>
+    <div id="jobList" style="margin-top:10px"></div>
+  </div>
+
   <!-- ═══ GOVERNANCE + REWARD ENGINE + HRW ═══ -->
   <div class="grid">
     <div class="card">
@@ -255,10 +271,9 @@ function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg
 /* ═══════════ IDENTITY ═══════════ */
 const LEVELS=[
   {l:0,n:'เงา Shadow',d:'ดาวน์โหลดแอป — อ่าน Mountain'},
-  {l:1,n:'มนุษย์ Human',d:'Google Sign-In — โหวต + แชท AI'},
-  {l:2,n:'พลเมือง Citizen',d:'KYC+Selfie — AI รับงาน ถอน $200/วัน'},
-  {l:3,n:'ธนาคาร Bank-Grade',d:'Bank API/NDID — เสนอปัญหา + Governance'},
-  {l:4,n:'อธิปไตย Sovereign',d:'Digital ID+Biometric — Validator'},
+  {l:1,n:'มนุษย์ Human',d:'Passkey จริง — โหวต + แชท AI'},
+  {l:2,n:'พลเมือง Citizen',d:'บัตร+แสกนหน้า จริง — AI รับงาน ถอนได้'},
+  {l:3,n:'อธิปไตย Sovereign',d:'Validator — เปลี่ยน Protocol ได้'},
 ];
 function renderLevels(){
   document.getElementById('levels').innerHTML = LEVELS.map(x=>
@@ -271,8 +286,8 @@ function renderLevels(){
   renderProblems();
 }
 function upgradeLevel(){
-  if(user.level>=4){ toast('ครบ Level สูงสุดแล้ว 🐉'); return; }
-  const names=['','Google Sign-In ✓ (sim)','KYC+Liveness ✓ (sim)','Bank Proof ✓ (sim)','NDID+FIDO2 ✓ (sim)'];
+  if(user.level>=3){ toast('ครบ Level สูงสุดแล้ว 🐉 (อธิปไตย)'); return; }
+  const names=['','Google Sign-In ✓ (sim)','KYC บัตร+ใบหน้า ✓ (sim)','NDID+FIDO2 ✓ (sim)'];
   user.level++; toast(names[user.level]); persist(); renderLevels();
 }
 /* ── Identity จริง: Passkey (WebAuthn) + Wallet Signature ── */
@@ -302,7 +317,7 @@ function saveTwin(){
 
 /* ═══════════ MOUNTAIN ═══════════ */
 function submitProblem(){
-  if(user.level<3){ toast('⛔ ต้อง Level 3 (Bank-Grade) ถึงจะเสนอปัญหาได้'); return; }
+  if(user.level<2){ toast('⛔ ต้อง Level 2 (พลเมือง — ยืนยันบัตร+ใบหน้า) ถึงจะเสนอปัญหาได้'); return; }
   const t=document.getElementById('pTitle').value.trim();
   if(!t){ toast('พิมพ์ชื่อปัญหาก่อน'); return; }
   probs.unshift({id:Date.now(), title:t, cat:document.getElementById('pCat').value,
@@ -372,6 +387,7 @@ document.getElementById('walletBtn').onclick=async()=>{
   if(typeof window.ethereum==='undefined'){ toast('ยังไม่มี MetaMask — Local Mode ทำงานได้ปกติ'); return; }
   try{
     const acc=(await window.ethereum.request({method:'eth_requestAccounts'}))[0];
+    window._myAddr=acc;
     document.getElementById('netBadge').textContent='Wallet: '+acc.slice(0,6)+'…'+acc.slice(-4);
     document.getElementById('netBadge').style.color='var(--good)';
     toast('✅ เชื่อม wallet แล้ว — พร้อม deploy contract');
@@ -728,7 +744,91 @@ function renderStats(){
     <tr><td>Tests passing</td><td class="num pos">6/6</td></tr>`;
 }
 
-renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats(); renderIdentitySummary();
+/* ═══════════ JOB MARKET — Escrow + 10% fee ═══════════ */
+const NEX_TOKEN  = ""; // วาง address NexusToken หลัง deploy
+const JOB_BOARD  = ""; // วาง address JobBoard หลัง deploy
+const JOB_ABI = [
+  "function postJob(uint256 reward,string specHash) returns (uint256)",
+  "function takeJob(uint256)",
+  "function submitWork(uint256,string)",
+  "function approveWork(uint256)",
+  "function cancelJob(uint256)",
+  "function jobCount() view returns (uint256)",
+  "function jobs(uint256) view returns (uint256 id,address employer,address worker,uint256 reward,string specHash,string resultHash,uint8 status,uint64 createdAt)",
+  "function FEE_BPS() view returns (uint16)",
+];
+const JOB_STATUS = ["🟢 เปิดรับ","🔵 มีคนรับแล้ว","🟡 ส่งงานแล้ว","✅ เสร็จ","⚪ ยกเลิก","🔴 ข้อพิพาท"];
+function jobReady(){ return !!(NEX_TOKEN && JOB_BOARD && window.ethereum); }
+function jobContract(signer){ const p=signer?chainSigner():chainProvider(); return new ethers.Contract(JOB_BOARD,JOB_ABI,p); }
+
+async function jobPost(){
+  if(!jobReady()){ toast('ต้อง deploy NEX+JobBoard ก่อน — ดู deploy-market.ps1'); return; }
+  const spec=document.getElementById('jobSpec').value.trim().slice(0,300);
+  const reward=document.getElementById('jobReward').value;
+  if(!spec||!reward){ toast('กรอกงาน+ค่าตอบแทนก่อน'); return; }
+  try{
+    const signer=await (chainSigner()).getSigner();
+    const token=new ethers.Contract(NEX_TOKEN,[ "function approve(address,uint256) returns (bool)" ],signer);
+    toast('1/2 อนุมัติ NEX...'); await (await token.approve(JOB_BOARD, ethers.parseEther(reward))).wait();
+    toast('2/2 โพสต์งาน...'); const c=jobContract(true);
+    await (await c.postJob(ethers.parseEther(reward), spec)).wait();
+    document.getElementById('jobSpec').value='';
+    toast('📢 งานขึ้นตลาดแล้ว — เงินล็อกใน escrow'); jobRefresh();
+  }catch(e){ toast('❌ '+String(e.message||e).slice(0,70)); }
+}
+async function jobRefresh(){
+  const el=document.getElementById('jobList');
+  if(!jobReady()){ el.innerHTML='<span class="muted">ยังไม่เชื่อมตลาดงาน — deploy แล้ววาง address ในไฟล์นี้</span>'; return; }
+  try{
+    const c=jobContract(false);
+    const n=Number(await c.jobCount());
+    let html='';
+    for(let i=n;i>=1&&i>n-10;i--){
+      const j=await c.jobs(i);
+      const me=window._myAddr&&(j.employer.toLowerCase()===window._myAddr.toLowerCase());
+      html+=`<div class="prob"><div class="top"><div><div class="title">#${i} ${esc(j.specHash)}</div>
+        <small class="muted">นายจ้าง ${j.employer.slice(0,8)}… ${j.worker!==('0x'+'0'.repeat(40))?('· ผู้รับ '+j.worker.slice(0,8)+'…'):''}</small></div>
+        <span class="cat">${JOB_STATUS[Number(j.status)]}</span></div>
+        <div class="votes"><b>${Number(ethers.formatEther(j.reward))}</b> <span class="muted">NEX</span>
+        ${Number(j.status)===0?`<button class="vote-btn" onclick="jobTake(${i})">🙋 รับงาน</button>`:''}
+        ${Number(j.status)===1&&me?`<button class="vote-btn" onclick="jobSubmit(${i})">📤 ส่งงาน</button>`:''}
+        ${Number(j.status)===2&&me?`<button class="vote-btn" onclick="jobApprove(${i})">✅ อนุมัติ (จ่าย 90%/fee 10%)</button>`:''}
+        ${Number(j.status)===0&&me?`<button class="vote-btn" onclick="jobCancel(${i})">ยกเลิก</button>`:''}
+        </div></div>`;
+    }
+    el.innerHTML=html||'<span class="muted">ยังไม่มีงาน — คุณโพสต์งานแรกได้เลย</span>';
+  }catch(e){ el.innerHTML='<span class="neg">'+esc(String(e.message||e).slice(0,80))+'</span>'; }
+}
+async function _jobTx(fn,msg){
+  if(!jobReady()) return;
+  try{ const c=jobContract(true); toast(msg); await (await fn(c)).wait(); toast('✅ สำเร็จ'); jobRefresh(); }
+  catch(e){ toast('❌ '+String(e.message||e).slice(0,70)); }
+}
+function jobTake(i){ _jobTx(c=>c.takeJob(i),'🙋 รับงาน...'); }
+function jobCancel(i){ _jobTx(c=>c.cancelJob(i),'ยกเลิก...'); }
+function jobSubmit(i){ const h=prompt('ลิงก์/รายละเอียดผลงาน:'); if(h) _jobTx(c=>c.submitWork(i,h.slice(0,200)),'ส่งงาน...'); }
+function jobApprove(i){ _jobTx(c=>c.approveWork(i),'อนุมัติ+จ่ายเงิน (worker 90%, fee 10%)...'); }
+
+/* AI หางาน: จับคู่งานกับความจำ/ทักษะของเจ้าของ Twin */
+async function aiFindJob(){
+  if(!jobReady()){ toast('ตลาดงานยังไม่เชื่อม — deploy ก่อน'); return; }
+  const c=jobContract(false); const n=Number(await c.jobCount());
+  const mems=(window.NexusLTM?window.NexusLTM.store.semantic:[]).map(m=>m.text.toLowerCase()).join(' ');
+  let best=null,bestScore=0;
+  for(let i=1;i<=n;i++){
+    const j=await c.jobs(i);
+    if(Number(j.status)!==0) continue;
+    const words=j.specHash.toLowerCase().split(/\s+/);
+    const score=words.filter(w=>w.length>2&&mems.includes(w)).length;
+    if(score>bestScore){bestScore=score;best={i,spec:j.specHash,reward:Number(ethers.formatEther(j.reward))};}
+  }
+  const reply=best?`🐉 ผมเจองานที่เข้ากับทักษะคุณ: #${best.i} "${best.spec}" (${best.reward} NEX)\nความเข้ากัน: ${Math.min(100,bestScore*25)}% — กด "รับงาน" ในลิสต์เพื่อรับ`
+                  :'🐉 ยังไม่มีงานที่ตรงกับโปรไฟล์ของคุณ (ผมจับคู่จากความจำระยะยาวของคุณ) — ลองเพิ่มทักษะ: บอกผมว่า "จำว่า ฉันทำงานออกแบบ"';
+  toast(reply.split('\n')[0]); speak(reply);
+  if(window.Twin){ window.Twin.mem.chat.push({role:'twin',text:reply,at:Date.now()}); window.Twin.save(); renderChat(); }
+}
+
+renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats(); renderIdentitySummary(); jobRefresh();
 if(_voiceOn) document.getElementById('voiceBtn').style.borderColor='var(--good)';
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');
