@@ -202,18 +202,26 @@
     <p class="muted" id="rwStatus" style="margin-top:8px"></p>
   </div>
 
-  <!-- ══ JOB MARKET (Escrow + 10% fee) ══ -->
+  <!-- ══ JOB MARKET PRO — Escrow + 10% platform fee ══ -->
   <div class="card" style="margin-top:16px">
-    <h3>💼 ตลาดงาน NEX — Escrow จริง หัก 10% ต่องานสำเร็จ</h3>
-    <p class="muted" id="jobConfig">NEX Token: <b>ยังไม่ deploy</b> · รัน <span style="font-family:Consolas">deploy-market.ps1</span> แล้ววาง address ที่ได้ในไฟล์นี้</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
-      <div style="flex:2;min-width:200px"><label>รายละเอียดงาน</label><input id="jobSpec" placeholder="เช่น ทำโลโก้ร้านกาแฟ 3 แบบ"></div>
-      <div style="flex:1;min-width:120px"><label>ค่าตอบแทน (NEX)</label><input id="jobReward" type="number" value="100"></div>
-      <button onclick="jobPost()">📢 โพสต์งาน (ฝากเงิน escrow)</button>
-      <button class="ghost" onclick="jobRefresh()">🔄 รีเฟรช</button>
+    <h3>💼 Job Market Pro — Escrow บน Chain · เราเป็นตัวกลาง หัก 10%</h3>
+    <p class="muted" style="font-size:11px;font-family:Consolas" id="marketAddrs"></p>
+    <table id="marketStats" style="margin-bottom:6px"></table>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px">
+      <button class="ghost" onclick="marketConfig()" title="วาง address NEX Token + JobBoard">⚙️ ตั้งค่า Contracts</button>
+      <span class="muted" id="jobConfig"></span>
     </div>
-    <div style="margin-top:8px">
-      <button class="ghost" onclick="aiFindJob()">🐉 ให้ AI หางานที่เหมาะกับคุณ</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:10px;border-top:1px solid var(--line);padding-top:10px">
+      <div style="flex:2;min-width:200px"><label>📋 รายละเอียดงาน (โพสต์แล้วล็อกเงิน escrow ทันที)</label><input id="jobSpec" placeholder="เช่น ทำโลโก้ร้านกาแฟ 3 แบบ + ไฟล์ต้นฉบับ"></div>
+      <div style="flex:1;min-width:120px"><label>ค่าตอบแทน (NEX)</label><input id="jobReward" type="number" value="100" min="1"></div>
+      <button onclick="jobPost()">📢 โพสต์งาน</button>
+      <button class="ghost" onclick="jobRefresh()">🔄</button>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:10px">
+      <button class="ghost" id="tabAll" onclick="jobTab('all')">🌐 ทั้งหมด</button>
+      <button class="ghost" id="tabPost" onclick="jobTab('posted')">📢 งานที่สั่ง</button>
+      <button class="ghost" id="tabWork" onclick="jobTab('working')">🔨 งานที่รับ</button>
+      <button class="ghost" onclick="aiFindJob()">🐉 AI จับคู่งานให้ฉัน</button>
     </div>
     <div id="jobList" style="margin-top:10px"></div>
   </div>
@@ -409,7 +417,8 @@ document.getElementById('walletBtn').onclick=async()=>{
     window._myAddr=acc;
     document.getElementById('netBadge').textContent='Wallet: '+acc.slice(0,6)+'…'+acc.slice(-4);
     document.getElementById('netBadge').style.color='var(--good)';
-    toast('✅ เชื่อม wallet แล้ว — พร้อม deploy contract');
+    toast('✅ เชื่อม wallet แล้ว — พร้อมใช้ตลาดงาน + on-chain');
+    jobRefresh();
   }catch(e){ toast('ยกเลิกการเชื่อมต่อ'); }
 };
 
@@ -787,75 +796,152 @@ function renderStats(){
     <tr><td>Tests passing</td><td class="num pos">6/6</td></tr>`;
 }
 
-/* ═══════════ JOB MARKET — Escrow + 10% fee ═══════════ */
-const NEX_TOKEN  = ""; // วาง address NexusToken หลัง deploy
-const JOB_BOARD  = ""; // วาง address JobBoard หลัง deploy
+/* ═══════════ JOB MARKET PRO — Escrow + 10% platform fee (feeCollector = เจ้าของระบบ) ═══════════ */
+const NEX_TOKEN_DEFAULT  = ""; // ใส่ address NexusToken หลัง deploy (หรือกด ⚙️ ตั้งค่าในหน้าเว็บ)
+const JOB_BOARD_DEFAULT  = ""; // ใส่ address JobBoard
+const TOKEN_ABI = [
+  "function approve(address,uint256) returns (bool)",
+  "function balanceOf(address) view returns (uint256)",
+  "function symbol() view returns (string)",
+];
 const JOB_ABI = [
   "function postJob(uint256 reward,string specHash) returns (uint256)",
   "function takeJob(uint256)",
   "function submitWork(uint256,string)",
   "function approveWork(uint256)",
   "function cancelJob(uint256)",
+  "function raiseDispute(uint256)",
+  "function resolveDispute(uint256,address)",
   "function jobCount() view returns (uint256)",
   "function jobs(uint256) view returns (uint256 id,address employer,address worker,uint256 reward,string specHash,string resultHash,uint8 status,uint64 createdAt)",
   "function FEE_BPS() view returns (uint16)",
+  "function feeCollector() view returns (address)",
+  "function totalFeesCollected() view returns (uint256)",
 ];
-const JOB_STATUS = ["🟢 เปิดรับ","🔵 มีคนรับแล้ว","🟡 ส่งงานแล้ว","✅ เสร็จ","⚪ ยกเลิก","🔴 ข้อพิพาท"];
-function jobReady(){ return !!(NEX_TOKEN && JOB_BOARD && window.ethereum); }
-function jobContract(signer){ const p=signer?chainSigner():chainProvider(); return new ethers.Contract(JOB_BOARD,JOB_ABI,p); }
+const JOB_STATUS = ["🟢 Open","🔵 Taken","🟡 Submitted","✅ Done","⚪ Cancelled","🔴 Disputed"];
+const ZERO_ADDR = '0x'+'0'.repeat(40);
+let _jobTab='all';
+
+function nexToken(){ return localStorage.getItem('nx_nex_token') || NEX_TOKEN_DEFAULT; }
+function jobBoard(){ return localStorage.getItem('nx_job_board') || JOB_BOARD_DEFAULT; }
+function jobReady(){ return !!(nexToken() && jobBoard() && window.ethereum); }
+async function jobContract(withSigner){
+  if(withSigner){ const bp=chainSigner(); if(!bp) return null; return new ethers.Contract(jobBoard(),JOB_ABI,await bp.getSigner()); }
+  return new ethers.Contract(jobBoard(),JOB_ABI,chainProvider());
+}
+async function tokenContract(withSigner){
+  if(withSigner){ const bp=chainSigner(); if(!bp) return null; return new ethers.Contract(nexToken(),TOKEN_ABI,await bp.getSigner()); }
+  return new ethers.Contract(nexToken(),TOKEN_ABI,chainProvider());
+}
+
+function marketConfig(){
+  const t=prompt('NEX Token address (ERC-20):',localStorage.getItem('nx_nex_token')||NEX_TOKEN_DEFAULT);
+  if(t===null) return;
+  const b=prompt('JobBoard address:',localStorage.getItem('nx_job_board')||JOB_BOARD_DEFAULT);
+  if(b===null) return;
+  localStorage.setItem('nx_nex_token',t.trim()); localStorage.setItem('nx_job_board',b.trim());
+  toast('⚙️ บันทึก addresses — โหลดสถานะใหม่'); jobRefresh();
+}
+
+function jobTab(t){ _jobTab=t; ['all','posted','working'].forEach(x=>document.getElementById('tab'+x[0].toUpperCase()+x.slice(1)).style.borderColor=x===t?'var(--acc)':''); jobRefresh(); }
 
 async function jobPost(){
-  if(!jobReady()){ toast('ต้อง deploy NEX+JobBoard ก่อน — ดู deploy-market.ps1'); return; }
+  if(!jobReady()){ toast('ต้องตั้งค่า NEX + JobBoard ก่อน — กด ⚙️ ตั้งค่า Contracts'); return; }
   const spec=document.getElementById('jobSpec').value.trim().slice(0,300);
   const reward=document.getElementById('jobReward').value;
-  if(!spec||!reward){ toast('กรอกงาน+ค่าตอบแทนก่อน'); return; }
+  if(!spec||!reward||Number(reward)<=0){ toast('กรอกงาน+ค่าตอบแทนก่อน'); return; }
   try{
-    const signer=await (chainSigner()).getSigner();
-    const token=new ethers.Contract(NEX_TOKEN,[ "function approve(address,uint256) returns (bool)" ],signer);
-    toast('1/2 อนุมัติ NEX...'); await (await token.approve(JOB_BOARD, ethers.parseEther(reward))).wait();
-    toast('2/2 โพสต์งาน...'); const c=jobContract(true);
-    await (await c.postJob(ethers.parseEther(reward), spec)).wait();
+    const signer=await chainSigner().getSigner();
+    const token=await tokenContract(true);
+    toast('1/2 approve NEX...'); await (await token.approve(jobBoard(), ethers.parseEther(reward))).wait();
+    toast('2/2 โพสต์งาน...'); await (await (await jobContract(true)).postJob(ethers.parseEther(reward), spec)).wait();
     document.getElementById('jobSpec').value='';
-    toast('📢 งานขึ้นตลาดแล้ว — เงินล็อกใน escrow'); jobRefresh();
+    toast('📢 งานขึ้นตลาด — NEX ล็อกใน escrow แล้ว'); jobRefresh();
   }catch(e){ toast('❌ '+String(e.message||e).slice(0,70)); }
 }
+
 async function jobRefresh(){
+  renderMarketChrome();
   const el=document.getElementById('jobList');
-  if(!jobReady()){ el.innerHTML='<span class="muted">ยังไม่เชื่อมตลาดงาน — deploy แล้ววาง address ในไฟล์นี้</span>'; return; }
+  if(!jobReady()){
+    el.innerHTML='<span class="muted">ยังไม่เชื่อม chain — กด <b>⚙️ ตั้งค่า Contracts</b> วาง address NEX Token + JobBoard<br>deploy ได้ด้วย contracts/deploy-market.ps1</span>';
+    return;
+  }
   try{
-    const c=jobContract(false);
-    const n=Number(await c.jobCount());
-    let html='';
-    for(let i=n;i>=1&&i>n-10;i--){
+    const c=await jobContract(false), n=Number(await c.jobCount());
+    const collector=(await c.feeCollector()).toLowerCase();
+    const me=window._myAddr?window._myAddr.toLowerCase():null;
+    const isOwner=me&&me===collector;
+    let rows='';
+    for(let i=n;i>=1&&i>=n-49;i--){
       const j=await c.jobs(i);
-      const me=window._myAddr&&(j.employer.toLowerCase()===window._myAddr.toLowerCase());
-      html+=`<div class="prob"><div class="top"><div><div class="title">#${i} ${esc(j.specHash)}</div>
-        <small class="muted">นายจ้าง ${j.employer.slice(0,8)}… ${j.worker!==('0x'+'0'.repeat(40))?('· ผู้รับ '+j.worker.slice(0,8)+'…'):''}</small></div>
-        <span class="cat">${JOB_STATUS[Number(j.status)]}</span></div>
-        <div class="votes"><b>${Number(ethers.formatEther(j.reward))}</b> <span class="muted">NEX</span>
-        ${Number(j.status)===0?`<button class="vote-btn" onclick="jobTake(${i})">🙋 รับงาน</button>`:''}
-        ${Number(j.status)===1&&me?`<button class="vote-btn" onclick="jobSubmit(${i})">📤 ส่งงาน</button>`:''}
-        ${Number(j.status)===2&&me?`<button class="vote-btn" onclick="jobApprove(${i})">✅ อนุมัติ (จ่าย 90%/fee 10%)</button>`:''}
-        ${Number(j.status)===0&&me?`<button class="vote-btn" onclick="jobCancel(${i})">ยกเลิก</button>`:''}
+      const st=Number(j.status);
+      const isEmp=me&&j.employer.toLowerCase()===me, isWrk=me&&j.worker.toLowerCase()===me;
+      if(_jobTab==='posted'&&!isEmp) continue;
+      if(_jobTab==='working'&&!isWrk) continue;
+      const rw=Number(ethers.formatEther(j.reward));
+      const payout=(rw*0.9).toFixed(2), fee=(rw*0.1).toFixed(2);
+      rows+=`<div class="prob"><div class="top"><div><div class="title">#${i} ${esc(j.specHash)}</div>
+        <small class="muted">👤 ${j.employer.slice(0,6)}…${j.worker!==ZERO_ADDR?' → 🔨 '+j.worker.slice(0,6)+'…':''} · ${new Date(Number(j.createdAt)*1000).toLocaleDateString('th-TH')}</small></div>
+        <span class="cat">${JOB_STATUS[st]}</span></div>
+        <div class="votes"><b>${rw}</b> <span class="muted">NEX</span>
+        <span class="muted" style="font-size:11px">(worker ${payout} · platform fee ${fee})</span>
+        ${st===0&&!isEmp?`<button class="vote-btn" onclick="jobTake(${i})">🙋 รับงาน</button>`:''}
+        ${st===0&&isEmp?`<button class="vote-btn" onclick="jobCancel(${i})">✖ ยกเลิก (คืนเงิน)</button>`:''}
+        ${st===1&&isWrk?`<button class="vote-btn" onclick="jobSubmit(${i})">📤 ส่งงาน</button>`:''}
+        ${st===2&&isEmp?`<button class="vote-btn" onclick="jobApprove(${i})">💸 Approve → จ่าย worker ${payout} NEX</button>`:''}
+        ${(st===1||st===2)?`<button class="vote-btn" onclick="jobDispute(${i})">⚖️ Dispute</button>`:''}
+        ${st===5&&isOwner?`<button class="vote-btn" onclick="jobResolvePrompt(${i},'${j.employer}','${j.worker}')">⚖️ ตัดสิน (admin)</button>`:''}
+        ${st===3&&j.resultHash?`<a href="${esc(j.resultHash)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--acc2)">🔗 ผลงาน</a>`:''}
         </div></div>`;
     }
-    el.innerHTML=html||'<span class="muted">ยังไม่มีงาน — คุณโพสต์งานแรกได้เลย</span>';
-  }catch(e){ el.innerHTML='<span class="neg">'+esc(String(e.message||e).slice(0,80))+'</span>'; }
+    el.innerHTML=rows||'<span class="muted">ไม่มีงานในมุมมองนี้</span>';
+  }catch(e){ el.innerHTML='<span class="neg">'+esc(String(e.message||e).slice(0,90))+'</span>'; }
 }
+
+async function renderMarketChrome(){
+  const cfg=document.getElementById('marketAddrs'), stats=document.getElementById('marketStats');
+  const ok=jobReady();
+  cfg.innerHTML=`REGISTRY <b style="color:${REGISTRY?'var(--good)':'var(--bad)'}">${REGISTRY?REGISTRY.slice(0,8)+'…':'—'}</b> · SPLITTER <b style="color:${SPLITTER?'var(--good)':'var(--bad)'}">${SPLITTER?SPLITTER.slice(0,8)+'…':'—'}</b> · NEX <b style="color:${nexToken()?'var(--good)':'var(--bad)'}">${nexToken()?nexToken().slice(0,8)+'…':'—'}</b> · JOBBOARD <b style="color:${jobBoard()?'var(--good)':'var(--bad)'}">${jobBoard()?jobBoard().slice(0,8)+'…':'—'}</b>`;
+  document.getElementById('jobConfig').textContent=ok?(window._myAddr?('wallet: '+window._myAddr.slice(0,6)+'…'):''):'';
+  if(!ok){ stats.innerHTML=''; return; }
+  try{
+    const c=await jobContract(false), n=Number(await c.jobCount());
+    const fees=Number(ethers.formatEther(await c.totalFeesCollected()));
+    const collector=await c.feeCollector();
+    const bps=Number(await c.FEE_BPS())/100;
+    let mine='';
+    if(window._myAddr){
+      const bal=Number(ethers.formatEther(await (await tokenContract(false)).balanceOf(window._myAddr)));
+      mine=`<td class="num">💰 ฉัน: <b>${bal.toLocaleString()}</b> NEX</td>`;
+    }
+    stats.innerHTML=`<tr>${mine}<td class="num">📋 Jobs: <b>${n}</b></td><td class="num">🏛 Platform revenue (fee ${bps}%): <b style="color:var(--acc)">${fees.toLocaleString()}</b> NEX</td></tr><tr><td colspan="2" class="muted" style="font-size:11px">fee wallet: ${collector} ${window._myAddr&&collector.toLowerCase()===window._myAddr.toLowerCase()?'<b style="color:var(--acc)">← wallet ของคุณ ✓</b>':''}</td></tr>`;
+  }catch(e){ stats.innerHTML='<tr><td class="neg">'+esc(String(e.message||e).slice(0,60))+'</td></tr>'; }
+}
+
 async function _jobTx(fn,msg){
   if(!jobReady()) return;
-  try{ const c=jobContract(true); toast(msg); await (await fn(c)).wait(); toast('✅ สำเร็จ'); jobRefresh(); }
+  try{ const c=await jobContract(true); if(!c) return; toast(msg); await (await fn(c)).wait(); toast('✅ สำเร็จ — บันทึกบน blockchain'); jobRefresh(); }
   catch(e){ toast('❌ '+String(e.message||e).slice(0,70)); }
 }
 function jobTake(i){ _jobTx(c=>c.takeJob(i),'🙋 รับงาน...'); }
-function jobCancel(i){ _jobTx(c=>c.cancelJob(i),'ยกเลิก...'); }
-function jobSubmit(i){ const h=prompt('ลิงก์/รายละเอียดผลงาน:'); if(h) _jobTx(c=>c.submitWork(i,h.slice(0,200)),'ส่งงาน...'); }
-function jobApprove(i){ _jobTx(c=>c.approveWork(i),'อนุมัติ+จ่ายเงิน (worker 90%, fee 10%)...'); }
+function jobCancel(i){ _jobTx(c=>c.cancelJob(i),'ยกเลิก + คืน escrow...'); }
+function jobSubmit(i){ const h=prompt('ลิงก์ผลงาน (URL/IPFS/CID):'); if(h) _jobTx(c=>c.submitWork(i,h.trim().slice(0,200)),'📤 ส่งงาน...'); }
+function jobApprove(i){ if(confirm('Approve = จ่าย worker 90% + platform 10% จาก escrow ทันที (ถอนไม่ได้)')) _jobTx(c=>c.approveWork(i),'💸 Release escrow...'); }
+function jobDispute(i){ if(confirm('เปิดข้อพิพาท? Admin/DAO จะตัดสินภายหลัง')) _jobTx(c=>c.raiseDispute(i),'⚖️ Raise dispute...'); }
+function jobResolvePrompt(i,employer,worker){
+  const w=prompt('ตัดสินให้ฝ่ายใด?\nพิมพ์: employer หรือ worker', 'worker');
+  if(w===null) return;
+  const winner=/^e/i.test(w)?employer:(/^w/i.test(w)?worker:null);
+  if(!winner){ toast('พิมพ์ employer หรือ worker เท่านั้น'); return; }
+  _jobTx(c=>c.resolveDispute(i,winner),'⚖️ Resolve dispute...');
+}
+async function jobResolve(i,winner){ _jobTx(c=>c.resolveDispute(i,winner),'⚖️ Resolve...'); }
 
 /* AI หางาน: จับคู่งานกับความจำ/ทักษะของเจ้าของ Twin */
 async function aiFindJob(){
   if(!jobReady()){ toast('ตลาดงานยังไม่เชื่อม — deploy ก่อน'); return; }
-  const c=jobContract(false); const n=Number(await c.jobCount());
+  const c=await jobContract(false); const n=Number(await c.jobCount());
   const mems=(window.NexusLTM?window.NexusLTM.store.semantic:[]).map(m=>m.text.toLowerCase()).join(' ');
   let best=null,bestScore=0;
   for(let i=1;i<=n;i++){
