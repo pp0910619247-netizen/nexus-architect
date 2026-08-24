@@ -103,6 +103,14 @@ class TwinEngine {
   /* ── Adapters ── */
   async chat(userMsg) {
     this.mem.chat.push({ role: 'user', text: userMsg, at: Date.now() });
+
+    // ── ความจำระยะยาว: สกัดข้อมูลอัตโนมัติ + บันทึกหัวข้อ ──
+    let learned = [];
+    if (window.NexusLTM) {
+      learned = window.NexusLTM.extract(userMsg);
+      window.NexusLTM.setLastTopic(userMsg.slice(0, 60));
+    }
+
     let reply;
     try {
       if (this.cfg.provider === 'gemini') {
@@ -122,6 +130,12 @@ class TwinEngine {
     if (this.mem.chat.length > 60) this.mem.chat = this.mem.chat.slice(-60);
     this.mem.xp += 1;
     this.save();
+
+    // ── Consolidation: ย่อยความจำเก่าเป็น episodic เมื่อแชทยาว ──
+    if (window.NexusLTM && this.mem.chat.length >= 40) window.NexusLTM.consolidate(this.mem.chat);
+
+    // ── แจ้งสิ่งที่เรียนรู้ใหม่ ──
+    if (learned.length) reply += `\n🧠 (เรียนรู้อัตโนมัติ: ${learned.map(l => l.type).join(', ')})`;
     return reply;
   }
 

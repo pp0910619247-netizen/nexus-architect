@@ -11,6 +11,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script src="nexus-core.js"></script>
 <script src="nexus-gov.js"></script>
+<script src="nexus-memory.js"></script>
+<script src="identity.js"></script>
 <script src="twin.js"></script>
 <style>
   :root{
@@ -80,7 +82,12 @@
       <h3>🆔 Nexus Identity Protocol</h3>
       <p class="muted">MVP จำลองระดับ identity ในเครื่อง (localStorage)<br>Production: Google OAuth → KYC API → NDID/ZK</p>
       <div id="levels"></div>
-      <button class="ghost" style="width:100%;margin-top:12px" onclick="upgradeLevel()">⬆️ ยืนยันระดับถัดไป (simulated)</button>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="ghost" style="flex:1" onclick="realPasskey()">🔐 Passkey จริง (Lv.1)</button>
+        <button class="ghost" style="flex:1" onclick="realWallet()">✍️ เซ็น Wallet จริง (Lv.2)</button>
+      </div>
+      <p class="muted" id="identitySummary" style="margin-top:8px"></p>
+      <button class="ghost" style="width:100%;margin-top:6px" onclick="upgradeLevel()">⬆️ ยืนยันระดับถัดไป (simulated)</button>
     </div>
 
     <div class="card">
@@ -134,6 +141,8 @@
     <div style="display:flex;gap:8px;margin-top:10px">
       <input id="chatInput" placeholder='พิมพ์คุยกับ Twin... หรือ "จำว่า ฉันชอบกาแฟ" ' onkeydown="if(event.key==='Enter')sendChat()">
       <button onclick="sendChat()">ส่ง</button>
+      <button class="ghost" id="micBtn" onclick="toggleMic()" title="พูดแทนพิมพ์">🎤</button>
+      <button class="ghost" id="voiceBtn" onclick="toggleVoice()" title="ให้ Twin พูดตอบ">🔊</button>
     </div>
     <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
       <button class="ghost" onclick="twinProposeProblem()">🐉 เสนอโจทย์สู่ Mountain (AI Mother)</button>
@@ -262,6 +271,20 @@ function upgradeLevel(){
   if(user.level>=4){ toast('ครบ Level สูงสุดแล้ว 🐉'); return; }
   const names=['','Google Sign-In ✓ (sim)','KYC+Liveness ✓ (sim)','Bank Proof ✓ (sim)','NDID+FIDO2 ✓ (sim)'];
   user.level++; toast(names[user.level]); persist(); renderLevels();
+}
+/* ── Identity จริง: Passkey (WebAuthn) + Wallet Signature ── */
+async function realPasskey(){
+  const r=await NexusIdentity.registerPasskey();
+  if(r.ok){ user.level=Math.max(user.level,1); persist(); renderLevels(); }
+  toast(r.msg); renderIdentitySummary();
+}
+async function realWallet(){
+  const r=await NexusIdentity.walletProof();
+  if(r.ok){ user.level=Math.max(user.level,2); persist(); renderLevels(); }
+  toast(r.msg); renderIdentitySummary();
+}
+function renderIdentitySummary(){
+  document.getElementById('identitySummary').innerHTML=NexusIdentity.summary();
 }
 
 /* ═══════════ TWIN ═══════════ */
@@ -445,6 +468,7 @@ async function sendChat(){
   const reply=await window.Twin.chat(msg);
   document.getElementById('typing')?.remove();
   renderChat();
+  speak(reply);
 }
 function brainChange(){
   window.Twin.setCfg({provider:document.getElementById('brainSel').value});
@@ -563,6 +587,30 @@ function twinProposeProblem(){
   persist(); renderProblems(); renderHRW();
   toast('🐉 AI Mother เสนอโจทย์ใหม่: '+pick.t);
 }
+/* ── เสียง: ไมค์ (Web Speech) + ผู้พูด (TTS) — ใช้ฟรีในเบราว์เซอร์ ── */
+let _voiceOn=localStorage.getItem('nx_voice')==='1', _rec=null;
+function toggleVoice(){
+  _voiceOn=!_voiceOn; localStorage.setItem('nx_voice',_voiceOn?'1':'0');
+  document.getElementById('voiceBtn').style.borderColor=_voiceOn?'var(--good)':'';
+  toast(_voiceOn?'🔊 Twin จะพูดตอบ':'ปิดเสียงแล้ว');
+}
+function speak(text){
+  if(!_voiceOn || !('speechSynthesis' in window)) return;
+  const clean=text.replace(/[🐉🧠⛰🏔📚🔬🧮📋🕒🤔⚠️✅❌💡]/gu,'').slice(0,300);
+  const u=new SpeechSynthesisUtterance(clean); u.lang='th-TH'; u.rate=1.05;
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+function toggleMic(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ toast('เบราว์เซอร์นี้ไม่รองรับไมค์ (ใช้ Chrome/Edge)'); return; }
+  if(_rec){ _rec.stop(); _rec=null; document.getElementById('micBtn').style.borderColor=''; return; }
+  _rec=new SR(); _rec.lang='th-TH'; _rec.interimResults=false;
+  _rec.onresult=e=>{ const t=e.results[0][0].transcript; document.getElementById('chatInput').value=t; sendChat(); };
+  _rec.onend=()=>{ _rec=null; document.getElementById('micBtn').style.borderColor=''; };
+  _rec.onerror=()=>{ toast('ไม่ได้ยิน — ลองใหม่'); _rec=null; };
+  _rec.start(); document.getElementById('micBtn').style.borderColor='var(--bad)';
+  toast('🎤 กำลังฟัง... พูดได้เลย');
+}
 function exportMemory(){
   const data={ exported:new Date().toISOString(), twin:{name:window.Twin.cfg.name, mem:window.Twin.mem}, user, problems:probs };
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
@@ -596,7 +644,8 @@ function renderStats(){
     <tr><td>Tests passing</td><td class="num pos">6/6</td></tr>`;
 }
 
-renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats();
+renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats(); renderIdentitySummary();
+if(_voiceOn) document.getElementById('voiceBtn').style.borderColor='var(--good)';
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');
 renderLevels(); runSplit();
