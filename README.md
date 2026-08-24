@@ -3,16 +3,48 @@
 เอกสารนี้แปลง whitepaper v1.0 ให้เป็นชิ้นงานที่ build ได้วันนี้
 พร้อมความเห็นตรงๆ ว่าส่วนไหน feasible / ส่วนไหนต้องแก้ design
 
+## 🔴 Live Demo
+- **App**: https://pp0910619247-netizen.github.io/nexus-architect/
+- **Waitlist**: https://pp0910619247-netizen.github.io/nexus-architect/waitlist.html
+
+## ✅ สถานะระบบ (อัปเดต 25 ส.ค. 2026)
+
+| โมดูล | สถานะ |
+|---|---|
+| 🏔 Mountain (registry + vote + Mission Peak + **midnight culling >10 votes**) | ✅ local + on-chain Amoy |
+| ⚖️ 20/80 RewardSplitter | ✅ deployed `0x97fb…79ecF` |
+| 🆔 Identity L0–L2: Google GIS + Passkey/WebAuthn + Wallet sig + **KYC-Lite (Thai ID checksum, ICAO 9303 MRZ passport, active liveness blink+yaw)** | ✅ 100% on-device |
+| 🐉 Digital Twin — Brain v3.0 TF-IDF classifier (21/21 tests) + auto-LTM 7/7 + feedback learning | ✅ |
+| 💼 Job Market Pro — escrow, fee 10% → feeCollector, dispute+resolve | ✅ contract ready · ใส่ address ผ่านปุ่ม ⚙️ |
+| 🚀 NexusPresale — ขายเป็นรอบ ×5 ราคาขึ้น 50%/รอบ, spillover+refund | ✅ contract + tests 7/7 · UI พร้อม |
+| 🗳 DAO Governance 67% + HRW supermajority + AI lifecycle + Anti-Bot | ✅ |
+| Multi-chain deploy kit | Polygon Amoy · Arbitrum Sepolia · BSC Testnet |
+
+## 🚀 Deploy ตลาด/presale จริง (testnet)
+```powershell
+cd contracts
+$env:PRIVATE_KEY="0x..."
+npx hardhat run deploy-market.js --network amoy     # NEX + JobBoard
+npx hardhat run deploy-presale.js --network amoy    # Presale rounds
+# BSC: --network bscTestnet / Arbitrum: --network arbitrumSepolia
+```
+แล้วกดปุ่ม ⚙️ บนเว็บเพื่อวาง address (เก็บ localStorage ไม่แก้โค้ด)
+
+## เอกสารสำคัญ
+`WHITEPAPER_v1.0_GENESIS.md` · `WHITEPAPER_v1.1_CHANGELOG.md` · `GRANT_APPLICATION_EN.md` (ยื่น Questbook/Gitcoin) · `AUDIT_CHECKLIST.md` · `DEPLOY.md`
+
 ## โครงสร้าง
 
 ```
 nexus-architect/
-├── README.md                  ← ไฟล์นี้ (feasibility + แผนจริง)
+├── app/                      ← PWA (index, twin, brain, gov, memory, kyc, identity)
 ├── contracts/
-│   ├── ProblemRegistry.sol    ← กระดานปัญหาบน chain (Mountain MVP)
-│   └── RewardSplitter.sol     ← แบ่งรางวัล 20/80 อัตโนมัติ
+│   ├── contracts_sol/        ← ProblemRegistry V1/V2, RewardSplitter, NexusToken, JobBoard, NexusPresale
+│   ├── test/                 ← registry · jobboard (11) · presale (7) = 18 tests
+│   └── deploy-*.js/.ps1      ← amoy / arbitrumSepolia / bscTestnet
 └── tools/
-    └── tokenomics_sim.py      ← จำลอง Variable Decay — เจอบั๊กดีไซน์ใหญ่!
+    ├── tokenomics_sim.py     ← พิสูจน์ว่า decay แบบเวลา = ตายใน 48 วิ
+    └── kyc-proxy-server.js   ← server stub สำหรับ KYC provider จริง
 ```
 
 ## ⚠️ สิ่งที่ต้องแก้ก่อนอย่างอื่น: Variable Decay มีปัญหา

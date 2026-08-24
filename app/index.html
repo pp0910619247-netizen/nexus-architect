@@ -226,6 +226,27 @@
     <div id="jobList" style="margin-top:10px"></div>
   </div>
 
+  <!-- ══ PRESALE — ขาย NEX เป็นรอบ ══ -->
+  <div class="card" style="margin-top:16px">
+    <h3>🚀 NEX Presale — Genesis Rounds <span class="muted" style="font-weight:400;font-size:12px">ราคาขึ้น ×1.5 ทุกรอบ · testnet</span></h3>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="ghost" onclick="presaleConfig()">⚙️ Presale Contract</button>
+      <span class="muted" id="psAddrTxt" style="font-size:11px;font-family:Consolas"></span>
+    </div>
+    <table id="psStats" style="margin-top:8px"></table>
+    <div style="background:var(--panel2);border-radius:8px;height:14px;margin-top:6px;border:1px solid var(--line)">
+      <div id="psBar" style="height:100%;background:linear-gradient(90deg,var(--acc),#fbbf24);border-radius:7px;width:0%;transition:.4s"></div>
+    </div>
+    <p class="muted" id="psProgress" style="font-size:12px;margin-top:4px"></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
+      <div style="flex:1;min-width:160px"><label>จำนวนเงิน (<span class="psSym">POL</span>)</label><input id="psAmount" type="number" step="0.001" value="0.01"></div>
+      <button onclick="presaleBuy()">🛒 Buy NEX</button>
+      <button class="ghost" onclick="renderPresale()">🔄</button>
+    </div>
+    <p class="muted" id="psEstimate" style="font-size:12px"></p>
+    <p class="muted" style="font-size:11px">⚠️ Testnet demo — เงินทดสอบเท่านั้น · ผู้ซื้อได้ token ทันที · เกินเงินคืนอัตโนมัติ · โอนเกิน cap = roll รอบถัดไป</p>
+  </div>
+
   <!-- ═══ GOVERNANCE + REWARD ENGINE + HRW ═══ -->
   <div class="grid">
     <div class="card">
@@ -987,6 +1008,91 @@ function jobResolvePrompt(i,employer,worker){
 }
 async function jobResolve(i,winner){ _jobTx(c=>c.resolveDispute(i,winner),'⚖️ Resolve...'); }
 
+/* ═══════════ PRESALE — round-based sale (native currency) ═══════════ */
+const PRESALE_ABI = [
+  "function buy() payable",
+  "function currentRound() view returns (uint8)",
+  "function priceOf(uint8) view returns (uint256)",
+  "function perRoundCap() view returns (uint256)",
+  "function roundSold(uint8) view returns (uint256)",
+  "function totalRaised() view returns (uint256)",
+  "function startAt() view returns (uint256)",
+  "function ROUNDS() view returns (uint256)",
+];
+const PS_SYM = { 80002:'POL', 97:'tBNB', 421614:'ETH' };
+function presaleAddr(){ return localStorage.getItem('nx_presale') || ''; }
+function presaleReady(){ return !!(presaleAddr() && nexToken()); }
+async function psContract(withSigner){
+  if(withSigner){ const bp=chainSigner(); if(!bp) return null; return new ethers.Contract(presaleAddr(),PRESALE_ABI,await bp.getSigner()); }
+  return new ethers.Contract(presaleAddr(),PRESALE_ABI,chainProvider());
+}
+function presaleConfig(){
+  const p=prompt('Presale contract address:',localStorage.getItem('nx_presale')||'');
+  if(p===null) return;
+  localStorage.setItem('nx_presale',p.trim());
+  toast('⚙️ Presale address saved'); renderPresale();
+}
+
+async function renderPresale(){
+  const addrTxt=document.getElementById('psAddrTxt');
+  document.querySelectorAll('.psSym').forEach(el=>el.textContent='POL');
+  addrTxt.textContent = presaleAddr()? presaleAddr().slice(0,10)+'…' : 'ยังไม่ตั้งค่า — deploy-presale.js แล้วกด ⚙️';
+  const stats=document.getElementById('psStats'), bar=document.getElementById('psBar'),
+        prog=document.getElementById('psProgress'), est=document.getElementById('psEstimate');
+  if(!presaleReady()){ stats.innerHTML=''; bar.style.width='0%'; prog.textContent=''; est.textContent=''; return; }
+  try{
+    const c=await psContract(false);
+    const rounds=Number(await c.ROUNDS());
+    let cur=await c.currentRound(); cur=Number(cur);
+    const price=await c.priceOf(cur);
+    const cap=await c.perRoundCap();
+    const sold=Number(await c.roundSold(cur));
+    const raised=ethers.formatEther(await c.totalRaised());
+    const pct=Math.min(100,sold/Number(cap)*100);
+    bar.style.width=pct+'%';
+    prog.textContent=`🔥 Round ${cur+1}/${rounds} · ขายไป ${(sold/1e18).toLocaleString(undefined,{maximumFractionDigits:0})} / ${(Number(cap)/1e18).toLocaleString()} NEX · Raised รวม ${Number(raised).toLocaleString(undefined,{maximumFractionDigits:4})} POL`;
+    (async()=>{
+      let rows=`<tr><th>รอบ</th><th style="text-align:right">ราคา (POL/NEX)</th><th style="text-align:right">สถานะ</th></tr>`;
+      for(let i=0;i<rounds;i++){
+        const p=Number(ethers.formatEther(await c.priceOf(i)));
+        rows+=`<tr><td>${i+1}</td><td class="num">${p.toFixed(6)}</td><td class="num">${i<cur?'✅ เต็ม':i===cur?'🔥 กำลังขาย':'⏳ ถัดไป'}</td></tr>`;
+      }
+      stats.innerHTML=rows;
+    })();
+    estimateOut();
+    document.getElementById('psEstimate').style.color='';
+  }catch(e){
+    stats.innerHTML=`<tr><td class="neg">${esc(String(e.message||e).slice(0,70))}</td></tr>`;
+    if(String(e).includes('SoldOut')){ prog.textContent='🏁 Presale ปิดแล้ว — ขายหมดทุกรอบ!'; bar.style.width='100%'; }
+  }
+}
+function estimateOut(){
+  const v=parseFloat(document.getElementById('psAmount').value)||0;
+  const est=document.getElementById('psEstimate');
+  if(v<=0||!presaleReady()){ est.textContent=''; return; }
+  psContract(false).then(async c=>{
+    try{
+      const cur=Number(await c.currentRound());
+      const price=BigInt(await c.priceOf(cur));
+      const out=BigInt(Math.floor(v*1e9))*10n**9n*10n**18n/price; // value(wei)*1e18/price
+      est.textContent=`≈ ได้ประมาณ ${Number(out)/1e18 < 1e6 ? Number(Number(out)/1e18).toFixed(2) : (Number(out)/1e18).toLocaleString(undefined,{maximumFractionDigits:0})} NEX @ ราคารอบ ${cur+1} (เกิน cap → roll รอบถัดไปอัตโนมัติ)`;
+    }catch(e){ est.textContent=''; }
+  }).catch(()=>est.textContent='');
+}
+document.getElementById('psAmount').addEventListener?.('input',estimateOut);
+
+async function presaleBuy(){
+  if(!presaleReady()){ toast('ตั้งค่า Presale + NEX address ก่อน (⚙️)'); return; }
+  const v=document.getElementById('psAmount').value;
+  if(!(parseFloat(v)>0)){ toast('ใส่จำนวนเงินก่อน'); return; }
+  try{
+    const c=await psContract(true); if(!c) return;
+    toast('🛒 กำลังซื้อ NEX...'); 
+    await (await c.buy({ value: ethers.parseEther(v), gasLimit: 500000 })).wait();
+    toast('🎉 ซื้อสำเร็จ! ตรวจ NEX ใน wallet ได้เลย'); renderPresale();
+  }catch(e){ toast('❌ '+String(e.message||e).slice(0,80)); }
+}
+
 /* AI หางาน: จับคู่งานกับความจำ/ทักษะของเจ้าของ Twin */
 async function aiFindJob(){
   if(!jobReady()){ toast('ตลาดงานยังไม่เชื่อม — deploy ก่อน'); return; }
@@ -1006,7 +1112,7 @@ async function aiFindJob(){
   if(window.Twin){ window.Twin.mem.chat.push({role:'twin',text:reply,at:Date.now()}); window.Twin.save(); renderChat(); }
 }
 
-renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats(); renderIdentitySummary(); jobRefresh();
+renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats(); renderIdentitySummary(); jobRefresh(); renderPresale();
 if(_voiceOn) document.getElementById('voiceBtn').style.borderColor='var(--good)';
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');

@@ -22,5 +22,11 @@ export default defineConfig({
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 421614,
     },
+    bscTestnet: {
+      type: "http",
+      url: process.env.BSC_RPC || "https://data-seed-prebsc-1-s1.binance.org:8545",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 97,
+    },
   },
 });
