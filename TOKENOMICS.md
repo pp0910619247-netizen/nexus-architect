@@ -26,8 +26,10 @@
 | JobBoard (fee 10%) | `0xD6CA3267356f91E3c43097adf8F02caFa42D358A` |
 | ProblemRegistry | `0x5dDA958680e4Cf99200906bF7F357310D51F9157` |
 | RewardSplitter | `0x97fb5CEada36C721a4b82BF6a6ddFa565AC79ecF` |
+| ⛏️ **Mining Treasury Vesting** | `0xf0B7104aAbb2a42587464B004c3dd14034B86B07` (300M locked) |
+| 👤 **Founder Vesting** | `0x0f9f528514d5920a6261524E9fA8D8A9F3D76375` (200M locked) |
 
-> Vesting contracts (Mining/Founder): รัน `deploy-allocation.js` — รอ gas
+✅ **Allocation executed on-chain** — total supply = 1,000,000,000 NEX · Sale Reserve 499M ใน deployer wallet สำหรับ phase ถัดไป
 
 ## Emission Schedule (Mining pool → rewards)
 
