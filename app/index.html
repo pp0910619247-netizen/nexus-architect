@@ -280,7 +280,7 @@
     <div id="hrwList"></div>
   </div>
 </main>
-<footer>Nexus Architect — Open Source CC BY-SA 4.0 · Built with the Architect · <span id="ts"></span></footer>
+<footer>Nexus Architect — <a href="privacy.html" style="color:var(--acc)">Privacy</a> · <a href="waitlist.html" style="color:var(--acc)">Waitlist</a> · Open Source CC BY-SA 4.0 · Built with the Architect · <span id="ts"></span></footer>
 <div id="toast"></div>
 
 <script>
@@ -365,8 +365,10 @@ function saveTwin(){
 
 /* ═══════════ MOUNTAIN ═══════════ */
 const SURVIVE_VOTES = 10; // ต้องได้ "มากกว่า" 10 โหวตก่อนเที่ยงคืนถึงจะรอด
+const SOLVE_APPROVALS = 3; // Peer Review: 3 approvals = SOLVED
 let _showGrave=false;
 function endOfDay(ts){ const d=new Date(ts); d.setHours(24,0,0,0); return d.getTime(); }
+function myUid(){ let u=localStorage.getItem('nx_uid'); if(!u){ u='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); localStorage.setItem('nx_uid',u); } return u; }
 
 function submitProblem(){
   if(user.level<2){ toast('⛔ ต้อง Level 2 (พลเมือง — ยืนยันบัตร+ใบหน้า) ถึงจะเสนอปัญหาได้'); return; }
@@ -388,12 +390,10 @@ function vote(id){
 /* ── Daily Culling: เกินเที่ยงคืนแล้วโหวตไม่ผ่าน 10+ → หายจากภูเขา ── */
 function cullExpired(){
   let culled=0;
-  const today = new Date(); today.setHours(0,0,0,0);
   probs.forEach(p=>{
-    if(p.status==='expired') return;
+    if(p.status==='expired'||p.status==='solved') return;
     if(!p.deadline) p.deadline=endOfDay(Number(p.id)||Date.now());
     if(Date.now()>p.deadline && p.votes<=SURVIVE_VOTES){
-      // ยกเว้นวันที่โพสต์วันนี้ (กัน timezone edge) — ปกติ deadline คือเที่ยงคืนวันโพสต์อยู่แล้ว
       p.status='expired'; p.expiredAt=Date.now(); culled++;
     }
   });
@@ -406,33 +406,81 @@ function _fmtLeft(ms){
   return h>0 ? `${h} ชม. ${m} น.` : `${m} นาที`;
 }
 function checkPeak(){
-  const active=probs.filter(p=>p.status!=='expired');
+  const active=probs.filter(p=>p.status!=='expired'&&p.status!=='solved');
   const top=[...active].sort((a,b)=>b.votes-a.votes)[0];
   probs.forEach(p=>{
-    if(p.status==='expired') return;
+    if(p.status==='expired'||p.status==='solved') return;
     p.status=(top && p.id===top.id && top.votes>=30)?'peak':'open';
   });
   persist();
+}
+/* ── Solutions + Peer Review (WP ch6.2): เสนอทางแก้ → Lv1+ approve = SOLVED ── */
+function toggleSol(id){ const p=probs.find(x=>x.id===id); p._open=!p._open; renderProblems(); }
+function proposeSolution(id){
+  if(user.level<1){ toast('⛔ ต้อง Level 1+ ถึงจะเสนอทางแก้'); return; }
+  const t=prompt('ทางแก้ของคุณ (สั้นๆ ชัดๆ):');
+  if(!t||!t.trim()) return;
+  const p=probs.find(x=>x.id===id);
+  if(!p.solutions) p.solutions=[];
+  const nm=(user.name||'anon').slice(0,20);
+  p.solutions.push({sid:Date.now(), by:nm, text:t.trim().slice(0,300), up:0, voters:{}});
+  p._open=true; persist(); renderProblems(); toast('เสนอทางแก้แล้ว — รอ peer review');
+}
+function reviewSol(id,sid){
+  if(user.level<1){ toast('Peer Review ต้อง Level 1+'); return; }
+  const p=probs.find(x=>x.id===id); const s=(p.solutions||[]).find(x=>x.sid===sid);
+  if(!s) return;
+  const uid=myUid();
+  if(s.voters[uid]){ delete s.voters[uid]; s.up--; }
+  else { s.voters[uid]=1; s.up++; }
+  if(s.up>=SOLVE_APPROVALS && p.status!=='solved' && p.status!=='expired'){
+    p.status='solved'; p.solvedAt=Date.now();
+    persist(); renderProblems(); renderStats(); renderHRW();
+    toast('SOLVED! "'+p.title.slice(0,30)+'" ผ่าน peer review '+SOLVE_APPROVALS+' คน');
+    return;
+  }
+  persist(); renderProblems(); toast(s.up+' / '+SOLVE_APPROVALS+' approvals');
 }
 function renderProblems(){
   cullExpired(); checkPeak();
   const el=document.getElementById('problemList');
   const alive=probs.filter(p=>p.status!=='expired');
   const dead=probs.filter(p=>p.status==='expired');
-  const sorted=[...alive].sort((a,b)=>b.votes-a.votes);
-  let html=`<div class="muted" style="font-size:12px;margin-bottom:6px">📜 กติกาภูเขา: แต่ละโจทย์มีเวลา <b>ถึงเที่ยงคืนของวันที่โพสต์</b> — ต้องได้ <b>มากกว่า ${SURVIVE_VOTES} โหวต</b> ไม่งั้นถูกล้างออก 🌙
+  const sorted=[...alive].sort((a,b)=>(b.status==='solved')-(a.status==='solved')||b.votes-a.votes);
+  let html=`<div class="muted" style="font-size:12px;margin-bottom:6px">📜 กติกาภูเขา: โจทย์ต้องได้ <b>มากกว่า ${SURVIVE_VOTES} โหวตก่อนเที่ยงคืน</b> ไม่งั้นถูกล้าง 🌙 · ทางแก้ผ่าน peer review ${SOLVE_APPROVALS} คน = ✅ SOLVED
     ${dead.length?`<button class="vote-btn" style="margin-left:8px" onclick="toggleGrave()">☠️ culled (${dead.length})${_showGrave?' ▲':' ▼'}</button>`:''}</div>`;
   html+=sorted.map(p=>{
     const left=p.deadline-Date.now();
     const need=Math.max(0,SURVIVE_VOTES+1-p.votes);
     const survive=p.votes>SURVIVE_VOTES;
+    const nSol=(p.solutions||[]).length;
+    const badge=p.status==='solved'
+      ? '<span class="cat" style="background:#12331f;color:var(--good)">✅ SOLVED</span>'
+      : `<span class="cat ${esc(p.cat)}">${esc(p.cat)}</span>`;
+    const timeInfo=p.status==='solved'
+      ? `<span style="color:var(--good);font-size:12px">แก้สำเร็จ ${new Date(p.solvedAt||Date.now()).toLocaleDateString('th-TH')}</span>`
+      : (survive?'<span style="color:var(--good);font-size:12px">✓ รอดแล้ว</span>'
+        :`<span class="${left<6*3600000?'neg':'muted'}" style="font-size:12px">⏳ เหลือ ${_fmtLeft(left)} · ต้องอีก ${need} โหวต</span>`);
+    let solHtml='';
+    if(p._open){
+      solHtml='<div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:6px">'+
+        (p.solutions||[]).map(s=>{
+          const voted=!!s.voters[myUid()];
+          return `<div class="muted" style="font-size:12px;padding:4px 0">💡 ${esc(s.text)} <small>— ${esc(s.by)}</small>
+            <button class="vote-btn ${voted?'voted':''}" style="margin-left:6px" onclick="reviewSol(${p.id},${s.sid})">👍 ${s.up}/${SOLVE_APPROVALS}</button></div>`;
+        }).join('')+
+        (p.status!=='solved'?`<button class="vote-btn" onclick="proposeSolution(${p.id})">➕ เสนอทางแก้ของฉัน</button>`:'')+
+        '</div>';
+    }
     return `
     <div class="prob ${p.status==='peak'?'peak':''}">
       <div class="top"><div><div class="title">#${String(p.id).slice(-4)} ${esc(p.title)}</div>
-      <small class="muted">โดย ${esc(p.by)}</small></div><span class="cat ${esc(p.cat)}">${esc(p.cat)}</span></div>
+      <small class="muted">โดย ${esc(p.by)}</small></div>${badge}</div>
       <div class="votes"><button class="vote-btn ${p.voted?'voted':''}" onclick="vote(${p.id})">${p.voted?'▲ Voted':'▲ Vote'}</button>
       <b>${p.votes}</b> <span class="muted">votes</span>
-      ${survive?'<span style="color:var(--good);font-size:12px">✓ รอดแล้ว</span>':`<span class="${left<6*3600000?'neg':'muted'}" style="font-size:12px">⏳ เหลือ ${_fmtLeft(left)} · ต้องอีก ${need} โหวต</span>`}</div>
+      ${timeInfo}
+      <button class="vote-btn" onclick="toggleSol(${p.id})">💡 ทางแก้ (${nSol})${p._open?' ▲':''}</button></div>
+      ${solHtml}
     </div>`;
   }).join('');
   if(_showGrave&&dead.length) html+='<div class="muted" style="margin-top:8px">☠️ โจทย์ที่ถูกล้าง:</div>'+dead.map(p=>`
@@ -856,14 +904,18 @@ function importMemory(input){
 function renderStats(){
   const ps=JSON.parse(localStorage.getItem('nx_probs')||'[]');
   const votes=ps.reduce((s,p)=>s+p.votes,0);
+  const solved=ps.filter(p=>p.status==='solved').length;
+  const sols=ps.reduce((s,p)=>s+((p.solutions||[]).length),0);
   const el=document.getElementById('statsOut');
   if(el) el.innerHTML=`
     <tr><td>ปัญหาบนภูเขา</td><td class="num pos">${ps.length}</td></tr>
     <tr><td>Votes รวม</td><td class="num">${votes}</td></tr>
+    <tr><td>Solutions เสนอ</td><td class="num">${sols}</td></tr>
+    <tr><td>✅ Solved (peer-reviewed)</td><td class="num pos">${solved}</td></tr>
     <tr><td>Twin ความจำ</td><td class="num">${window.Twin?window.Twin.mem.facts.length:0} บันทึก</td></tr>
     <tr><td>Twin XP</td><td class="num">${window.Twin?window.Twin.mem.xp:0}</td></tr>
     <tr><td>Contracts live</td><td class="num pos">2 (Amoy)</td></tr>
-    <tr><td>Tests passing</td><td class="num pos">6/6</td></tr>`;
+    <tr><td>Tests passing</td><td class="num pos">18 contracts · 21 brain · 7 memory</td></tr>`;
 }
 
 /* ═══════════ JOB MARKET PRO — Escrow + 10% platform fee (feeCollector = เจ้าของระบบ) ═══════════ */
