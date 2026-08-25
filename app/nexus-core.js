@@ -1,12 +1,11 @@
 /* ═══════════════════════════════════════════════════════════
-   NEXUS MINI BRAIN v5.1 — MoE-lite + Hardcore Local Training
-   - Gating/Router: TF-IDF → BAGGED ENSEMBLE ×5 (bootstrap dropout,
-     variance reduction — เทรนซ้ำจนแม่นสุดใน JS ได้)
-   - Self-Healing: ยิง training set ใส่ตัวเอง → ข้อไหนพลาด boost ×3
-     แล้ว renormalize (2 rounds — train like you mean it)
-   - Expert Arbitration + Trust Chain + Emotion engine (v5.0 ครบ)
-   - 🧠 NEURAL MODE catalog: Qwen 0.5B/1.5B · BitNet-1.58 (experimental)
-     WebGPU auto-accelerate · graceful fallback ทุกชั้น
+   NEXUS MINI BRAIN v6.0 — QUANTUM HYBRID (One Model · 1 Human : 1 AI)
+   Quantum-INSPIRED layer (จริงทาง CS ไม่ใช่ quantum HW):
+    • Superposition  : ทุก intent ถือ amplitude พร้อมกัน
+    • Entanglement   : intent คู่พันธ์เสริม amplitude ซึ่งกันและกัน
+    • Collapse       : ห่างชัด → deterministic · กำกวม → probabilistic
+    • Tunneling      : training ยอมข้าม local optimum (guarded)
+   + Bagged ensemble ×5 · Trust chain · Emotion · Neural ONE (single model)
    ═══════════════════════════════════════════════════════════ */
 
 class NexusBrain {
@@ -220,21 +219,48 @@ class NexusBrain {
     return dot / (Math.sqrt(na) || 1);
   }
 
-  /* ── classify → MoE gating: คืน ranked distribution ── */
+  /* ── classify → quantum superposition + collapse ── */
   classify(msg) {
     // deterministic rule: coin + price wording = price (แม่นกว่า centroid สำหรับประโยคสั้น)
     if (this._priceRe.test(msg)) {
       const rest = this._rankAll(msg).filter(r => r.intent !== 'price');
       return { intent: 'price', confidence: Math.min(0.95, 0.92), ranked: [{ intent: 'price', score: 0.92 }, ...rest.slice(0, 2)] };
     }
-    const tokens = this._tokenize(msg);
-    const ranked = this._rankAll(msg, tokens);
-    const best = ranked[0];
-    return { intent: best.intent, confidence: Math.min(0.95, best.score * 1.4), ranked };
+    const ranked = this._rankAll(msg);
+    const amps = this._amplitudes(ranked);
+    const bestAmp = amps[0];
+    let chosen = this._collapse(amps, Math.min(0.95, bestAmp.amp * 1.4));
+    return { intent: chosen, confidence: Math.min(0.95, bestAmp.amp * 1.4), ranked };
   }
+  /* ══ QUANTUM LAYER v6.0 ══ */
+  deterministic = true;            // node tests → stable · UI ตั้ง false ให้มีชีวิต
+  static ENTANGLED = [             // intent คู่พันธ์ (ซ้าย↔ขวา เสริมกัน)
+    ['price', 'invest'], ['mood', 'smalltalk'], ['job', 'analyze'],
+    ['knowledge', 'followup'], ['plan', 'remember'],
+  ];
+  _amplitudes(ranked) {
+    const amps = ranked.slice(0, 3).map(r => ({ intent: r.intent, amp: r.score }));
+    for (const [a, b] of NexusBrain.ENTANGLED) {
+      const ia = amps.find(x => x.intent === a), ib = amps.find(x => x.intent === b);
+      if (ia && ib) { const boost = 1 + 0.08 * Math.min(ia.amp, ib.amp); ia.amp *= boost; ib.amp *= boost; }
+    }
+    return amps;
+  }
+  _collapse(amps, confidence) {
+    // gap ชัดเจน → deterministic argmax · กำกวม + อนุญาต → probabilistic collapse
+    if (amps.length < 2 || this.deterministic || confidence > 0.55) return amps[0].intent;
+    const gap = amps[0].amp - amps[1].amp;
+    if (gap > 0.03) return amps[0].intent;
+    const T = 0.02;
+    const w = amps.map(x => Math.exp((x.amp * x.amp) / T));
+    const total = w.reduce((s, v) => s + v, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < amps.length; i++) { r -= w[i]; if (r <= 0) return amps[i].intent; }
+    return amps[0].intent;
+  }
+
   _rankAll(msg, tokens) {
     tokens = tokens || this._tokenize(msg);
-    // MoE gating บน bagged ensemble — เฉลี่ยคะแนนจาก 5 experts
     if (!this.ensemble || !this.ensemble.length) {
       const all = [];
       for (const [intent, centroid] of Object.entries(this.centroids))
@@ -344,13 +370,10 @@ class NexusBrain {
     return null;
   }
 
-  /* ── 🧠 NEURAL MODE catalog — เลือกสมองได้ · WebGPU auto · fallback ทุกชั้น ── */
+  /* ── 🧠 NEURAL MODE — ONE MODEL (1 Human : 1 AI) · WebGPU auto · fallback Fast ── */
   static MODELS = {
-    fast:   { id: 'onnx-community/Qwen2.5-0.5B-Instruct',  dtype: 'q4f16', label: '⚡ Fast (0.5B, ~350MB)' },
-    smart:  { id: 'onnx-community/Qwen2.5-1.5B-Instruct',  dtype: 'q4f16', label: '🔥 Smart (1.5B, ~1GB)' },
-    llama:  { id: 'onnx-community/Llama-3.2-1B-Instruct',  dtype: 'q4f16', label: '🦙 Llama-3.2 1B' },
-    big:    { id: 'onnx-community/Qwen2.5-3B-Instruct',     dtype: 'q4',    label: '🐉 Big (3B, ~2GB)' },
-    bitnet: { id: 'microsoft/BitNet-b1.58-2B-4T',           dtype: 'q4',    label: '🧪 BitNet-1.58 2B (experimental)' },
+    one:  { id: 'onnx-community/Qwen2.5-1.5B-Instruct', dtype: 'q4f16', label: '🧠 Nexus One (1.5B)' },
+    fast: { id: 'onnx-community/Qwen2.5-0.5B-Instruct', dtype: 'q4f16', label: '⚡ Lite fallback' },
   };
   _pipe = null;
   _pipeKey = null;

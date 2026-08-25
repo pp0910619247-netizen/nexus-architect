@@ -25,6 +25,14 @@ for (const [t, expect] of tests) {
   console.log((ok ? 'PASS' : 'FAIL') + ' | "' + t + '" -> ' + r.intent + ' (' + Math.round(r.confidence * 100) + '%) คาด: ' + expect);
 }
 console.log('classify: ' + pass + '/' + tests.length);
+B.deterministic = true; // quantum collapse stable mode
+let qp=0,qt=0;
+const q=(cond,l)=>{qt++; if(cond){qp++;console.log('PASS | '+l);} else console.log('FAIL | '+l);};
+q(typeof B._amplitudes==='function','quantum: _amplitudes exists');
+q(Array.isArray(B.constructor.ENTANGLED)&&B.constructor.ENTANGLED.length>=3,'quantum: entanglement pairs');
+const amps=B._amplitudes([{intent:'price',score:.5},{intent:'invest',score:.45},{intent:'job',score:.2}]);
+q(amps[0].amp>0.5,'quantum: entanglement boosts paired amplitude');
+q(B._collapse(amps,0.9)==='price','quantum: deterministic collapse high-conf');
 
 // ── v5.0 MoE-lite: ranked distribution + arbitration ──
 let mp5 = 0, mt5 = 0;
