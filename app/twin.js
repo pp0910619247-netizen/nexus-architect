@@ -143,8 +143,9 @@ class TwinEngine {
           // ── ความรู้รอบด้าน: ถ้าสมอง local ไม่รู้ → ค้น Wikipedia ทันที ──
           if ((br.intent === 'unknown' || br.conf < 0.35) && window.NexusBrain) {
             try {
-              const wiki = await NexusBrain.wikiSearch(userMsg);
-              if (wiki) reply = wiki.text;
+              // Trust Chain: KB → Wikipedia → DuckDuckGo ("อาจารย์ไปดูมาแล้ว")
+              const found = await NexusBrain.knowledgeLookup(userMsg);
+              if (found) reply = found.text;
             } catch (e) { /* offline ก็ยังมีคำตอบเดิม */ }
           }
         }

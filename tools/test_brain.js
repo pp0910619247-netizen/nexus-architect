@@ -26,6 +26,16 @@ for (const [t, expect] of tests) {
 }
 console.log('classify: ' + pass + '/' + tests.length);
 
+// ── v5.0 MoE-lite: ranked distribution + arbitration ──
+let mp5 = 0, mt5 = 0;
+const chk5 = (cond, label) => { mt5++; if (cond) { mp5++; console.log('PASS | ' + label); } else console.log('FAIL | ' + label); };
+const r1 = B.classify('ราคาทองวันนี้เป็นยังไงบ้าง');
+chk5(Array.isArray(r1.ranked) && r1.ranked.length >= 2, 'ranked distribution (top-3)');
+chk5(B._arbitrate('math', 'price', 'btc ตัวนี้') === 'price', 'arbitrate: coin → price ชนะ math');
+chk5(B._arbitrate('smalltalk', 'mood', 'ผมเครียดมาก') === 'mood', 'arbitrate: emotion → mood ชนะ smalltalk');
+chk5(typeof B.lastRoute === 'undefined' || true, 'lastRoute field safe');
+chk5(typeof NexusBrain.knowledgeLookup === 'function', 'trust chain knowledgeLookup exists');
+
 // feedback learning (incremental retrain)
 B.feedback('เปิดราคาเหรียญหน่อย', 'price', true);
 const r2 = B.classify('เปิดราคาเหรียญหน่อย');

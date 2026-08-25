@@ -1,12 +1,13 @@
 /* ═══════════════════════════════════════════════════════════
-   NEXUS MINI BRAIN v4.0 — Human-like Conversation Engine
-   - TF-IDF classifier + deterministic rules (แม่น · เร็ว · offline)
-   - Emotion detection → reflective empathy (mirror + advise + remember)
-   - Context carry-over: lastIntent/topic/pronouns → ตอบต่อเนื่องแบบมนุษย์
-   - Reply composer: variant banks + slot filling = แทบไม่ซ้ำกัน
-   - 🧠 NEURAL MODE: โหลด LLM จริง (Qwen2.5-0.5B q4 ~350MB) รันในเบราว์เซอร์
-     ผ่าน transformers.js — on-device 100% ไม่ส่งข้อมูลออก · inject ความจำ LTM
-     เป็น system prompt (RAG-lite) · fallback กลับ Local Brain ทันทีถ้าพัง
+   NEXUS MINI BRAIN v5.0 — MoE-lite Architecture
+   "สร้างเหมือนกำลังสร้างตัวเอง"
+   - Gating/Router: TF-IDF centroid → ranked distribution (top-3)
+   - Mixture of Experts: ทุก intent = expert เฉพาะทาง · ผลคะแนนใกล้กัน
+     → _arbitrate() ให้ expert ที่ถนัด domain ตัดสิน (เช่น coin > math)
+   - Trust Chain: KB ของอาจารย์ → Wikipedia → DuckDuckGo → LTM → ซื่อสัตย์ว่าไม่รู้
+     ("ถ้าหาไม่เจอจงเชื่ออาจารย์ — เพราะอาจารย์ไปดูมาแล้ว")
+   - Chain-of-Thought: โจทย์ซับซ้อนคิดเป็นขั้น · multi-perspective
+   - Emotion engine + context carry-over + 🧠 Neural Mode (on-device LLM)
    ═══════════════════════════════════════════════════════════ */
 
 class NexusBrain {
@@ -139,23 +140,62 @@ class NexusBrain {
     return dot / (Math.sqrt(na) || 1);
   }
 
-  /* ── classify ด้วยโมเดลที่เทรนไว้ ── */
+  /* ── classify → MoE gating: คืน ranked distribution ── */
   classify(msg) {
     // deterministic rule: coin + price wording = price (แม่นกว่า centroid สำหรับประโยคสั้น)
-    if (this._priceRe.test(msg)) return { intent: 'price', confidence: 0.92 };
-    const tokens = this._tokenize(msg);
-    let best = null, bestScore = 0;
-    for (const [intent, centroid] of Object.entries(this.centroids)) {
-      const score = this._cosine(tokens, centroid);
-      if (score > bestScore) { bestScore = score; best = intent; }
+    if (this._priceRe.test(msg)) {
+      const rest = this._rankAll(msg).filter(r => r.intent !== 'price');
+      return { intent: 'price', confidence: Math.min(0.95, 0.92), ranked: [{ intent: 'price', score: 0.92 }, ...rest.slice(0, 2)] };
     }
-    return { intent: best, confidence: Math.min(0.95, bestScore * 1.4) }; // calibrate
+    const tokens = this._tokenize(msg);
+    const ranked = this._rankAll(msg, tokens);
+    const best = ranked[0];
+    return { intent: best.intent, confidence: Math.min(0.95, best.score * 1.4), ranked };
+  }
+  _rankAll(msg, tokens) {
+    tokens = tokens || this._tokenize(msg);
+    const all = [];
+    for (const [intent, centroid] of Object.entries(this.centroids)) {
+      all.push({ intent, score: this._cosine(tokens, centroid) });
+    }
+    return all.sort((a, b) => b.score - a.score);
   }
 
-  /* ── Main respond (v4.0: จำ context + ตอบเหมือนมนุษย์) ── */
+  /* ── MoE arbitration: expert เฉพาะทางตัดสินเมื่อ gate ลังเล ── */
+  static DOMAIN_RULES = [
+    [/btc|bitcoin|eth|sol|คริป|crypto|เหรียญ|ราคา/i, ['math', 'invest'], 'price'],
+    [/เหนื่อย|เครียด|เหงา|เศร้า|โกรธ|เบื่อ|กังวล/i, ['smalltalk', 'ack', 'greet'], 'mood'],
+    [/งาน|job|freelance|รายได้/i, ['knowledge', 'smalltalk'], 'job'],
+    [/วิเคราะห์|แผน|plan|ปัญหา/i, ['knowledge', 'followup'], 'analyze'],
+  ];
+  _arbitrate(a, b, msg) {
+    for (const [re, losers, winner] of NexusBrain.DOMAIN_RULES) {
+      if (re.test(msg) && (losers.includes(a) || losers.includes(b))) {
+        if ((losers.includes(a) && a === winner) || (losers.includes(b) && b === winner)) continue;
+        if (a === winner || b === winner) return a === winner ? a : b;
+        return winner;
+      }
+    }
+    return a; // default = gate champion
+  }
+
+  /* ── Main respond (v5.0 MoE-lite) ── */
   respond(msg) {
     this.lastUserMsg = msg;
-    const { intent, confidence } = this.classify(msg);
+    const cls = this.classify(msg);
+    let intent = cls.intent;
+    const confidence = cls.confidence;
+    // MoE gating: champion vs runner-up ใกล้กันมาก → ให้ domain expert ตัดสิน
+    if (cls.ranked && cls.ranked[1]) {
+      const margin = cls.ranked[0].score - cls.ranked[1].score;
+      if (margin < 0.05) {
+        const before = intent;
+        intent = this._arbitrate(cls.ranked[0].intent, cls.ranked[1].intent, msg);
+        this.lastArbitration = `${rankedStr(cls.ranked)} → ${intent}${intent !== before ? ' (expert override)' : ''}`;
+      }
+    }
+    function rankedStr(r){ return r.slice(0,2).map(x=>`${x.intent}:${x.score.toFixed(2)}`).join(' vs '); }
+    this.lastRoute = `${intent} @ ${(confidence*100).toFixed(0)}%${this.lastArbitration ? ' · ' + this.lastArbitration : ''}`;
     // regex override สำหรับ intent ที่ต้องแม่นยำ (มี capture group) — price จัดการใน classify() แล้ว
     const precise = [
       [/^(?:จำว่า|จำไว้|remember)\s*[:：]?\s*(.+)/i, 'remember'],
@@ -272,6 +312,19 @@ class NexusBrain {
     return null;
   }
 
+  /* ── Trust Chain: KB อาจารย์(ใน respond) → Wikipedia → DuckDuckGo → ซื่อสัตย์ ── */
+  static async knowledgeLookup(query) {
+    const w = await NexusBrain.wikiSearch(query);
+    if (w) return w;
+    try {
+      const r = await fetch('https://api.duckduckgo.com/?format=json&no_html=1&skip_disambig=1&q=' + encodeURIComponent(String(query).slice(0, 120)));
+      const j = await r.json();
+      if (j.AbstractText) return { text: '🔎 ' + j.AbstractText + (j.AbstractURL ? '\n🔗 ' + j.AbstractURL : ''), conf: 0.75, source: 'ddg' };
+      if (j.Answer) return { text: '🔎 ' + j.Answer, conf: 0.75, source: 'ddg' };
+    } catch (e) { /* offline — สาย fallback ถัดไป */ }
+    return null;
+  }
+
   /* ── Personality ตาม XP ── */
   personality() {
     const xp = this.xp();
@@ -322,7 +375,14 @@ class NexusBrain {
     };
     this.skills['analyze'] = (m) => {
       const topic = m.replace(/.*(วิเคราะห์|analyze|ช่วยคิด|แตกปัญหา|แนวทางแก้)\s*/i, '').trim() || 'ปัญหานี้';
-      return { text: `🔬 กรอบวิเคราะห์ "${topic}":\n1. รากปัญหา — ถาม "ทำไม" 5 รอบ\n2. Stakeholders — ใครเจ็บ/ใครได้\n3. ทรัพยากร — คน เงิน ข้อมูล AI\n4. ทางแก้ 3 ระดับ: ทันที/3เดือน/เชิงระบบ\n5. KPI — ตัวเลขอะไรเปลี่ยนถ้าสำเร็จ\nส่งขึ้น Mountain ให้ชุมชนช่วยต่อได้เลย`, conf: 0.85 };
+      // Chain-of-Thought + multi-perspective (เหมือนปรึกษา expert หลายสาย)
+      return { text: `🔬 คิด "${topic}" แบบมีขั้นตอน:\n` +
+        `1️⃣ นิยามให้ชัด — "แก้สำเร็จ" หน้าตาเป็นยังไง? (ถ้าตอบไม่ได้ = ยังไม่เข้าใจปัญหา)\n` +
+        `2️⃣ 🧮 เชิงข้อมูล — ตัวเลขอะไรบอกความรุนแรง? วัดที่ไหน?\n` +
+        `3️⃣ ⚙️ เชิงระบบ — root cause อยู่ที่ incentive/กระบวนการ ส่วนไหน?\n` +
+        `4️⃣ 💚 เชิงคน — ใครเดือดร้อน ใครได้ประโยชน์ ใครต้องมาช่วย?\n` +
+        `5️⃣ ✅ First Step วันนี้ — action เล็กสุดที่พิสูจน์ได้ใน 48 ชม.\n` +
+        `ส่งขึ้น Mountain ให้ peer review ช่วยต่อได้เลย`, conf: 0.88 };
     };
     this.skills['math'] = (m, mt) => {
       const expr = (mt && mt[1] ? mt[1] : m.replace(/(คำนวณ|calc|เท่ากับเท่าไหร่|how much is)/i, '')).replace(/[^\d+\-*/().\s%]/g, '').trim();
