@@ -68,6 +68,7 @@ class NexusBrain {
     this.ensemble = [];
     this._buildEnsemble();
     this._selfHeal();
+    this._loadKbIntoStatic(); // kb-nexus.json → Local Brain knowledge skill
 
     /* deterministic rule cache: coin + price wording = price */
     const COIN = 'btc|bitcoin|eth|ethereum|sol|solana|xrp|doge|คริปโต|crypto|เหรียญ|ทองคำ?';
@@ -380,23 +381,68 @@ class NexusBrain {
   neuralLoaded() { return !!this._pipe; }
   neuralModel() { return this._pipeKey || null; }
 
-  /* System prompt v2: persona card + style rules + few-shot + memory (RAG-lite) */
-  _neuralSystemPrompt(userMsg) {
+  /* System prompt v2.1: Persona Card (twin-persona.md, distilled by Architect AI)
+     + NEXUS FACTS จาก kb-nexus.json เฉพาะประเด็นที่ user ถาม */
+  _personaCache = null;
+  _kbCache = null;
+  async _getPersona() {
+    if (this._personaCache !== null) return this._personaCache;
+    try {
+      const r = await fetch('twin-persona.md');
+      this._personaCache = r.ok ? (await r.text()) : '';
+    } catch (e) { this._personaCache = ''; }
+    return this._personaCache;
+  }
+  async _getKB() {
+    if (this._kbCache) return this._kbCache;
+    try {
+      const r = await fetch('kb-nexus.json');
+      this._kbCache = r.ok ? (await r.json()) : { entries: [] };
+    } catch (e) { this._kbCache = { entries: [] }; }
+    return this._kbCache;
+  }
+  /* ดึง KB ลง static KB ของ Local Brain ด้วย (knowledge skill ใช้ร่วมกัน) */
+  _loadKbIntoStatic() {
+    (async () => {
+      try {
+        const kb = await this._getKB();
+        for (const e of (kb.entries || []))
+          if (!NexusBrain.KB.some(x => x.a === e.a)) NexusBrain.KB.push({ k: e.k, a: e.a });
+      } catch (err) {}
+    })();
+  }
+
+  async _neuralSystemPrompt(userMsg) {
+    const persona = await this._getPersona();
     const un = this.userName();
     const mems = (window.NexusLTM?.search(userMsg, 4) || []).map(m => '- ' + m.text).join('\n');
     const lastTopic = window.NexusLTM?.getLastTopic();
-    let sys =
+
+    // NEXUS FACTS: เลือกเฉพาะ entry ที่ keyword ตรงกับคำถาม (max 4)
+    let facts = '';
+    try {
+      const kb = await this._getKB();
+      const q = String(userMsg).toLowerCase();
+      const hits = (kb.entries || [])
+        .filter(e => e.k.some(k => q.includes(String(k).toLowerCase())))
+        .slice(0, 4);
+      if (hits.length) facts = '\nNEXUS PROJECT FACTS (use these, they are verified):\n' +
+        hits.map(h => '- ' + h.a).join('\n');
+    } catch (e) {}
+
+    const fallback =
 `You are ${this.name()}, the user's personal Digital Twin AI living 100% on their device.
 PERSONA: warm, direct, lightly humorous, loyal companion.
-STYLE RULES:
-- Reply in Thai (switch language if the user switches).
-- 2-6 short sentences, natural chat tone, light emoji (max 2).
-- Be specific and useful. Never repeat the user's question back.
-- If unsure, say honestly what you know vs don't know, then offer a next step.`;
+STYLE RULES: Reply in Thai (switch if user switches). 2-6 short sentences. Light emoji (max 2).
+Be specific and useful. If unsure, say honestly what you know vs don't, then offer a next step.`;
+
+    let sys = persona && persona.trim().length > 100
+      ? persona.replace(/\{NAME\}/g, this.name()) + '\n\nFollow this persona strictly.'
+      : fallback;
     if (un) sys += `\nUser's name: ${un}`;
     if (lastTopic) sys += `\nLast topic discussed: ${String(lastTopic).slice(0, 60)}`;
     if (mems) sys += `\nFacts you remember about the user:\n${mems}`;
-    sys += `\nExample of your voice:\nUser: เหนื่อยมากเลยวันนี้\nYou: ฟังแล้วเหนื่อยเลยครับ 🫂 พักสายตามองไกลๆ 20 วินาที ดื่มน้ำสักแก้ว แล้วค่อยคิดต่อ — ผมอยู่ตรงนี้`;
+    sys += facts;
     return sys;
   }
 
@@ -404,7 +450,8 @@ STYLE RULES:
   async tryNeural(userMsg, history = [], onToken = null) {
     if (!this._pipe) return null;
     try {
-      const msgs = [{ role: 'system', content: this._neuralSystemPrompt(userMsg) }];
+      const sys = await this._neuralSystemPrompt(userMsg);
+      const msgs = [{ role: 'system', content: sys }];
       for (const t of history.slice(-8)) {
         const content = String(t.content || '').slice(0, 400);
         if (!content.trim()) continue;
