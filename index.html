@@ -169,8 +169,9 @@
       </select>
       <input id="apiKeyIn" placeholder="API Key (เก็บในเครื่องเท่านั้น)" style="flex:1;min-width:180px;margin:0;width:auto" type="password">
       <button class="ghost" onclick="saveKey()">บันทึก Key</button>
+      <button class="ghost" id="neuralBtn" onclick="loadNeuralBrain()" title="LLM จริงรันในเบราว์เซอร์ (on-device, ฟรี)">⚡ Full Brain</button>
     </div>
-    <p class="muted" style="margin-top:6px">💡 Gemini key ฟรีได้ที่ aistudio.google.com — key เก็บใน localStorage ของเครื่องคุณเท่านั้น</p>
+    <p class="muted" style="margin-top:6px">💡 Gemini key ฟรีได้ที่ aistudio.google.com · ⚡Full Brain = โหลดโมเดล ~350MB ครั้งเดียว รันในเครื่อง 100% ไม่ส่งข้อความออกไป</p>
   </div>
 
   <!-- ══ ON-CHAIN ══ -->
@@ -1163,6 +1164,28 @@ async function aiFindJob(){
                   :'🐉 ยังไม่มีงานที่ตรงกับโปรไฟล์ของคุณ (ผมจับคู่จากความจำระยะยาวของคุณ) — ลองเพิ่มทักษะ: บอกผมว่า "จำว่า ฉันทำงานออกแบบ"';
   toast(reply.split('\n')[0]); speak(reply);
   if(window.Twin){ window.Twin.mem.chat.push({role:'twin',text:reply,at:Date.now()}); window.Twin.save(); renderChat(); }
+}
+
+/* ── 🧠 Neural Brain loader (transformers.js on-device) ── */
+async function loadNeuralBrain(){
+  if(!window.NexusBrain){ toast('Brain ยังไม่พร้อม'); return; }
+  if(window.NexusBrain.neuralLoaded()){ toast('⚡ Full Brain โหลดไว้แล้ว — พิมพ์คุยได้เลย!'); return; }
+  const btn=document.getElementById('neuralBtn');
+  btn.disabled=true; btn.textContent='⏳ 0%';
+  try{
+    await NexusBrain.loadNeural((pct,file)=>{
+      if(pct!=null) btn.textContent='⏳ '+pct+'%';
+    });
+    btn.textContent='🧠 Full Brain ON'; btn.style.borderColor='var(--good)';
+    toast('⚡ Full Brain พร้อม! LLM รันในเครื่องคุณ — พิมพ์อะไรมาก็ตอบได้');
+    if(window.Twin&&window.Twin.mem.chat){
+      window.Twin.mem.chat.push({role:'twin',text:'🧠 Full Brain เปิดใช้งานแล้ว — ตอนนี้ผมฉลาดขึ้นเยอะ ถามอะไรก็ได้เลยนะ!',at:Date.now()});
+      window.Twin.save(); renderChat();
+    }
+  }catch(e){
+    btn.textContent='⚡ Full Brain'; btn.disabled=false;
+    toast('❌ โหลดไม่สำเร็จ: '+String(e.message||e).slice(0,60));
+  }
 }
 
 renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats(); renderIdentitySummary(); jobRefresh(); renderPresale();

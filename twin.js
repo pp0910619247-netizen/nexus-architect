@@ -123,8 +123,14 @@ class TwinEngine {
       }
       else if (this.cfg.provider === 'ollama') reply = await this._ollama(userMsg);
       else {
-        // ── ดึงราคา crypto สด (CoinGecko ฟรี ไม่มี key) ก่อนเข้าสมอง ──
-        if (/ราคา|เท่าไหร่|price/i.test(userMsg) && /btc|bitcoin|eth|ethereum|คริปโต|crypto|เหรียญ/i.test(userMsg)) {
+        // ── 🧠 NEURAL MODE: LLM จริงในเบราว์เซอร์ (โหลดแล้วเท่านั้น) ──
+        if (window.NexusBrain && window.NexusBrain.neuralLoaded()) {
+          const nr = await window.NexusBrain.tryNeural(userMsg);
+          if (nr) { reply = nr.text; }
+        }
+        if (!reply) {
+          // ── ดึงราคา crypto สด (CoinGecko ฟรี ไม่มี key) ก่อนเข้าสมอง ──
+          if (/ราคา|เท่าไหร่|price/i.test(userMsg) && /btc|bitcoin|eth|ethereum|คริปโต|crypto|เหรียญ/i.test(userMsg)) {
           try {
             const pr = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd,thb&include_24hr_change=true');
             const pj = await pr.json();
@@ -141,6 +147,7 @@ class TwinEngine {
               if (wiki) reply = wiki.text;
             } catch (e) { /* offline ก็ยังมีคำตอบเดิม */ }
           }
+        }
         }
       }
     } catch (e) {
