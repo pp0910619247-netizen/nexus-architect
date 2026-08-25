@@ -623,8 +623,8 @@ function renderChat(){
   box.innerHTML=hist.map((m,mi)=>`<div style="margin:6px 0;text-align:${m.role==='user'?'right':'left'}">
     <span style="display:inline-block;max-width:85%;padding:7px 12px;border-radius:11px;font-size:13px;white-space:pre-wrap;
       ${m.role==='user'?'background:var(--acc);color:#111':'background:#243044;color:var(--txt)'}">${esc(m.text)}</span>
-    ${m.role==='twin'?`<div style="font-size:11px;margin-top:2px"><a href="javascript:void(0)" onclick="chatFeedback(${JSON.stringify(m.text).replace(/"/g,'&quot;')},true)" style="color:var(--good);text-decoration:none">👍</a>
-    <a href="javascript:void(0)" onclick="chatFeedback(${JSON.stringify(m.text).replace(/"/g,'&quot;')},false)" style="color:var(--dim);text-decoration:none">👎</a> <span class="muted">สอน AI</span></div>`:''}</div>`).join('');
+    ${m.role==='twin'?`<div style="font-size:11px;margin-top:2px"><a href="javascript:void(0)" onclick="chatFeedbackIdx(${mi},true)" style="color:var(--good);text-decoration:none">👍</a>
+    <a href="javascript:void(0)" onclick="chatFeedbackIdx(${mi},false)" style="color:var(--dim);text-decoration:none">👎</a> <span class="muted">สอน AI</span></div>`:''}</div>`).join('');
   box.scrollTop=box.scrollHeight;
 }
 async function sendChat(){
@@ -884,6 +884,10 @@ window.addEventListener('message',e=>{
   }
 });
 /* ── เทรน AI จาก feedback: 👍 = ยืนยัน intent / 👎 = ถอนออก (online learning) ── */
+function chatFeedbackIdx(i, positive){
+  const m = (window.Twin.mem.chat.slice(-30))[i];
+  if (m && m.role === 'twin') chatFeedback(m.text, positive);
+}
 function chatFeedback(text, positive){
   const c=window.NexusBrain.classify(text);
   const ok=window.NexusBrain.feedback(text.slice(0,120), c.intent, positive);
