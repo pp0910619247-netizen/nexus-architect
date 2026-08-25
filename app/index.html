@@ -919,8 +919,8 @@ function renderStats(){
 }
 
 /* ═══════════ JOB MARKET PRO — Escrow + 10% platform fee (feeCollector = เจ้าของระบบ) ═══════════ */
-const NEX_TOKEN_DEFAULT  = ""; // ใส่ address NexusToken หลัง deploy (หรือกด ⚙️ ตั้งค่าในหน้าเว็บ)
-const JOB_BOARD_DEFAULT  = ""; // ใส่ address JobBoard
+const NEX_TOKEN_DEFAULT  = "0x999dec3a199335e0a83d0Dc03d8d0ABB48542035"; // NexusToken (Amoy, deployed)
+const JOB_BOARD_DEFAULT  = ""; // ใส่ address JobBoard หลัง deploy-market.js
 const TOKEN_ABI = [
   "function approve(address,uint256) returns (bool)",
   "function balanceOf(address) view returns (uint256)",
@@ -1072,7 +1072,8 @@ const PRESALE_ABI = [
   "function ROUNDS() view returns (uint256)",
 ];
 const PS_SYM = { 80002:'POL', 97:'tBNB', 421614:'ETH' };
-function presaleAddr(){ return localStorage.getItem('nx_presale') || ''; }
+const PRESALE_DEFAULT = "0x8b6EC8d481A583d788B9C9d2c914E9bc0a220e24"; // NexusPresale (Amoy, deployed)
+function presaleAddr(){ return localStorage.getItem('nx_presale') || PRESALE_DEFAULT; }
 function presaleReady(){ return !!(presaleAddr() && nexToken()); }
 async function psContract(withSigner){
   if(withSigner){ const bp=chainSigner(); if(!bp) return null; return new ethers.Contract(presaleAddr(),PRESALE_ABI,await bp.getSigner()); }
