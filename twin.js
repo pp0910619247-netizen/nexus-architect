@@ -123,14 +123,29 @@ class TwinEngine {
       }
       else if (this.cfg.provider === 'ollama') reply = await this._ollama(userMsg);
       else {
-        // ── 🧠 NEURAL MODE: LLM จริงในเบราว์เซอร์ (โหลดแล้วเท่านั้น) ──
-        if (window.NexusBrain && window.NexusBrain.neuralLoaded()) {
-          const nr = await window.NexusBrain.tryNeural(userMsg);
-          if (nr) { reply = nr.text; }
+        // ── v5.2 ROUTING: deterministic experts ก่อน (เร็ว/แม่น) → LLM สำหรับงานซับซ้อน ──
+        const priceQ = /ราคา|เท่าไหร่|price/i.test(userMsg) && /btc|bitcoin|eth|ethereum|คริปโต|crypto|เหรียญ/i.test(userMsg);
+        if (!priceQ && window.NexusBrain && window.NexusBrain.neuralLoaded()) {
+          // multi-turn history (8 ทรานซ์ล่าสุด)
+          const hist = this.mem.chat.filter(m => m.role === 'user' || m.role === 'twin')
+                                    .slice(-8).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
+          // streaming: push bubble เปล่า → อัปเดตทีละ chunk
+          const bub = { role: 'twin', text: '', at: Date.now(), streaming: true };
+          this.mem.chat.push(bub);
+          let lastPaint = 0;
+          const nr = await window.NexusBrain.tryNeural(userMsg, hist, (acc) => {
+            bub.text = acc;
+            const now = Date.now();
+            if (now - lastPaint > 120) { lastPaint = now; if (window.renderChatSafe) window.renderChatSafe(); }
+          });
+          this.mem.chat.pop(); // bubble stream ใช้ชั่วคราว — จะ push ของจริงตอนจบ
+          if (nr) {
+            reply = nr.text;
+          }
         }
         if (!reply) {
-          // ── ดึงราคา crypto สด (CoinGecko ฟรี ไม่มี key) ก่อนเข้าสมอง ──
-          if (/ราคา|เท่าไหร่|price/i.test(userMsg) && /btc|bitcoin|eth|ethereum|คริปโต|crypto|เหรียญ/i.test(userMsg)) {
+          // ── ดึงราคา crypto สด (CoinGecko ฟรี ไม่มี key) ──
+          if (priceQ) {
           try {
             const pr = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd,thb&include_24hr_change=true');
             const pj = await pr.json();
@@ -140,10 +155,9 @@ class TwinEngine {
         } else {
           const br = window.NexusBrain ? window.NexusBrain.respond(userMsg) : { text: this.localBrain(userMsg), intent: 'local' };
           reply = br.text;
-          // ── ความรู้รอบด้าน: ถ้าสมอง local ไม่รู้ → ค้น Wikipedia ทันที ──
+          // ── Trust Chain: KB → Wikipedia → DuckDuckGo ("อาจารย์ไปดูมาแล้ว") ──
           if ((br.intent === 'unknown' || br.conf < 0.35) && window.NexusBrain) {
             try {
-              // Trust Chain: KB → Wikipedia → DuckDuckGo ("อาจารย์ไปดูมาแล้ว")
               const found = await NexusBrain.knowledgeLookup(userMsg);
               if (found) reply = found.text;
             } catch (e) { /* offline ก็ยังมีคำตอบเดิม */ }

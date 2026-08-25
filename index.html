@@ -172,6 +172,8 @@
       <select id="neuralSel" style="width:auto;margin:0;padding:6px 8px">
         <option value="fast">⚡ Fast 0.5B</option>
         <option value="smart">🔥 Smart 1.5B</option>
+        <option value="llama">🦙 Llama 1B</option>
+        <option value="big">🐉 Big 3B</option>
         <option value="bitnet">🧪 BitNet-1.58</option>
       </select>
       <button class="ghost" id="neuralBtn" onclick="loadNeuralBrain()" title="LLM จริงรันในเบราว์เซอร์ (on-device, ฟรี)">⚡ Full Brain</button>
@@ -1171,7 +1173,8 @@ async function aiFindJob(){
   if(window.Twin){ window.Twin.mem.chat.push({role:'twin',text:reply,at:Date.now()}); window.Twin.save(); renderChat(); }
 }
 
-/* ── 🧠 Neural Brain loader (catalog: Fast/Smart/BitNet · WebGPU auto) ── */
+/* ── 🧠 Neural Brain loader (catalog: Fast/Smart/Llama/Big/BitNet · WebGPU auto) ── */
+window.renderChatSafe = () => { try { renderChat(); } catch (e) {} };
 async function loadNeuralBrain(){
   if(!window.NexusBrain){ toast('Brain ยังไม่พร้อม'); return; }
   const key=document.getElementById('neuralSel').value;
