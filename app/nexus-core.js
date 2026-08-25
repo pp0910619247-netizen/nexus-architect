@@ -343,16 +343,20 @@ class NexusBrain {
   static MODELS = {
     fast:   { id: 'onnx-community/Qwen2.5-0.5B-Instruct',  dtype: 'q4f16', label: '⚡ Fast (0.5B, ~350MB)' },
     smart:  { id: 'onnx-community/Qwen2.5-1.5B-Instruct',  dtype: 'q4f16', label: '🔥 Smart (1.5B, ~1GB)' },
+    llama:  { id: 'onnx-community/Llama-3.2-1B-Instruct',  dtype: 'q4f16', label: '🦙 Llama-3.2 1B' },
+    big:    { id: 'onnx-community/Qwen2.5-3B-Instruct',     dtype: 'q4',    label: '🐉 Big (3B, ~2GB)' },
     bitnet: { id: 'microsoft/BitNet-b1.58-2B-4T',           dtype: 'q4',    label: '🧪 BitNet-1.58 2B (experimental)' },
   };
   _pipe = null;
   _pipeKey = null;
+  _tfmod = null;
 
   async loadNeural(key = 'fast', onProgress) {
     if (this._pipe && this._pipeKey === key) return true;
     this._pipe = null; // swap model → reset
     const cfg = NexusBrain.MODELS[key] || NexusBrain.MODELS.fast;
     const mod = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1');
+    this._tfmod = mod;
     const tryLoad = async (opts) => mod.pipeline('text-generation', cfg.id, {
       ...opts,
       progress_callback: (p) => { if (onProgress && p.status === 'progress') onProgress(p.progress != null ? Math.round(p.progress) : null, p.file || ''); },
@@ -367,6 +371,8 @@ class NexusBrain {
     if (!this._pipe && key !== 'fast') {
       const fb = NexusBrain.MODELS.fast;
       this._pipe = await mod.pipeline('text-generation', fb.id, { dtype: fb.dtype });
+      this._pipeKey = 'fast';
+      return true;
     }
     this._pipeKey = key;
     return true;
@@ -374,22 +380,62 @@ class NexusBrain {
   neuralLoaded() { return !!this._pipe; }
   neuralModel() { return this._pipeKey || null; }
 
-  /* RAG-lite: inject ความจำ + persona เป็น system prompt · พัง → fallback null */
-  async tryNeural(userMsg) {
+  /* System prompt v2: persona card + style rules + few-shot + memory (RAG-lite) */
+  _neuralSystemPrompt(userMsg) {
+    const un = this.userName();
+    const mems = (window.NexusLTM?.search(userMsg, 4) || []).map(m => '- ' + m.text).join('\n');
+    const lastTopic = window.NexusLTM?.getLastTopic();
+    let sys =
+`You are ${this.name()}, the user's personal Digital Twin AI living 100% on their device.
+PERSONA: warm, direct, lightly humorous, loyal companion.
+STYLE RULES:
+- Reply in Thai (switch language if the user switches).
+- 2-6 short sentences, natural chat tone, light emoji (max 2).
+- Be specific and useful. Never repeat the user's question back.
+- If unsure, say honestly what you know vs don't know, then offer a next step.`;
+    if (un) sys += `\nUser's name: ${un}`;
+    if (lastTopic) sys += `\nLast topic discussed: ${String(lastTopic).slice(0, 60)}`;
+    if (mems) sys += `\nFacts you remember about the user:\n${mems}`;
+    sys += `\nExample of your voice:\nUser: เหนื่อยมากเลยวันนี้\nYou: ฟังแล้วเหนื่อยเลยครับ 🫂 พักสายตามองไกลๆ 20 วินาที ดื่มน้ำสักแก้ว แล้วค่อยคิดต่อ — ผมอยู่ตรงนี้`;
+    return sys;
+  }
+
+  /* Multi-turn + optional token streaming (พิมพ์ทีละคำแบบ ChatGPT) · fail → null */
+  async tryNeural(userMsg, history = [], onToken = null) {
     if (!this._pipe) return null;
     try {
-      const mems = (window.NexusLTM?.search(userMsg, 3) || []).map(m => '- ' + m.text).join('\n');
-      const un = this.userName();
-      const sys = `You are ${this.name()}, a warm personal AI twin living fully on the user's device. Reply in Thai, friendly and concise (2-5 sentences), light emoji ok.${un ? ` The user's name is ${un}.` : ''}${mems ? `\nFacts you remember about the user:\n${mems}` : ''}`;
-      const out = await this._pipe(
-        [{ role: 'system', content: sys }, { role: 'user', content: String(userMsg).slice(0, 500) }],
-        { max_new_tokens: 200, temperature: 0.8, do_sample: true }
-      );
-      const g = out?.[0]?.generated_text;
-      const reply = Array.isArray(g) ? (g.at(-1)?.content || '') : (typeof g === 'string' ? g : '');
-      const clean = String(reply).replace(/<\|.*?\|>/g, '').trim();
-      if (!clean) return null;
-      return { text: clean, conf: 0.9, intent: 'neural' };
+      const msgs = [{ role: 'system', content: this._neuralSystemPrompt(userMsg) }];
+      for (const t of history.slice(-8)) {
+        const content = String(t.content || '').slice(0, 400);
+        if (!content.trim()) continue;
+        msgs.push({ role: t.role === 'user' ? 'user' : 'assistant', content });
+      }
+      msgs.push({ role: 'user', content: String(userMsg).slice(0, 500) });
+
+      let streamer = null, acc = '';
+      if (onToken && this._tfmod && this._tfmod.TextStreamer) {
+        streamer = new this._tfmod.TextStreamer(this._pipe.tokenizer, {
+          skip_prompt: true,
+          decode_kwargs: { skip_special_tokens: true },
+          callback_function: (tok) => { acc += tok; onToken(acc); },
+        });
+      }
+      const out = await this._pipe(msgs, {
+        max_new_tokens: 300,
+        temperature: 0.85,
+        top_p: 0.9,
+        repetition_penalty: 1.12,
+        do_sample: true,
+        ...(streamer ? { streamer } : {}),
+      });
+      let text = acc;
+      if (!text) {
+        const g = out?.[0]?.generated_text;
+        text = Array.isArray(g) ? (g.at(-1)?.content || '') : (typeof g === 'string' ? g : '');
+      }
+      text = String(text).replace(/<\|.*?\|>/g, '').trim();
+      if (!text) return null;
+      return { text, conf: 0.9, intent: 'neural' };
     } catch (e) { return null; }
   }
 
