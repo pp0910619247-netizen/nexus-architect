@@ -15,6 +15,7 @@ const tests = [
   ['ราคา bitcoin วันนี้', 'price'], ['eth เท่าไหร่', 'price'], ['bitcoin กี่บาท', 'price'],
   ['คำนวณ 1200*3+50', 'math'], ['ฉันเคยบอกอะไรไปบ้าง', 'recall'], ['ภูเขามีโจทย์อะไร', 'mission'],
   ['ตอนนี้กี่โมงแล้ว', 'time'], ['สุดยอดไปเลย', 'thanks'], ['แล้วไงต่อ', 'followup'],
+  ['โอเค', 'ack'], ['555', 'laugh'], ['วันนี้อากาศร้อนจัง', 'smalltalk'],
 ];
 let pass = 0;
 for (const [t, expect] of tests) {

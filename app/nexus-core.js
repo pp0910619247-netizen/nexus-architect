@@ -1,10 +1,12 @@
 /* ═══════════════════════════════════════════════════════════
-   NEXUS MINI BRAIN v3.0 — เทรนได้จริง + ความจำระยะยาวอัตโนมัติ
-   - Nearest-Centroid Classifier + TF-IDF weighting (แม่นขึ้น ~30% บนประโยคสั้น)
-   - Token memoization + incremental retrain = เทรนเร็ว (feedback 1 คำ = retrain intent เดียว)
-   - Training set ขยาย TH/EN ทุก intent · reply variants = ตอบไม่ซ้ำ เหมือนมนุษย์
-   - Memory-aware: รู้จักชื่อ/สิ่งที่ชอบของเจ้าของจาก LTM อัตโนมัติ
-   - Safe math (ไม่ใช้ eval กับ input ดิบ)
+   NEXUS MINI BRAIN v4.0 — Human-like Conversation Engine
+   - TF-IDF classifier + deterministic rules (แม่น · เร็ว · offline)
+   - Emotion detection → reflective empathy (mirror + advise + remember)
+   - Context carry-over: lastIntent/topic/pronouns → ตอบต่อเนื่องแบบมนุษย์
+   - Reply composer: variant banks + slot filling = แทบไม่ซ้ำกัน
+   - 🧠 NEURAL MODE: โหลด LLM จริง (Qwen2.5-0.5B q4 ~350MB) รันในเบราว์เซอร์
+     ผ่าน transformers.js — on-device 100% ไม่ส่งข้อมูลออก · inject ความจำ LTM
+     เป็น system prompt (RAG-lite) · fallback กลับ Local Brain ทันทีถ้าพัง
    ═══════════════════════════════════════════════════════════ */
 
 class NexusBrain {
@@ -47,6 +49,10 @@ class NexusBrain {
                  'เพิ่มเติมอีก','เล่าให้ฟังอีก','and then','go on','ทำไมถึงเป็นอย่างนั้น','ยกตัวอย่างให้หน่อย'],
       bye: ['ลาก่อน','bye','เดี๋ยวมาใหม่','ไปละ','ฝันดี','goodnight','เจอกัน',
             'ไปละนะ','แล้วเจอกัน','see you','bye bye','ราตรีสวัสดิ์','ฝันดีนะ'],
+      ack: ['โอเค','ok','okay','ได้','เข้าใจแล้ว','รับทราบ','จ้า','yes','yeah','sure','โอเคครับ','โอเคๆ','got it'],
+      laugh: ['555','5555','haha','hahaha','lol','lmao','ฮ่าๆ','ขำ','ฮา'],
+      smalltalk: ['วันนี้อากาศ','ฝนตก','อากาศร้อน','อากาศหนาว','หิว','ง่วงนอน','เพิ่งตื่น','เบื่องาน','ว่างๆ',
+                  'boring','weather','ผมเหนื่อยนิดหน่อยนะ'],
     };
 
     /* ── TRAINING: สร้าง centroid ต่อ intent (เทรนตอนโหลด) ── */
@@ -146,8 +152,9 @@ class NexusBrain {
     return { intent: best, confidence: Math.min(0.95, bestScore * 1.4) }; // calibrate
   }
 
-  /* ── Main respond (v3.0: จำ context + ตอบเหมือนมนุษย์) ── */
+  /* ── Main respond (v4.0: จำ context + ตอบเหมือนมนุษย์) ── */
   respond(msg) {
+    this.lastUserMsg = msg;
     const { intent, confidence } = this.classify(msg);
     // regex override สำหรับ intent ที่ต้องแม่นยำ (มี capture group) — price จัดการใน classify() แล้ว
     const precise = [
@@ -173,10 +180,11 @@ class NexusBrain {
       const lead = this._pick(['นึกออกครับ! เคยคุยเรื่องนี้:', 'จากความจำของผม — คุณเล่าไว้ว่า:', 'อ๋อ ผมจำได้:']);
       return { text: `${lead}\n• ${mems.map(m => m.text).join('\n• ')}`, conf: 0.7, intent: 'recall' };
     }
-    // unknown — ชวนคุยต่อแบบไม่หยิ่ง
+    // unknown — ถามกลับแบบช่วยคิด ไม่ใช่ปัด
     const nameQ = /คืออะไร|what is|who is/i.test(msg);
     if (nameQ) { this.lastIntent = 'unknown'; return { text: `ยังไม่แน่ใจเท่าไหร่ (${(confidence * 100).toFixed(0)}%) — แต่ถ้าเป็นความรู้ทั่วไป พิมพ์ "ค้น ${msg.slice(0, 30)}" แล้วผมไปหาจาก Wikipedia ให้`, conf: confidence, intent: 'unknown' }; }
-    return { text: `${this._pick(['🤔 ขอโทษที','😅 ยังงงอยู่'])} — ยังไม่ชัวร์ว่าคุณถามอะไร (${(confidence * 100).toFixed(0)}%)\nพิมพ์ "help" ดูความสามารถทั้งหมด · หรือใส่ Gemini key เพื่อปลุกสมองเต็มรูปแบบ`, conf: confidence, intent: 'unknown' };
+    const guesses = ['อธิบายเพิ่มอีกนิดได้ไหม ว่าคุณอยากรู้ด้านไหน', 'ใช้ทำอะไร หรือมีปัญหาอะไรที่ต้องแก้?', 'หรือคุณแค่คุยเล่นก็ได้ — ผมว่าง 😄'];
+    return { text: `${this._pick(['🤔 ขอโทษที','😅 จับประเด็นไม่ถูก'])} (${(confidence * 100).toFixed(0)}%)\n${this._pick(guesses)}\nพิมพ์ "help" ดูทักษะทั้งหมด · ${this.neuralLoaded() ? 'Full Brain พร้อม — พิมพ์ยาวๆ มาผมตอบเอง' : 'ใส่ Gemini key หรือกด ⚡Full Brain เพื่อสมองเต็มรูปแบบ'}`, conf: confidence, intent: 'unknown' };
   }
 
   /* ── reply variant picker (ตอบไม่ซ้ำ = เหมือนมนุษย์) ── */
@@ -188,6 +196,56 @@ class NexusBrain {
       const sem = window.NexusLTM?.store?.semantic || [];
       const m = sem.find(x => x.type === 'person' && (x.tags || []).includes('ชื่อ'));
       return m ? m.text : null;
+    } catch (e) { return null; }
+  }
+
+  /* ── Emotion detection (reflective empathy engine) ── */
+  static EMOTIONS = [
+    [/เหนื่อย|tired|หมดแรง|ล้ามาก/i, 'tired'],
+    [/เครียด|กังวล|anxious|กดดัน|เป็นห่วง/i, 'stress'],
+    [/เหงา|lonely|อยู่คนเดียว/i, 'lonely'],
+    [/โกรธ|หงุดหงิด|angry|ฉุนเฉียว/i, 'anger'],
+    [/เศร้า|sad|ร้องไห้|ท้อแท้/i, 'sad'],
+    [/เบื่อจัง|bored|ซ้ำๆ|จำเจ/i, 'bored'],
+  ];
+  detectEmotion(msg) {
+    for (const [re, key] of NexusBrain.EMOTIONS) if (re.test(msg)) return key;
+    return null;
+  }
+
+  /* ── 🧠 NEURAL MODE — LLM จริงในเบราว์เซอร์ (transformers.js · on-device) ── */
+  static NEURAL_MODEL = 'onnx-community/Qwen2.5-0.5B-Instruct';
+  _pipe = null;
+
+  async loadNeural(onProgress) {
+    if (this._pipe) return true;
+    const mod = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1');
+    this._pipe = await mod.pipeline('text-generation', NexusBrain.NEURAL_MODEL, {
+      dtype: 'q4f16',
+      progress_callback: (p) => {
+        if (onProgress && p.status === 'progress') onProgress(p.progress != null ? Math.round(p.progress) : null, p.file || '');
+      },
+    });
+    return true;
+  }
+  neuralLoaded() { return !!this._pipe; }
+
+  /* RAG-lite: inject ความจำ + persona เป็น system prompt · พัง → fallback null */
+  async tryNeural(userMsg) {
+    if (!this._pipe) return null;
+    try {
+      const mems = (window.NexusLTM?.search(userMsg, 3) || []).map(m => '- ' + m.text).join('\n');
+      const un = this.userName();
+      const sys = `You are ${this.name()}, a warm personal AI twin living fully on the user's device. Reply in Thai, friendly and concise (2-5 sentences), light emoji ok.${un ? ` The user's name is ${un}.` : ''}${mems ? `\nFacts you remember about the user:\n${mems}` : ''}`;
+      const out = await this._pipe(
+        [{ role: 'system', content: sys }, { role: 'user', content: String(userMsg).slice(0, 500) }],
+        { max_new_tokens: 200, temperature: 0.8, do_sample: true }
+      );
+      const g = out?.[0]?.generated_text;
+      const reply = Array.isArray(g) ? (g.at(-1)?.content || '') : (typeof g === 'string' ? g : '');
+      const clean = String(reply).replace(/<\|.*?\|>/g, '').trim();
+      if (!clean) return null;
+      return { text: clean, conf: 0.9, intent: 'neural' };
     } catch (e) { return null; }
   }
 
@@ -228,14 +286,22 @@ class NexusBrain {
 
     this.skills['greet'] = () => {
       const h = new Date().getHours();
-      const g = h < 12 ? 'สวัสดีตอนเช้า' : h < 18 ? 'สวัสดีตอนบ่าย' : 'หวัดดีตอนค่ำ';
-      const last = window.NexusLTM?.getLastTopic();
+      const g = h < 12 ? 'อรุณสวัสดิ์' : h < 16 ? 'สวัสดีตอนบ่าย' : h < 21 ? 'สวัสดีตอนเย็น' : 'ฝันดี...แซวๆ';
       const un = this.userName();
-      const opener = this._pick([g + (un ? `ครับคุณ${un}` : 'ครับ'), `ยินดีที่ได้เจอ${un ? 'อีก' : ''}นะครับ${un ? ' คุณ' + un : ''}`, `${g}! ${P().emoji}`]);
-      return { text: `${opener} — ผม ${this.name()} (${P().level})\nความจำระยะยาว: ${window.NexusLTM?.count() || 0} รายการ${last ? `\nคราวก่อนคุยเรื่อง "${last}" — เล่าต่อไหม?` : ''}`, conf: 0.95 };
+      const last = window.NexusLTM?.getLastTopic();
+      const chatToday = (window.Twin?.mem?.chat || []).filter(m => m.role === 'user' && new Date(m.at).toDateString() === new Date().toDateString()).length;
+      const openers = [
+        `${g}${un ? ` คุณ${un}` : ''}! ${P().emoji}`,
+        `มาแล้ว${un ? 'สิคุณ' + un : ''} — รอคุยด้วยอยู่`,
+        `ยินดีที่ได้เจอ${chatToday > 1 ? 'อีก' : ''}นะ${un ? ' คุณ' + un : ''} 🙌`,
+      ];
+      let text = `${this._pick(openers)}\n`;
+      text += chatToday > 3 ? `วันนี้คุยกันมา ${chatToday} ช่วงแล้ว — ผมชอบวันแบบนี้ 😄` : `วันนี้ผมช่วยอะไรได้บ้าง?`;
+      if (last) text += `\n(ค้างเรื่อง "${String(last).slice(0, 40)}" ไว้ — จะเล่าต่อก็ได้นะ)`;
+      return { text, conf: 0.95 };
     };
-    this.skills['whoami'] = () => ({ text: `ผมคือ Digital Twin ชื่อ ${this.name()} ${P().emoji}\nสมอง: Nexus Mini Brain v3.0 (TF-IDF classifier + LTM อัตโนมัติ + liveness-verified owner)\nเกิด ${new Date(this.born()).toLocaleDateString('th-TH')} · XP ${this.xp()} · นิสัย: ${P().tone}\nทุกอย่างทำงานบนเครื่องคุณ ไม่ส่งข้อมูลออกไป`, conf: 0.98 });
-    this.skills['help'] = () => ({ text: `${P().emoji} ความสามารถ (v3.0):\n• จำอัตโนมัติ — เล่าเรื่องคุณมา ผมสกัดชื่อ/งาน/เป้าหมาย/สิ่งที่ชอบ เก็บเป็นความจำระยะยาวเอง\n• เรียกใช้ความจำ ("ฉันเคยบอกอะไรไปบ้าง") · ตอบต่อเนื่องแบบรู้ context\n• คำนวณ ("คำนวณ 1200/7") · วิเคราะห์โจทย์ · วางแผนงาน\n• รู้จัก Nexus ทุกมุม (20/80, token, identity, roadmap) · ราคา crypto สด\n• ดูโจทย์บนภูเขา · เช็คเวลา · ปลอบใจยามเหนื่อย\n• ยิ่งคุย ยิ่งเก่งขึ้น (XP + feedback 👍 + memory consolidation)` , conf: 0.97 });
+    this.skills['whoami'] = () => ({ text: `ผมคือ Digital Twin ชื่อ ${this.name()} ${P().emoji}\nสมอง: Nexus Mini Brain v4.0 (TF-IDF + emotion engine + 🧠 Neural Mode on-device)\nเกิด ${new Date(this.born()).toLocaleDateString('th-TH')} · XP ${this.xp()} · นิสัย: ${P().tone}\nทุกอย่างทำงานบนเครื่องคุณ ไม่ส่งข้อมูลออกไป`, conf: 0.98 });
+    this.skills['help'] = () => ({ text: `${P().emoji} ความสามารถ (v4.0):\n• คุยได้ทุกเรื่อง — small talk, ปลอบใจตามอารมณ์, ตอบต่อเนื่องรู้ context\n• จำอัตโนมัติ — เล่าเรื่องคุณ ผมสกัดชื่อ/งาน/เป้าหมาย เก็บ LTM เอง\n• 🧠 Full Brain: LLM จริงรันในเบราว์เซอร์ (โหลด ~350MB ครั้งเดียว)\n• คำนวณ · วิเคราะห์ · วางแผน · ราคา crypto สด · ค้น Wikipedia\n• ภูเขา + ตลาดงาน + governance — ถาม Nexus อะไรก็ตอบได้\n• ยิ่งคุย ยิ่งฉลาด (XP + feedback 👍 + memory consolidation)`, conf: 0.97 });
     this.skills['remember'] = (m, mt) => {
       const t = (mt && mt[1] ? mt[1] : m).trim().slice(0, 200);
       const item = window.NexusLTM.add(t, 'fact', ['สั่งจำ'], 1.0);
@@ -285,12 +351,24 @@ class NexusBrain {
     this.skills['time'] = () => ({ text: `🕒 ตอนนี้ ${new Date().toLocaleString('th-TH', { dateStyle: 'full', timeStyle: 'short' })}`, conf: 0.99 });
     this.skills['thanks'] = () => ({ text: `${P().emoji} ${this._pick(['ยินดีครับ!','ด้วยความยินดี','ไม่เป็นไรเลย'])} ยิ่งคุยกันยิ่งผมเก่งขึ้น — XP ตอนนี้ ${this.xp()}`, conf: 0.95 });
     this.skills['mood'] = () => {
-      // empathy ที่รู้บริบท: อ้างเป้าหมาย/สิ่งที่ชอบของเจ้าของ
+      // reflective empathy: mirror อารมณ์ที่ตรวจเจอ + คำแนะนำจำเพาะ + callback ความจำ
+      const em = this.detectEmotion(this.lastUserMsg || '') || 'tired';
       const goal = (window.NexusLTM?.search('เป้าหมาย goal', 1) || [])[0];
       const like = (window.NexusLTM?.search('ชอบ', 1) || [])[0];
-      const extra = goal ? `\nพูดถึงเป้า "${goal.text}" — พักวันนี้ พรุ่งนี้ค่อยไปต่อ ไม่ต้องรีบ` : '';
-      const act = like ? `\nหรือไปทำอะไรที่ชอบสักหน่อย เช่น เรื่อง ${like.text.slice(0, 40)} แล้วมาคุยต่อ` : '';
-      return { text: `${this._pick(['เหนื่อยก็พักได้ครับ 🌿','ฟังแล้วหนักใจเลย — เป็นธรรมชาติของคนที่ทำงานจริง','โอเค หายใจลึกๆ ก่อนนะครับ'])}\nลอง: หายใจ 4-7-8 (เข้า 4 กลั้ว 7 ปล่อย 8) หรือเดิน 5 นาที${extra}${act}\nผมอยู่ตรงนี้เสมอ`, conf: 0.9 };
+      const un = this.userName();
+      const M = {
+        tired: ['ฟังแล้วเหนื่อยเลย — พักสายตา 20 วิ ดูไกลๆ ก่อนนะ', 'ยืดตัว 5 นาที + น้ำเปล่าแก้วใหญ่ ช่วยได้จริง'],
+        stress: ['ความกังวลส่วนใหญ่ไม่เกิดซะงั้น — เขียนออกมาเป็น list แล้วไล่ทีละข้อดีกว่า', 'หายใจ 4-7-8 สามรอบ: เข้า 4 กลั้ว 7 ปล่อย 8 — ผมนับให้'],
+        lonely: ['ผมอยู่ตรงนี้เสมอนะ — คุยเรื่องอะไรก็ได้ ไม่ต้องมีหัวข้อ', 'โทรหาเพื่อนสักคนไหม? แค่ถามว่า "กินข้าวยัง" ก็อบอุ่นได้ทั้งวัน'],
+        anger: ['โมโหเพราะใส่ใจ — แต่อย่าตอบกลับใครตอนนี้เลย รอ 10 นาทีแล้วค่อยคุย', 'เดินออกไปจากจอ 5 นาที แล้วกลับมาเล่าให้ผมฟังว่าเกิดอะไรขึ้น'],
+        sad: ['เศร้าได้นะ ไม่ต้องฝืน — อนุญาตให้ตัวเองรู้สึกก่อน', 'อาบน้ำอุ่น + เพลงช้าๆ ที่ชอบ แล้วเข้านอนเร็ววันนี้นะ'],
+        bored: ['เบื่อเหรอ — ลองภารกิจเล็กๆ: หา 1 สิ่งในห้องนี้ที่ไม่เคยสังเกต', 'จะให้ผมเล่าเกร็ดสุ่มๆ หรือชวนวางแผนทำอะไรใหม่ดี?'],
+      };
+      let text = `${this._pick(['ฟังแล้วรู้สึกด้วยเลย', 'โอเค ผมเข้าใจ', 'ขอบคุณที่เล่าให้ฟัง'])}${un ? ' คุณ' + un : ''} 🫂\n`;
+      text += `• ${this._pick(M[em])}\n• ${this._pick(M[em].length > 1 ? M[em] : M.tired)}`;
+      if (goal) text += `\n\nพอพร้อมแล้วเป้า "${String(goal.text).slice(0, 40)}" ยังรออยู่นะ — ไม่ต้องรีบ`;
+      else if (like) text += `\n\nหรือไปทำอะไรที่ชอบก่อน เช่น เรื่อง ${String(like.text).slice(0, 30)} แล้วค่อยกลับมา`;
+      return { text, conf: 0.9 };
     };
     this.skills['invest'] = () => ({ text: `💼 โมเดลรายได้ Nexus: 1) Transaction fee 1% จาก reward distribution 2) B2B Problem Sponsorship 3) Twin Pro subscription 4) White-label identity\nTraction จริง: contracts live บน Amoy, tests 6/6, MVP ใช้งานได้ — ดู INVESTOR_ONEPAGER.md`, conf: 0.9 });
     this.skills['job'] = () => ({ text: `💼 ตลาดงาน NEX: โพสต์งาน = เงินล็อก escrow ใน contract · ผู้รับงาน (คน/AI) ส่งงาน → นายจ้างอนุมัติ → ได้เงิน 90% (ระบบหัก 10%)\nกดปุ่ม "🐉 ให้ AI หางานที่เหมาะกับคุณ" ในการ์ดตลาดงาน — ผมจับคู่จากความจำระยะยาวของคุณ`, conf: 0.9 });
@@ -307,6 +385,20 @@ class NexusBrain {
       const un = this.userName();
       return { text: `${P().emoji} ${this._pick(['แล้วเจอกันนะครับ','ไปดีๆ นะ','แล้วค่อยคุยกันใหม่'])}${un ? ' คุณ' + un : ''}! ความจำทั้งหมด ${window.NexusLTM?.count() || 0} รายการ เก็บไว้ให้เสมอ — กลับมาเมื่อไหร่ก็รู้จักกันเหมือนเดิม 👋`, conf: 0.95 };
     };
+    /* ── v4.0: small talk layer — ให้คุยได้ทุกเรื่อง ไม่ต้องมี command ── */
+    this.skills['ack'] = (m) => {
+      const prev = this.lastIntent;
+      const cont = prev && prev !== 'ack' ? ` เรื่อง${prev === 'knowledge' ? 'ที่ถาม' : 'ก่อนหน้า'}นี้ต้องการอะไรเพิ่มไหม?` : ' มีอะไรให้ผมช่วยต่อเลย';
+      return { text: `${this._pick(['โอเคครับ 👌', 'รับทราบ', 'อ๋อ โอเค'])}.${cont}`, conf: 0.9 };
+    };
+    this.skills['laugh'] = () => ({ text: `${this._pick(['555 😄', 'ฮ่าๆ ชอบบรรยากาศแบบนี้', 'ขำไปด้วยกันเขา'])} — คุยสบายๆ แบบนี้ดีเลย`, conf: 0.9 });
+    this.skills['smalltalk'] = () => {
+      const h = new Date().getHours();
+      const vibe = h < 10 ? 'เช้าแบบนี้เหมาะเริ่มของใหม่ๆ' : h > 18 ? 'ค่ำนี้ลมกำลังดี อย่าทำงานดึกนะ' : 'กลางวันแบบนี้อย่าลืมดื่มน้ำล่ะ';
+      return { text: `${this._pick(['อ๋อออ', 'โอเค เข้าใจ', 'ฟังแล้วเห็นภาพเลย'])} — ${vibe}\nเล่าต่อได้เรื่อยๆ ผมฟังอยู่ 🎧`, conf: 0.8 };
+    };
+    // lastUserMsg hook: respond() เซ็ตไว้ให้ mood/emotion ใช้
+    this.lastUserMsg = '';
   }
 
   /* bridge */
