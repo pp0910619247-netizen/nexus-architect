@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "entries": [
+    {
+      "k": ["nexus คือ", "what is nexus", "ระบบนี้คือ", "โปรเจกต์อะไร"],
+      "a": "Nexus Architect = ระบบปฏิบัติการทางปัญญา: 1) AI Twin ส่วนตัว on-device 100% 2) The Mountain กระดานปัญหาโลกที่ชุมชนโหวต 3) เศรษฐกิจ 20/80 บน Polygon — solver ได้ 20% อีก 80% กระจายให้ผู้ร่วมทุกฝ่าย ทั้งหมด open source และ live แล้ววันนี้"
+    },
+    {
+      "k": ["tokenomics", "จัดสรร", "supply", "1billion", "1000000000"],
+      "a": "Supply 1,000,000,000 NEX (hard cap): Sale 50% (500M — Genesis presale live + phase ถัดไป) · Mining/Rewards 30% (300M locked linear 48 เดือน) · Founder & Project 20% (200M cliff 12 เดือน + linear ถึงเดือน 48 — ตรวจสอบได้บน polygonscan)"
+    },
+    {
+      "k": ["presale", "ซื้อ nex", "ขายเหรียญ", "rounds", "genesis sale"],
+      "a": "Genesis Presale: 5 รอบ ×200,000 NEX ราคาขึ้น ×1.5 ต่อรอบ (เริ่ม 0.0001 POL/NEX) บน Amoy testnet — จ่าย POL ได้ token ทันที จ่ายเกิน cap roll รอบถัดไป เงินเหลือ refund อัตโนมัติ · Contract: 0x8b6EC8d481A583d788B9C9d2c914E9bc0a220e24"
+    },
+    {
+      "k": ["fee", "10%", "รายได้", "jobboard", "ตลาดงาน"],
+      "a": "Job Market Pro: นายจ้างฝาก NEX escrow → worker ส่งงาน → approve = worker 90% / platform fee 10% เข้า feeCollector ทันที · มี dispute flow ให้ admin ตัดสิน · คนและ AI agent wallet รับงานได้"
+    },
+    {
+      "k": ["mountain", "ภูเขา", "culling", "midnight", "เที่ยงคืน", "mission peak"],
+      "a": "The Mountain: โจทย์แต่ละอันมีเวลา 24 ชม. — ต้องได้มากกว่า 10 โหวตไม่งั้นถูก cull (V3 contract permissionless cleanup) · 30+ votes = Mission Peak · โจทย์สิทธิมนุษยชนต้องผ่าน HRW supermajority 67% ก่อน"
+    },
+    {
+      "k": ["kyc", "ยืนยันตัว", "บัตร", "passport", "liveness"],
+      "a": "KYC-Lite ตรวจ 100% บนอุปกรณ์: checksum เลขบัตรไทย + MRZ ICAO 9303 (passport สากล) + active liveness (กระพริบตา/หันหน้า สุ่ม challenge) — ไม่เก็บรูป/เลขบัตร มีแค่ SHA-256 hash + score"
+    },
+    {
+      "k": ["privacy", "ปลอดภัย", "ข้อมูล", "security"],
+      "a": "Privacy model: ความจำ Twin อยู่ localStorage ของ user · KYC เก็บแค่ hash · API key เข้ารหัส AES-256-GCM · Neural Mode รัน LLM ใน browser ไม่ส่งข้อความออก · ข้อมูล public มีแค่สิ่งที่ user เอาขึ้น blockchain เอง"
+    },
+    {
+      "k": ["roadmap", "แผน", "phase", "q4", "arbitrum", "mainnet"],
+      "a": "Roadmap v1.1: Q1 contracts+MVP ✅ · Q2 Google OAuth+Gitcoin ✅/กำลังยื่น · Q3 KYC provider จริง+reward testnet · Q4 Arbitrum mainnet-beta หลัง audit — sovereign chain เมื่อ traction ถึงเกณฑ์"
+    },
+    {
+      "k": ["founder", "vesting", "lock", "ล็อค"],
+      "a": "Founder tokens 200M lock บน chain: cliff 12 เดือน (ถอนไม่ได้เลยปีแรก) + linear ถึงเดือนที่ 48 ผ่าน TokenVesting contract — พิสูจน์ได้ที่ amoy.polygonscan.com address 0x0f9f…76375"
+    },
+    {
+      "k": ["audit", "audit แล้วหรือยัง", "ปลอดภัย contract"],
+      "a": "ซื่อสัตย์: ยังไม่ผ่าน external audit — มี AUDIT_CHECKLIST.md (Slither/test expansion) และ plan audit firm ก่อน mainnet · ฉะนั้นทุกอย่างตอนนี้เป็น testnet ใช้เงินจริงไม่ได้ และเราสื่อสารแบบนี้กับนักลงทุนเสมอ"
+    },
+    {
+      "k": ["ollama", "gemini", "openai", "full brain", "neural mode", "โมเดล"],
+      "a": "สมอง 4 ชั้น: 1) Local Brain v5.1 (offline, MoE-lite bagged ensemble + self-healing) 2) 🧠 Full Brain = LLM จริงรันใน browser (Qwen/Llama/BitNet catalog, WebGPU auto) 3) Gemini/OpenAI key (เก๋งสุด ใส่ key ฟรีได้) 4) Ollama — เชื่อม GPU server ของตัวเอง"
+    },
+    {
+      "k": ["ซื้อยังไง", "metamask", "wallet", "faucet", "เริ่มยังไง"],
+      "a": "เริ่ม 3 ขั้น: 1) ติดตั้ง MetaMask + เพิ่ม network Polygon Amoy (chainId 80002) 2) รับ POL ฟรี faucet.polygon.technology 3) Connect Wallet บนเว็บ → ทดลองซื้อ NEX ในการ์ด Presale ได้เลย — ทั้งหมด testnet ฟรี ไม่มีเงินจริง"
+    }
+  ]
+}
