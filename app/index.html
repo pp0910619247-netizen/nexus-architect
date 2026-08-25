@@ -66,6 +66,15 @@
   #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--acc);color:var(--txt);
          padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:99}
   #toast.show{opacity:1}
+  @media(max-width:640px){
+    header{padding:10px 12px}
+    .logo{font-size:17px}
+    main{padding:14px 10px 60px}
+    .grid{grid-template-columns:1fr!important}
+    .card{padding:14px}
+    input,select,textarea,button{font-size:16px}
+    #chatBox{max-height:260px}
+  }
 </style>
 </head>
 <body>
@@ -549,7 +558,7 @@ document.getElementById('walletBtn').onclick=async()=>{
 };
 
 /* ═══════════ ON-CHAIN (Polygon Amoy) ═══════════ */
-const REGISTRY = "0x5dDA958680e4Cf99200906bF7F357310D51F9157";
+const REGISTRY = "0x674d1b7b1c8FE6819AE7F22E6b46D8B02B7a8d32"; // V3 — on-chain culling
 const SPLITTER = "0x97fb5CEada36C721a4b82BF6a6ddFa565AC79ecF";
 const AMOY_RPC = "https://polygon-amoy.drpc.org";
 const ABI = [
