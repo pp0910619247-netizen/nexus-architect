@@ -169,9 +169,14 @@
       </select>
       <input id="apiKeyIn" placeholder="API Key (เก็บในเครื่องเท่านั้น)" style="flex:1;min-width:180px;margin:0;width:auto" type="password">
       <button class="ghost" onclick="saveKey()">บันทึก Key</button>
+      <select id="neuralSel" style="width:auto;margin:0;padding:6px 8px">
+        <option value="fast">⚡ Fast 0.5B</option>
+        <option value="smart">🔥 Smart 1.5B</option>
+        <option value="bitnet">🧪 BitNet-1.58</option>
+      </select>
       <button class="ghost" id="neuralBtn" onclick="loadNeuralBrain()" title="LLM จริงรันในเบราว์เซอร์ (on-device, ฟรี)">⚡ Full Brain</button>
     </div>
-    <p class="muted" style="margin-top:6px">💡 Gemini key ฟรีได้ที่ aistudio.google.com · ⚡Full Brain = โหลดโมเดล ~350MB ครั้งเดียว รันในเครื่อง 100% ไม่ส่งข้อความออกไป</p>
+    <p class="muted" style="margin-top:6px">💡 Gemini key ฟรีได้ที่ aistudio.google.com · ⚡Full Brain = LLM จริงในเครื่อง 100% (WebGPU auto · BitNet = experimental, fallback อัตโนมัติ)</p>
   </div>
 
   <!-- ══ ON-CHAIN ══ -->
@@ -1166,20 +1171,22 @@ async function aiFindJob(){
   if(window.Twin){ window.Twin.mem.chat.push({role:'twin',text:reply,at:Date.now()}); window.Twin.save(); renderChat(); }
 }
 
-/* ── 🧠 Neural Brain loader (transformers.js on-device) ── */
+/* ── 🧠 Neural Brain loader (catalog: Fast/Smart/BitNet · WebGPU auto) ── */
 async function loadNeuralBrain(){
   if(!window.NexusBrain){ toast('Brain ยังไม่พร้อม'); return; }
-  if(window.NexusBrain.neuralLoaded()){ toast('⚡ Full Brain โหลดไว้แล้ว — พิมพ์คุยได้เลย!'); return; }
+  const key=document.getElementById('neuralSel').value;
+  if(window.NexusBrain.neuralLoaded() && window.NexusBrain.neuralModel()===key){ toast('⚡ โหลดไว้แล้ว — พิมพ์คุยได้เลย!'); return; }
   const btn=document.getElementById('neuralBtn');
   btn.disabled=true; btn.textContent='⏳ 0%';
   try{
-    await NexusBrain.loadNeural((pct,file)=>{
+    await NexusBrain.loadNeural(key,(pct,file)=>{
       if(pct!=null) btn.textContent='⏳ '+pct+'%';
     });
-    btn.textContent='🧠 Full Brain ON'; btn.style.borderColor='var(--good)';
-    toast('⚡ Full Brain พร้อม! LLM รันในเครื่องคุณ — พิมพ์อะไรมาก็ตอบได้');
+    const label=NexusBrain.MODELS[key]?NexusBrain.MODELS[key].label:key;
+    btn.textContent='🧠 ON'; btn.style.borderColor='var(--good)';
+    toast('⚡ Full Brain ['+label+'] พร้อม!'+(navigator.gpu?' (WebGPU 🚀)':''));
     if(window.Twin&&window.Twin.mem.chat){
-      window.Twin.mem.chat.push({role:'twin',text:'🧠 Full Brain เปิดใช้งานแล้ว — ตอนนี้ผมฉลาดขึ้นเยอะ ถามอะไรก็ได้เลยนะ!',at:Date.now()});
+      window.Twin.mem.chat.push({role:'twin',text:'🧠 Full Brain เปิดแล้ว ('+label+') — ถามอะไรก็ได้เลยนะ!',at:Date.now()});
       window.Twin.save(); renderChat();
     }
   }catch(e){

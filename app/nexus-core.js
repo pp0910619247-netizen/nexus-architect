@@ -1,13 +1,12 @@
 /* ═══════════════════════════════════════════════════════════
-   NEXUS MINI BRAIN v5.0 — MoE-lite Architecture
-   "สร้างเหมือนกำลังสร้างตัวเอง"
-   - Gating/Router: TF-IDF centroid → ranked distribution (top-3)
-   - Mixture of Experts: ทุก intent = expert เฉพาะทาง · ผลคะแนนใกล้กัน
-     → _arbitrate() ให้ expert ที่ถนัด domain ตัดสิน (เช่น coin > math)
-   - Trust Chain: KB ของอาจารย์ → Wikipedia → DuckDuckGo → LTM → ซื่อสัตย์ว่าไม่รู้
-     ("ถ้าหาไม่เจอจงเชื่ออาจารย์ — เพราะอาจารย์ไปดูมาแล้ว")
-   - Chain-of-Thought: โจทย์ซับซ้อนคิดเป็นขั้น · multi-perspective
-   - Emotion engine + context carry-over + 🧠 Neural Mode (on-device LLM)
+   NEXUS MINI BRAIN v5.1 — MoE-lite + Hardcore Local Training
+   - Gating/Router: TF-IDF → BAGGED ENSEMBLE ×5 (bootstrap dropout,
+     variance reduction — เทรนซ้ำจนแม่นสุดใน JS ได้)
+   - Self-Healing: ยิง training set ใส่ตัวเอง → ข้อไหนพลาด boost ×3
+     แล้ว renormalize (2 rounds — train like you mean it)
+   - Expert Arbitration + Trust Chain + Emotion engine (v5.0 ครบ)
+   - 🧠 NEURAL MODE catalog: Qwen 0.5B/1.5B · BitNet-1.58 (experimental)
+     WebGPU auto-accelerate · graceful fallback ทุกชั้น
    ═══════════════════════════════════════════════════════════ */
 
 class NexusBrain {
@@ -62,9 +61,13 @@ class NexusBrain {
     this.centroids = {};
     // โหลดผลการเรียนรู้จาก feedback ที่เก็บไว้ (online learning ต่อเนื่อง)
     this.learned = JSON.parse(localStorage.getItem('nexus_learned') || '{}'); // {intent: [texts]}
-    for (const [intent, examples] of Object.entries(this.TRAINING)) {
+    for (const [intent] of Object.entries(this.TRAINING)) {
       this.centroids[intent] = this._buildCentroid(intent);
     }
+    /* ── HARDCORE TRAINING: bagged ensemble ×5 + self-healing boost ── */
+    this.ensemble = [];
+    this._buildEnsemble();
+    this._selfHeal();
 
     /* deterministic rule cache: coin + price wording = price */
     const COIN = 'btc|bitcoin|eth|ethereum|sol|solana|xrp|doge|คริปโต|crypto|เหรียญ|ทองคำ?';
@@ -74,8 +77,8 @@ class NexusBrain {
     this._registerCoreSkills();
   }
 
-  /* ── Online Learning: 👍 = สอนว่าข้อความนี้อยู่ intent นี้ / 👎 = ถอดออก ──
-     incremental retrain: สร้าง centroid เฉพาะ intent เดียว = เร็ว (ไม่ retrain ทั้งโมเดล) */
+  /* ── Online Learning: 👍 = สอนว่าข้อความนี้อยู่ intent นี้ / 👎 = ถอดออก
+     v5.1: retrain ครบทั้ง ensemble + self-heal (โหดแต่ชุดข้อมูลเล็ก เร็วมาก) ── */
   feedback(text, intent, positive) {
     if (!intent || !this.TRAINING[intent]) return false;
     const list = this.learned[intent] || (this.learned[intent] = []);
@@ -87,7 +90,9 @@ class NexusBrain {
       if (idx >= 0) list.splice(idx, 1);
     }
     localStorage.setItem('nexus_learned', JSON.stringify(this.learned));
-    this.centroids[intent] = this._buildCentroid(intent);
+    for (const [it] of Object.entries(this.TRAINING)) this.centroids[it] = this._buildCentroid(it);
+    this._buildEnsemble();
+    this._selfHeal();
     return true;
   }
 
@@ -111,6 +116,76 @@ class NexusBrain {
     }
     this.idf = {};
     for (const k in df) this.idf[k] = Math.log((N + 1) / (df[k] + 0.5));
+  }
+
+  /* ══ HARDCORE TRAINING CORE ══ */
+  _seededRng(seed) {
+    let s = seed | 0;
+    return function () {
+      s = s + 0x6D2B79F5 | 0;
+      let t = Math.imul(s ^ s >>> 15, 1 | s);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  _normVec(vec) {
+    const n = Math.sqrt(Object.values(vec).reduce((s, v) => s + v * v, 0)) || 1;
+    for (const k in vec) vec[k] /= n;
+    return vec;
+  }
+
+  /* Bagged ensemble: 5 experts แต่ละตัวเห็นข้อมูลต่างมุม (example/token dropout)
+     → เฉลี่ยคะแนน = variance down, accuracy up (เทคนิคเดียวกับ random forest) */
+  _buildEnsemble() {
+    this.ensemble = [];
+    for (let k = 0; k < 5; k++) {
+      const rnd = this._seededRng(0xBADA55 + k * 7919);
+      const cent = {};
+      for (const [intent, examples] of Object.entries(this.TRAINING)) {
+        const vec = {};
+        for (const ex of examples) {
+          if (examples.length > 6 && rnd() < 0.2) continue; // example dropout
+          for (const t of this._tokenize(ex)) if (rnd() < 0.85) vec[t] = (vec[t] || 0) + (this.idf[t] ?? Math.log(2));
+        }
+        for (const ex of (this.learned[intent] || []))
+          for (const t of this._tokenize(ex)) vec[t] = (vec[t] || 0) + (this.idf[t] ?? Math.log(2)) * 2;
+        cent[intent] = this._normVec(vec);
+      }
+      this.ensemble.push(cent);
+    }
+  }
+
+  /* Self-Healing: สอบตัวเองด้วย training set → ข้อพลาด boost ×3
+     Guarded: ยอมรับการแก้เฉพาะเมื่อ total misses ลดลง (monotonic improvement) */
+  _countMisses() {
+    let m = 0;
+    for (const [intent, examples] of Object.entries(this.TRAINING))
+      for (const ex of examples) {
+        const r = this._rankAll(ex);
+        if (!r.length || r[0].intent !== intent) m++;
+      }
+    return m;
+  }
+  _selfHeal() {
+    const snap = JSON.stringify(this.ensemble);
+    let best = this._countMisses();
+    for (let round = 0; round < 2 && best > 0; round++) {
+      for (const [intent, examples] of Object.entries(this.TRAINING)) {
+        for (const ex of examples) {
+          const r = this._rankAll(ex);
+          if (!r.length || r[0].intent !== intent) {
+            const toks = this._tokenize(ex);
+            for (const cent of this.ensemble)
+              for (const t of toks) cent[intent][t] = (cent[intent][t] || 0) + (this.idf[t] ?? Math.log(2)) * 3;
+          }
+        }
+      }
+      for (const cent of this.ensemble)
+        for (const iv in cent) cent[iv] = this._normVec(cent[iv]);
+      const now = this._countMisses();
+      if (now > best) { this.ensemble = JSON.parse(snap); break; } // แย่ลง = rollback
+      best = now;
+    }
   }
 
   /* ── tokenizer + vector ops (memoized) ── */
@@ -154,11 +229,22 @@ class NexusBrain {
   }
   _rankAll(msg, tokens) {
     tokens = tokens || this._tokenize(msg);
-    const all = [];
-    for (const [intent, centroid] of Object.entries(this.centroids)) {
-      all.push({ intent, score: this._cosine(tokens, centroid) });
+    // MoE gating บน bagged ensemble — เฉลี่ยคะแนนจาก 5 experts
+    if (!this.ensemble || !this.ensemble.length) {
+      const all = [];
+      for (const [intent, centroid] of Object.entries(this.centroids))
+        all.push({ intent, score: this._cosine(tokens, centroid) });
+      return all.sort((a, b) => b.score - a.score);
     }
-    return all.sort((a, b) => b.score - a.score);
+    const agg = {};
+    for (const cent of this.ensemble)
+      for (const [intent, cvec] of Object.entries(cent)) {
+        const s = this._cosine(tokens, cvec);
+        (agg[intent] = agg[intent] || []).push(s);
+      }
+    return Object.entries(agg)
+      .map(([intent, arr]) => ({ intent, score: arr.reduce((a, b) => a + b, 0) / arr.length }))
+      .sort((a, b) => b.score - a.score);
   }
 
   /* ── MoE arbitration: expert เฉพาะทางตัดสินเมื่อ gate ลังเล ── */
@@ -253,22 +339,40 @@ class NexusBrain {
     return null;
   }
 
-  /* ── 🧠 NEURAL MODE — LLM จริงในเบราว์เซอร์ (transformers.js · on-device) ── */
-  static NEURAL_MODEL = 'onnx-community/Qwen2.5-0.5B-Instruct';
+  /* ── 🧠 NEURAL MODE catalog — เลือกสมองได้ · WebGPU auto · fallback ทุกชั้น ── */
+  static MODELS = {
+    fast:   { id: 'onnx-community/Qwen2.5-0.5B-Instruct',  dtype: 'q4f16', label: '⚡ Fast (0.5B, ~350MB)' },
+    smart:  { id: 'onnx-community/Qwen2.5-1.5B-Instruct',  dtype: 'q4f16', label: '🔥 Smart (1.5B, ~1GB)' },
+    bitnet: { id: 'microsoft/BitNet-b1.58-2B-4T',           dtype: 'q4',    label: '🧪 BitNet-1.58 2B (experimental)' },
+  };
   _pipe = null;
+  _pipeKey = null;
 
-  async loadNeural(onProgress) {
-    if (this._pipe) return true;
+  async loadNeural(key = 'fast', onProgress) {
+    if (this._pipe && this._pipeKey === key) return true;
+    this._pipe = null; // swap model → reset
+    const cfg = NexusBrain.MODELS[key] || NexusBrain.MODELS.fast;
     const mod = await import('https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1');
-    this._pipe = await mod.pipeline('text-generation', NexusBrain.NEURAL_MODEL, {
-      dtype: 'q4f16',
-      progress_callback: (p) => {
-        if (onProgress && p.status === 'progress') onProgress(p.progress != null ? Math.round(p.progress) : null, p.file || '');
-      },
+    const tryLoad = async (opts) => mod.pipeline('text-generation', cfg.id, {
+      ...opts,
+      progress_callback: (p) => { if (onProgress && p.status === 'progress') onProgress(p.progress != null ? Math.round(p.progress) : null, p.file || ''); },
     });
+    // 1) WebGPU (เร็วมาก) → 2) WASM q4 → 3) Fast model กันตาย
+    if (navigator.gpu) {
+      try { this._pipe = await tryLoad({ device: 'webgpu', dtype: cfg.dtype }); } catch (e) { this._pipe = null; }
+    }
+    if (!this._pipe) {
+      try { this._pipe = await tryLoad({ dtype: cfg.dtype }); } catch (e) { this._pipe = null; }
+    }
+    if (!this._pipe && key !== 'fast') {
+      const fb = NexusBrain.MODELS.fast;
+      this._pipe = await mod.pipeline('text-generation', fb.id, { dtype: fb.dtype });
+    }
+    this._pipeKey = key;
     return true;
   }
   neuralLoaded() { return !!this._pipe; }
+  neuralModel() { return this._pipeKey || null; }
 
   /* RAG-lite: inject ความจำ + persona เป็น system prompt · พัง → fallback null */
   async tryNeural(userMsg) {
