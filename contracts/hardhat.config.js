@@ -28,5 +28,11 @@ export default defineConfig({
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 97,
     },
+    mainnet: {
+      type: "http",
+      url: process.env.MAINNET_RPC || "https://polygon-bor-rpc.publicnode.com",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 137,
+    },
   },
 });
