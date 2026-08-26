@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Nexus Architect — AI บนอุปกรณ์ของคุณ × Polygon Blockchain</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🏔</text></svg>">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src *; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
 <meta name="description" content="Nexus Architect — AI Twin ที่ทำงานบนอุปกรณ์ของคุณเอง ไม่ต้องพึ่ง Cloud พร้อม Blockchain Problem Economy บน Polygon">
 <meta property="og:title" content="Nexus Architect — AI × Blockchain">
 <meta property="og:description" content="AI บนอุปกรณ์ของคุณ · ปัญหาชุมชนบน链 · งาน Escrow · ทุกอย่างบน Polygon">
@@ -204,6 +205,8 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
           <span id="navWalletAddr" style="font-family:monospace;font-size:.78rem;color:var(--acc2)"></span>
           <span style="color:var(--txt3);font-size:.7rem">·</span>
           <span style="font-size:.78rem"><span style="color:var(--txt3)">POL</span> <b id="navPol" style="color:var(--txt)">—</b></span>
+          <span style="color:var(--txt3);font-size:.7rem">·</span>
+          <span style="font-size:.78rem"><span style="color:var(--txt3)">USDT</span> <b id="navUsdt" style="color:var(--good)">—</b></span>
           <span style="color:var(--txt3);font-size:.7rem">·</span>
           <span style="font-size:.78rem"><span style="color:var(--txt3)">NEX</span> <b id="navNex" style="color:var(--acc2)">—</b></span>
           <button onclick="disconnectWallet()" style="background:none;border:none;color:var(--txt3);cursor:pointer;font-size:.75rem;padding:.2rem" title="ยกเลิก">✕</button>
@@ -541,19 +544,21 @@ const NEX_ADDR='0x65A56978A60733B28cD1FD61C760AB5dC8FD3081';
 const POLYGON_CHAIN='0x89';
 const POLYGON_NAME='Polygon Mainnet';
 
-function showWallet(addr,bal,nexBal,chainId){
+function showWallet(addr,bal,nexBal,usdtBal,chainId){
   document.getElementById('navWalletBtn').style.display='none';
   const info=document.getElementById('navWalletInfo');
   info.style.display='flex';
   document.getElementById('navWalletAddr').textContent=addr.slice(0,6)+'…'+addr.slice(-4);
   document.getElementById('navPol').textContent=bal;
   document.getElementById('navNex').textContent=nexBal;
+  document.getElementById('navUsdt').textContent=usdtBal;
   const net=document.getElementById('navWalletNet');
   if(chainId===137){net.textContent='Polygon';net.style.background='var(--good)';}
   else{net.textContent='Chain '+chainId;net.style.background='var(--warn)';}
 }
 
 function disconnectWallet(){
+  window._myAddr=null;
   localStorage.removeItem('nx_wallet');
   document.getElementById('navWalletBtn').style.display='';
   document.getElementById('navWalletInfo').style.display='none';
@@ -591,8 +596,11 @@ async function connectWallet(){
       nexBal=Number(ethers.formatEther(await c.balanceOf(addr))).toLocaleString();
     }catch(e){}
 
+    let usdtBal='0';
+    try{const u=new ethers.Contract(USDT_ADDR,USDT_ABI,provider);usdtBal=Number(ethers.formatUnits(await u.balanceOf(addr),6)).toLocaleString();}catch(e){}
     localStorage.setItem('nx_wallet',addr);
-    showWallet(addr,bal,nexBal,parseInt(chainId,16));
+    window._myAddr=addr;
+    showWallet(addr,bal,nexBal,usdtBal,parseInt(chainId,16));
   }catch(e){alert('เชื่อมต่อไม่สำเร็จ: '+e.message);}
 }
 
@@ -603,6 +611,7 @@ async function connectWallet(){
     try{
       const accounts=await window.ethereum.request({method:'eth_accounts'});
       if(accounts.length && accounts[0].toLowerCase()===saved.toLowerCase()){
+        window._myAddr=saved;
         const chainId=await window.ethereum.request({method:'eth_chainId'});
         const provider=new ethers.JsonRpcProvider('https://polygon-bor-rpc.publicnode.com');
         const bal=Number(ethers.formatEther(await provider.getBalance(saved))).toFixed(3);
@@ -611,7 +620,9 @@ async function connectWallet(){
           const c=new ethers.Contract(NEX_ADDR,['function balanceOf(address) view returns (uint256)'],provider);
           nexBal=Number(ethers.formatEther(await c.balanceOf(saved))).toLocaleString();
         }catch(e){}
-        showWallet(saved,bal,nexBal,parseInt(chainId,16));
+        let usdtBal='0';
+          try{const u=new ethers.Contract(USDT_ADDR,USDT_ABI,provider);usdtBal=Number(ethers.formatUnits(await u.balanceOf(saved),6)).toLocaleString();}catch(e){}
+          showWallet(saved,bal,nexBal,usdtBal,parseInt(chainId,16));
       }
     }catch(e){}
   }
@@ -630,9 +641,9 @@ const PS_ABI=[
   'function ROUNDS() view returns (uint256)',
   'function currentRound() view returns (uint256)',
   'function perRoundCap() view returns (uint256)',
-  'function roundSold(uint256) view returns (uint256)',
-  'function priceOfUSDT() view returns (uint256)',
-  'function priceOfPOL() view returns (uint256)',
+  'function roundSold(uint8) view returns (uint256)',
+  'function priceOfUSDT(uint8) view returns (uint256)',
+  'function priceOfPOL(uint8) view returns (uint256)',
   'function quote(uint256,bool) view returns (uint256)',
   'function buyWithUSDT(uint256)',
   'function buyWithPOL(uint256) payable',
@@ -652,8 +663,8 @@ async function psLoad(){
     const rounds=Number(await c.ROUNDS());
     const cur=Number(await c.currentRound());
     const cap=Number(ethers.formatEther(await c.perRoundCap()));
-    const priceUSDT=Number(ethers.formatUnits(await c.priceOfUSDT(),6));
-    const pricePOL=Number(ethers.formatEther(await c.priceOfPOL()));
+    const priceUSDT=Number(ethers.formatUnits(await c.priceOfUSDT(cur),6));
+    const pricePOL=Number(ethers.formatEther(await c.priceOfPOL(cur)));
     let sold=0;
     try{ sold=Number(ethers.formatEther(await c.roundSold(cur))); }catch(e){}
     const left=Math.max(0,cap-sold);
@@ -664,7 +675,7 @@ async function psLoad(){
       '<strong>'+rounds+'</strong> รอบ · <strong>'+cap.toLocaleString()+'</strong> NEX ต่อรอบ · ราคา USDT = <strong>$'+priceUSDT.toFixed(4)+'</strong> · POL = <strong>'+pricePOL.toFixed(6)+' POL</strong>';
 
     let rh='';
-    for(let i=1;i<=rounds;i++){
+    for(let i=0;i<rounds;i++){
       const s=Number(ethers.formatEther(await c.roundSold(i).catch(()=>0n)));
       const pct=Math.min(100,Math.round(s/cap*100));
       const isCur=i===cur;
@@ -689,10 +700,14 @@ function psEstimate(){
   document.getElementById('psCost').textContent=cost.toFixed(pay==='USDT'?4:6)+' '+pay;
 }
 
+let _buying=false;
 async function psBuy(){
   if(!window.ethereum||!window._myAddr){alert('เชื่อม MetaMask ก่อน');return;}
   const n=Number(document.getElementById('psAmount').value)||0;
-  if(n<100){alert('ขั้นต่ำ 100 NEX');return;}
+  if(!Number.isFinite(n)||n<100){alert('ขั้นต่ำ 100 NEX');return;}
+  if(n>1000000000){alert('สูงสุด 1,000,000,000 NEX');return;}
+  if(_buying){return;}
+  _buying=true;
   const pay=document.getElementById('psPay').value;
   const btn=document.getElementById('psBuyBtn');
   const status=document.getElementById('psStatus');
@@ -708,7 +723,7 @@ async function psBuy(){
       btn.textContent='⏳ กำลังอนุมัติ...';
       btn.style.opacity='.5';btn.style.pointerEvents='none';
       const tk=new ethers.Contract(USDT_ADDR,USDT_ABI,signer);
-      const cost=await c.quote(amt,true);
+      const cost=await c.quote(amt,false);
       const tx1=await tk.approve(PS_ADDR,cost);
       await tx1.wait();
       status.textContent='⏳ กำลังซื้อ NEX...';
@@ -719,7 +734,7 @@ async function psBuy(){
       status.textContent='⏳ กำลังซื้อด้วย POL...';
       btn.textContent='⏳ กำลังซื้อ...';
       btn.style.opacity='.5';btn.style.pointerEvents='none';
-      const cost=await c.quote(amt,false);
+      const cost=await c.quote(amt,true);
       const tx=await c.buyWithPOL(amt,{value:cost,gasLimit:600000n});
       await tx.wait();
     }
@@ -728,10 +743,15 @@ async function psBuy(){
     btn.textContent='✅ สำเร็จ';
     btn.style.background='var(--good)';
     psLoad();
+    _buying=false;
     setTimeout(()=>{btn.textContent='🛒 ซื้อ NEX';btn.style.background='';btn.style.opacity='1';btn.style.pointerEvents='';},3000);
   }catch(e){
-    status.textContent='❌ ล้มเหลว: '+String(e.message||e).slice(0,40);
+    const msg=String(e.message||e);
+    if(msg.includes('user rejected')||msg.includes('User denied')){status.textContent='❌ ผู้ใช้ยกเลิก';}
+    else if(msg.includes('insufficient funds')){status.textContent='❌ เงินไม่พอ';}
+    else{status.textContent='❌ ล้มเหลว: '+msg.slice(0,50);}
     btn.textContent='🛒 ซื้อ NEX';btn.style.opacity='1';btn.style.pointerEvents='';
+    _buying=false;
   }
 }
 
