@@ -907,11 +907,19 @@ window.addEventListener('message',e=>{
 });
 /* ── เทรน AI จาก feedback: 👍 = ยืนยัน intent / 👎 = ถอนออก (online learning) ── */
 function chatFeedbackIdx(i, positive){
-  const m = (window.Twin.mem.chat.slice(-30))[i];
-  if (m && m.role === 'twin') chatFeedback(m.text, positive);
+  const h = (window.Twin.mem.chat.slice(-30));
+  const m = h[i];
+  if (!m || m.role !== 'twin') return;
+  // v6.1: ใช้ "คำถามของผู้ใช้" เป็นสัญญาณสอน (ไม่ใช่ข้อความตอบ)
+  let utext = m.text;
+  for (let k = i - 1; k >= 0; k--) {
+    if (h[k] && h[k].role === 'user') { utext = h[k].text; break; }
+  }
+  chatFeedback(utext, positive);
 }
 function chatFeedback(text, positive){
   const c=window.NexusBrain.classify(text);
+  if(!NexusBrain.TRAINING[c.intent]){ toast('ข้อความนี้สอนเป็น intent ไม่ได้ — ลองกด 👍 ที่คำถามของคุณแทน'); return; }
   const ok=window.NexusBrain.feedback(text.slice(0,120), c.intent, positive);
   toast(ok ? (positive?`👍 เทรนแล้ว — จับ "${c.intent}" แม่นขึ้น`:`👎 ปรับโมเดล "${c.intent}" แล้ว`) : 'ข้อความนี้ยังไม่ผูก intent');
 }
