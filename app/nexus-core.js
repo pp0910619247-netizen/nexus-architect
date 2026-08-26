@@ -476,18 +476,25 @@ Be specific and useful. If unsure, say honestly what you know vs don't, then off
     return sys;
   }
 
-  /* Multi-turn + optional token streaming (พิมพ์ทีละคำแบบ ChatGPT) · fail → null */
+  /* Multi-turn + streaming · 🪶 Lite Mode = RAM เบา (ctx สั้น · ตอบกระชับ) */
+  liteMode() { return localStorage.getItem('nx_lite') === '1'; }
+  setLite(v) { localStorage.setItem('nx_lite', v ? '1' : '0'); }
+
   async tryNeural(userMsg, history = [], onToken = null) {
     if (!this._pipe) return null;
+    const lite = this.liteMode();
     try {
-      const sys = await this._neuralSystemPrompt(userMsg);
+      let sys = await this._neuralSystemPrompt(userMsg);
+      if (lite) sys = sys.split('STYLE RULES:')[0] +
+        '\nSTYLE: Thai, warm, max 3 short sentences, 1 emoji max. Honest if unsure.';
       const msgs = [{ role: 'system', content: sys }];
-      for (const t of history.slice(-8)) {
-        const content = String(t.content || '').slice(0, 400);
+      const turnLimit = lite ? 4 : 8;
+      for (const t of history.slice(-turnLimit)) {
+        const content = String(t.content || '').slice(0, lite ? 200 : 400);
         if (!content.trim()) continue;
         msgs.push({ role: t.role === 'user' ? 'user' : 'assistant', content });
       }
-      msgs.push({ role: 'user', content: String(userMsg).slice(0, 500) });
+      msgs.push({ role: 'user', content: String(userMsg).slice(0, lite ? 250 : 500) });
 
       let streamer = null, acc = '';
       if (onToken && this._tfmod && this._tfmod.TextStreamer) {
@@ -498,7 +505,7 @@ Be specific and useful. If unsure, say honestly what you know vs don't, then off
         });
       }
       const out = await this._pipe(msgs, {
-        max_new_tokens: 300,
+        max_new_tokens: lite ? 120 : 300,
         temperature: 0.85,
         top_p: 0.9,
         repetition_penalty: 1.12,
