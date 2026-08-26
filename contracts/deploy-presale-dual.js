@@ -34,12 +34,12 @@ async function main() {
     return c;
   }
 
-  // ── params (แก้ได้) ──
+  // ── params (แก้ได้) ── หน่วย: CAP เป็น 'whole NEX' -> แปลง wei ที่นี่ที่เดียว
   const START_DELAY = 0;
   const BASE_USDT   = process.env.PRESALE_BASE_USDT || "1000";            // 0.001 USDT (6dec) / NEX
-  const BASE_POL    = process.env.PRESALE_BASE_POL  || ethers.parseEther("0.00002").toString(); // 0.00002 POL / NEX
-  const CAP         = process.env.PRESALE_CAP        || ethers.parseEther("200000").toString(); // 200k NEX / round
-  const NEED_WHITELIST = (process.env.PRESALE_WHITELIST === "true");      // compliance switch
+  const BASE_POL    = process.env.PRESALE_BASE_POL  || ethers.parseEther("0.00002").toString();
+  const CAP         = ethers.parseEther(process.env.PRESALE_CAP || "200000").toString(); // → wei
+  const NEED_WHITELIST = (process.env.PRESALE_WHITELIST === "true");
 
   let token;
   const existingNex = process.env.NEX_ADDR || "";
@@ -52,9 +52,8 @@ async function main() {
   const tokenAddr = await token.getAddress();
 
   // ให้ supply พอสำหรับขาย (mint เพิ่มถ้าขาด)
-  const needSale = BigInt(CAP) * 5n * 10n ** 18n / 10n ** 18n;
-  void needSale;
-  const saleAmt = BigInt(CAP) * 5n;
+  
+  const saleAmt = BigInt(CAP) * 5n; // wei
   if ((await token.balanceOf(wallet.address)) < saleAmt) {
     await (await token.mint(wallet.address, saleAmt)).wait();
   }
