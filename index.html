@@ -2,1431 +2,329 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://lh3.googleusercontent.com; connect-src *; font-src 'self'; object-src 'none'; base-uri 'self'; media-src 'self' blob:; frame-src https://accounts.google.com">
-<meta name="theme-color" content="#0a0e17">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icons/icon-192.png">
-<title>Nexus Architect — The Mountain (MVP)</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
-<script src="nexus-core.js"></script>
-<script src="nexus-gov.js"></script>
-<script src="nexus-memory.js"></script>
-<script src="identity.js"></script>
-<script src="kyc.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/dist/face-api.min.js"></script>
-<script src="twin.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nexus Architect — Decentralized AI × Blockchain</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🏔</text></svg>">
+<meta name="description" content="Nexus Architect — On-device AI Twin + Blockchain Problem Economy. Build the future of decentralized AI.">
+<meta property="og:title" content="Nexus Architect — Decentralized AI × Blockchain">
+<meta property="og:description" content="On-device AI Twin · Problem Economy · Escrow Jobs · All on Polygon">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://nexusarchitect.online">
 <style>
-  :root{
-    --bg:#0a0e17; --panel:#111827; --panel2:#1a2333; --line:#243044;
-    --txt:#e5ecf5; --dim:#8fa0b8; --acc:#f59e0b; --acc2:#38bdf8;
-    --good:#34d399; --bad:#f87171; --violet:#a78bfa;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,sans-serif}
-  body{background:var(--bg);color:var(--txt);min-height:100vh}
-  header{border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  .logo{font-size:20px;font-weight:800;letter-spacing:.5px}
-  .logo b{color:var(--acc)}
-  .tag{color:var(--dim);font-size:12px}
-  .spacer{flex:1}
-  .badge{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--dim)}
-  main{max-width:1100px;margin:0 auto;padding:24px 16px 80px}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-top:16px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
-  .card h3{font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-  .muted{color:var(--dim);font-size:13px;line-height:1.6}
-  button{cursor:pointer;border:none;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;background:var(--acc);color:#111}
-  button:hover{filter:brightness(1.1)}
-  button.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
-  input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--txt);padding:10px 12px;font-size:13px;margin-top:8px}
-  textarea{resize:vertical;min-height:70px}
-  label{font-size:12px;color:var(--dim)}
-  /* Identity */
-  .lvl{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1px solid var(--line);border-radius:10px;margin-top:8px;background:var(--panel2)}
-  .lvl.active{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
-  .lvl .n{font-weight:700}
-  .lvl small{display:block;color:var(--dim);font-weight:400}
-  /* Problems */
-  .prob{border:1px solid var(--line);border-radius:11px;padding:12px 14px;margin-top:10px;background:var(--panel2)}
-  .prob .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
-  .prob .title{font-weight:700;font-size:14px}
-  .cat{font-size:11px;padding:2px 9px;border-radius:999px;background:#243044;color:var(--acc2);white-space:nowrap}
-  .cat.HUMAN{background:#3b2f12;color:var(--acc)} .cat.AI_MOTHER{background:#2b2144;color:var(--violet)}
-  .votes{display:flex;align-items:center;gap:10px;margin-top:9px}
-  .vote-btn{background:transparent;border:1px solid var(--acc);color:var(--acc);padding:4px 12px;border-radius:8px;font-size:12px}
-  .vote-btn.voted{background:var(--acc);color:#111}
-  .peak{border-color:var(--acc)!important;position:relative}
-  .peak::after{content:"🏔 MISSION PEAK";position:absolute;top:-9px;right:12px;background:var(--acc);color:#111;font-size:10px;font-weight:800;border-radius:6px;padding:2px 8px}
-  /* Sim */
-  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
-  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
-  td.num{text-align:right;font-family:Consolas,monospace}
-  .pos{color:var(--good)} .neg{color:var(--bad)}
-  footer{text-align:center;color:var(--dim);font-size:12px;padding:26px}
-  #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--acc);color:var(--txt);
-         padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:99}
-  #toast.show{opacity:1}
-  @media(max-width:640px){
-    header{padding:10px 12px}
-    .logo{font-size:17px}
-    main{padding:14px 10px 60px}
-    .grid{grid-template-columns:1fr!important}
-    .card{padding:14px}
-    input,select,textarea,button{font-size:16px}
-    #chatBox{max-height:260px}
-  }
-
-/* ───────── APP SHELL v6.2 · MODERN MOBILE ───────── */
-.pg{display:none}
-.pg.on{display:block;animation:pgIn .22s ease-out}
-@keyframes pgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-
-.hero{display:flex;gap:12px;align-items:center;border-radius:20px;padding:16px;margin-bottom:14px;
-  background:radial-gradient(120% 140% at 0% 0%, #1b2540 0%, #0e1424 55%, #0a0f1c 100%);border:1px solid var(--line);
-  box-shadow:0 10px 30px -12px rgba(245,158,11,.15)}
-.hero-ava{width:54px;height:54px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;
-  background:linear-gradient(135deg,var(--acc),#d97706);box-shadow:0 6px 18px -6px rgba(245,158,11,.6)}
-
-.qgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}
-.qgrid button{background:linear-gradient(180deg,var(--panel),#0f1626);border:1px solid var(--line);border-radius:16px;
-  padding:13px 4px 10px;color:var(--txt);transition:transform .08s,border-color .15s}
-.qgrid button:active{transform:scale(.94)}
-.qgrid button .ic{display:block;font-size:22px;margin-bottom:4px}
-.qgrid button span:last-child{font-size:10px;color:var(--dim)}
-
-.bal{background:linear-gradient(135deg,#13203a,#0d1526);border:1px solid #24406b;border-radius:14px;
-  padding:12px 15px;font-size:13px;color:#bcd3ff;margin-bottom:14px}
-
-#tabbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;
-  background:rgba(10,14,23,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-  border-top:1px solid rgba(255,255,255,.07);padding-bottom:env(safe-area-inset-bottom)}
-#tabbar button{flex:1;background:none;border:0;color:#7d8ba5;font-size:10px;padding:8px 0 10px;position:relative}
-#tabbar button .ic{display:block;font-size:21px;margin-bottom:2px;filter:grayscale(.6);transition:.15s}
-#tabbar button.on{color:var(--acc)}
-#tabbar button.on .ic{filter:none;transform:translateY(-1px)}
-#tabbar button.on::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
-  width:26px;height:3px;border-radius:0 0 4px 4px;background:var(--acc)}
-
-@media(max-width:900px){
-  main{padding:12px 12px 92px}
-  header{position:sticky;top:0;z-index:55;background:rgba(10,14,23,.9);backdrop-filter:blur(14px);
-    -webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:10px 12px}
-  .logo{font-size:17px}.tag{display:none}
-  [data-p="chat"] #chatBox{height:calc(100vh - 315px)!important;max-height:none!important}
-  #micBtn{width:48px;height:48px;border-radius:50%;background:var(--acc);color:#111;border:none;font-size:20px;flex:none}
-  .card{border-radius:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e17;--panel:#111827;--panel2:#1a2236;
+  --acc:#6366f1;--acc2:#818cf8;--acc3:#4f46e5;
+  --good:#22c55e;--warn:#f59e0b;--err:#ef4444;
+  --txt:#e5e7eb;--txt2:#9ca3af;--txt3:#6b7280;
+  --line:#1e293b;
+  --grad:linear-gradient(135deg,#6366f1 0%,#8b5cf6 40%,#a855f7 70%,#c084fc 100%);
 }
-@media(min-width:901px){ #tabbar{display:none} .pg{display:block!important} }
+html{scroll-behavior:smooth}
+body{font-family:'Inter','SF Pro Display',system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--acc2);text-decoration:none}a:hover{text-decoration:underline}
+.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,14,23,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--line)}
+nav .inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 1.5rem}
+nav .logo{font-size:1.1rem;font-weight:800}
+nav .logo span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+nav .links{display:flex;gap:1.5rem}
+nav .links a{color:var(--txt2);font-size:.85rem;font-weight:500}
+nav .links a:hover{color:var(--txt);text-decoration:none}
+.social-row{display:flex;gap:.8rem}
+.social-row a{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:var(--panel2);color:var(--txt2);font-size:1rem;transition:all .2s}
+.social-row a:hover{background:var(--acc);color:#fff;text-decoration:none}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:100px 1.5rem 60px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-30%;left:-10%;width:120%;height:120%;background:radial-gradient(circle at 50% 40%,rgba(99,102,241,0.12) 0%,transparent 60%);pointer-events:none}
+.hero .badge{display:inline-block;background:var(--panel2);border:1px solid var(--line);padding:.4rem 1rem;border-radius:20px;font-size:.8rem;color:var(--acc2);margin-bottom:1.5rem;font-weight:600}
+.hero h1{font-size:clamp(2.2rem,5.5vw,4rem);font-weight:900;line-height:1.1;margin-bottom:1.2rem}
+.hero h1 .g{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:1.15rem;color:var(--txt2);max-width:650px;margin:0 auto 2rem}
+.hero .btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.8rem;border-radius:12px;font-weight:700;font-size:.95rem;border:none;cursor:pointer;transition:transform .15s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px);text-decoration:none}
+.btn-p{background:var(--grad);color:#fff;box-shadow:0 4px 20px rgba(99,102,241,0.3)}
+.btn-p:hover{box-shadow:0 8px 30px rgba(99,102,241,0.45)}
+.btn-s{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+.btn-s:hover{border-color:var(--acc)}
+
+/* SECTION */
+section{padding:5rem 0}
+.sec-title{font-size:1.8rem;font-weight:800;margin-bottom:.4rem}
+.sec-title .g{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sec-sub{color:var(--txt2);font-size:1rem;margin-bottom:2.5rem;max-width:550px}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
+.about-text p{color:var(--txt2);margin-bottom:1rem;font-size:.95rem}
+.about-text strong{color:var(--txt)}
+.about-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:2rem}
+.about-card h4{font-weight:700;margin-bottom:.8rem;font-size:1rem}
+.about-card ul{list-style:none;padding:0}
+.about-card li{color:var(--txt2);font-size:.88rem;padding:.35rem 0;padding-left:1.2rem;position:relative}
+.about-card li::before{content:'→';position:absolute;left:0;color:var(--acc)}
+
+/* TOKENOMICS */
+.toko-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.2rem}
+.toko-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.5rem;text-align:center}
+.toko-card .pct{font-size:2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.toko-card .lbl{color:var(--txt2);font-size:.82rem;margin-top:.3rem}
+.toko-card .det{color:var(--txt3);font-size:.75rem;margin-top:.5rem}
+
+/* ROADMAP */
+.road-timeline{position:relative;padding-left:2rem}
+.road-timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--line)}
+.road-item{position:relative;margin-bottom:2.5rem;padding-left:1.5rem}
+.road-item::before{content:'';position:absolute;left:-2rem;top:.5rem;width:18px;height:18px;border-radius:50%;background:var(--panel2);border:2px solid var(--acc)}
+.road-item.done::before{background:var(--good);border-color:var(--good)}
+.road-item .when{font-size:.75rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem}
+.road-item h4{font-weight:700;margin-bottom:.4rem}
+.road-item ul{list-style:none;padding:0}
+.road-item li{color:var(--txt2);font-size:.85rem;padding:.25rem 0;padding-left:1rem;position:relative}
+.road-item li::before{content:'·';position:absolute;left:0;color:var(--acc);font-weight:800}
+
+/* PRESALE */
+.presale-box{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:2.5rem;text-align:center;position:relative;overflow:hidden}
+.presale-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
+.presale-box h3{font-size:1.5rem;font-weight:800;margin-bottom:.5rem}
+.presale-box .price{font-size:2.5rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:.8rem 0}
+.presale-box .detail{color:var(--txt2);font-size:.9rem;margin-bottom:1.5rem;line-height:1.8}
+.presale-box .contracts{background:var(--panel2);border-radius:12px;padding:1rem;margin:1.5rem 0;text-align:left;font-size:.8rem;font-family:monospace}
+.presale-box .contracts div{padding:.3rem 0;color:var(--txt2)}
+.presale-box .contracts b{color:var(--txt)}
+.contract-addr{word-break:break-all;font-size:.75rem;color:var(--acc2)}
+
+/* FAQ */
+.faq-item{border-bottom:1px solid var(--line);padding:1.2rem 0}
+.faq-item h4{font-weight:700;cursor:pointer;font-size:.95rem}
+.faq-item p{color:var(--txt2);font-size:.88rem;margin-top:.5rem;display:none}
+.faq-item.open p{display:block}
+
+/* FOOTER */
+footer{text-align:center;padding:3rem 0;border-top:1px solid var(--line);color:var(--txt3);font-size:.8rem}
+footer .socials{display:flex;gap:1rem;justify-content:center;margin-bottom:1rem}
+footer .socials a{display:flex;align-items:center;gap:.4rem;background:var(--panel2);padding:.5rem 1rem;border-radius:10px;color:var(--txt2);font-size:.85rem}
+footer .socials a:hover{background:var(--acc);color:#fff;text-decoration:none}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .about-grid{grid-template-columns:1fr}
+  nav .links{display:none}
+  .hero h1{font-size:2rem}
+}
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">⛰ NEXUS <b>ARCHITECT</b></div>
-  <span class="tag">Whitepaper v1.1 · MVP · runs 100% local</span>
-  <div class="spacer"></div>
-  <span class="badge" id="netBadge">Local Mode</span>
-  <select id="netSel" onchange="switchNet(this.value)" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-size:12px">
-    <option value="amoy">⛓ Polygon Amoy</option>
-    <option value="bsc">⛓ BSC Testnet</option>
-    <option value="mainnet">🟣 Polygon Mainnet</option>
-  </select>
-  <a href="waitlist.html" style="text-decoration:none"><button class="ghost">✨ Waitlist</button></a>
-  <a href="waitlist.html" style="text-decoration:none"><button class="ghost">✨ Waitlist</button></a>
-  <button class="ghost" id="walletBtn">🔗 Connect Wallet</button>
-</header>
 
-<main>
-<section class="pg" data-p="more">
-  <div class="hero">
-    <div class="hero-ava">🐉</div>
-    <div style="flex:1">
-      <div class="muted" style="font-size:11px;letter-spacing:.5px">NEXUS ARCHITECT</div>
-      <div id="homeGreet" style="font-weight:800;font-size:17px">Hello Hunter 👋</div>
+<nav>
+  <div class="inner">
+    <div class="logo"><span>Nexus</span> Architect</div>
+    <div class="links">
+      <a href="#about">About</a>
+      <a href="#tokenomics">Token</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#presale">Presale</a>
+      <a href="#faq">FAQ</a>
     </div>
-    <button class="ghost" style="padding:6px 10px;font-size:11px" onclick="go('more')">⚙️</button>
-  </div>
-  <div class="bal" id="homeBal">🔗 Connect Wallet เพื่อดูยอดและซื้อ NEX</div>
-  <div id="homeLast" class="muted" style="font-size:12px;padding:0 16px;margin-top:2px"></div>
-  <div class="qgrid">
-    <button onclick="go('presale')"><span class="ic">🚀</span><span>Buy NEX</span></button>
-    <button onclick="go('jobs')"><span class="ic">💼</span><span>Jobs</span></button>
-    <button onclick="go('mountain')"><span class="ic">🏔️</span><span>Mountain</span></button>
-    <button onclick="go('chat')"><span class="ic">💬</span><span>Twin AI</span></button>
-  </div>
-</section>
-  <!-- ══ IDENTITY ══ -->
-  <div class="grid">
-    <div class="card">
-      <h3>🆔 Nexus Identity Protocol</h3>
-      <p class="muted">MVP จำลองระดับ identity ในเครื่อง (localStorage)<br>Production: Google OAuth → KYC API → NDID/ZK</p>
-      <div id="levels"></div>
-      <div style="display:flex;gap:6px;margin-top:10px">
-        <input id="gidIn" placeholder="Google Client ID (มี default แล้ว — เว้นว่างได้)" style="flex:1;margin:0" type="password" autocomplete="off">
-        <button class="ghost" onclick="googleFlow()">🔵 Google Sign-In (Lv.1)</button>
-      </div>
-      <p class="muted" id="gidHint" style="margin-top:4px">ใช้ Client ID ของระบบได้ทันที · จะใส่ของตัวเองก็ได้ (console.cloud.google.com → Credentials → OAuth Web client → origin ใส่ URL เว็บนี้)</p>
-      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-        <button class="ghost" style="flex:1" onclick="realPasskey()">🔐 Passkey จริง (Lv.1)</button>
-        <button class="ghost" style="flex:1" onclick="realWallet()">✍️ เซ็น Wallet จริง (Lv.2)</button>
-      </div>
-      <button style="width:100%;margin-top:8px" onclick="startKYC()">🪪 ยืนยันบัตรประชาชน + แสกนหน้า (Lv.2 REAL)</button>
-      <p class="muted" id="identitySummary" style="margin-top:8px"></p>
-      <button class="ghost" style="width:100%;margin-top:6px" onclick="upgradeLevel()">⬆️ ยืนยันระดับถัดไป (simulated)</button>
-    </div>
-
-    <div class="card">
-      <h3>👤 Digital Twin</h3>
-      <div class="muted" id="twinInfo"></div>
-      <div style="margin-top:10px">
-        <label>ชื่อ AI ของคุณ</label>
-        <input id="twinName" placeholder="เช่น Aurora">
-        <label>สิ่งที่อยากให้ AI จำเกี่ยวกับตัวคุณ</label>
-        <textarea id="twinMem" placeholder="ความสนใจ / ทักษะ / เป้าหมาย..."></textarea>
-        <button style="width:100%;margin-top:10px" onclick="saveTwin()">บันทึกลง On-Device Memory</button>
-      </div>
+    <div class="social-row">
+      <a href="https://t.me/YOUR_TELEGRAM" target="_blank" title="Telegram">✈️</a>
+      <a href="https://x.com/YOUR_TWITTER" target="_blank" title="X / Twitter">𝕏</a>
+      <a href="https://facebook.com/YOUR_PAGE" target="_blank" title="Facebook">📘</a>
     </div>
   </div>
-
-  </section>
-<section class="pg" data-p="mountain">
-<!-- ══ MOUNTAIN ══ -->
-  <div class="card" style="margin-top:16px">
-    <h3>🏔 The Mountain — กระดานปัญหาโลก 🌙 <span class="muted" style="font-weight:400;font-size:12px">culling เที่ยงคืน: ต้อง &gt;10 โหวตหรือหาย</span></h3>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:6px">
-      <div style="flex:2;min-width:220px"><label>ปัญหาที่ต้องการเสนอ</label><input id="pTitle" placeholder="เช่น ขยะพลาสติกในทะเลไทย"></div>
-      <div style="flex:1;min-width:150px"><label>หมวด</label>
-        <select id="pCat"><option>HUMAN</option><option>GROUP</option><option>AI_MOTHER</option><option>ANOMALY</option><option>AI_DEV</option></select></div>
-      <button onclick="submitProblem()">เสนอปัญหา (Level 3+)</button>
-    </div>
-    <div id="problemList"></div>
-  </div>
-
-  </section>
-<section class="pg" data-p="presale">
-<!-- ══ ECONOMY ══ -->
-  <div class="grid">
-    <div class="card">
-      <h3>⚖️ 20/80 Reward Splitter</h3>
-      <p class="muted">จำลองการแจกโทเค็นรอบแรก — solver ได้ 20%, ที่เหลือกระจายตาม participation points</p>
-      <label>โทเค็นรวมในรอบ</label><input id="rTotal" type="number" value="100000">
-      <label>Solver ชนะ (points)</label><input id="rWin" type="number" value="100">
-      <label>Voter/Reviewer/ผู้ร่วม (points รวม)</label><input id="rPool" type="number" value="400">
-      <button style="width:100%;margin-top:12px" onclick="runSplit()">▶️ Distribute</button>
-      <table id="splitOut"></table>
-    </div>
-
-    <div class="card">
-      <h3>📉 Variable Decay v1.1 (Solution-Mined)</h3>
-      <p class="muted">WP v1.0 แบบ halve-per-block = รางวัลเป็น 0 ใน &lt;1 นาที<br>v1.1: halve เมื่อ solutions สะสม ×milestone + tail floor</p>
-      <table id="decayOut"></table>
-    </div>
-  </div>
-  </section>
-<section class="pg on" data-p="chat">
-<!-- ══ DIGITAL TWIN CHAT ══ -->
-  <div class="card" style="margin-top:16px">
-    <h3>🐉 Digital Twin — <span id="twinChatName" style="color:var(--acc)"></span> <span class="muted" style="font-weight:400" id="twinStats"></span></h3>
-    <p class="muted" id="lifecycleInfo" style="margin-bottom:8px"></p>
-    <div id="chatBox" style="max-height:320px;overflow-y:auto;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;min-height:120px"></div>
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <input id="chatInput" placeholder='พิมพ์คุยกับ Twin... หรือ "จำว่า ฉันชอบกาแฟ" ' onkeydown="if(event.key==='Enter')sendChat()">
-      <button onclick="sendChat()">ส่ง</button>
-      <button class="ghost" id="micBtn" onclick="toggleMic()" title="พูดแทนพิมพ์">🎤</button>
-      <button class="ghost" id="voiceBtn" onclick="toggleVoice()" title="ให้ Twin พูดตอบ">🔊</button>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-      <button class="ghost" onclick="twinProposeProblem()">🐉 เสนอโจทย์สู่ Mountain (AI Mother)</button>
-      <button class="ghost" onclick="exportMemory()">💾 Export ความจำ</button>
-      <button class="ghost" onclick="document.getElementById('importMem').click()">📂 Import</button>
-      <input type="file" id="importMem" accept=".json" style="display:none" onchange="importMemory(this)">
-    </div>
-    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center">
-      <label style="margin:0">สมอง:</label>
-      <select id="brainSel" style="width:auto;margin:0;padding:6px 10px" onchange="brainChange()">
-        <option value="local">Local Brain (ฟรี)</option>
-        <option value="gemini">Gemini (API key ฟรี)</option>
-        <option value="openai">OpenAI</option>
-        <option value="ollama">Ollama (local LLM)</option>
-      </select>
-      <input id="apiKeyIn" placeholder="API Key (เก็บในเครื่องเท่านั้น)" style="flex:1;min-width:180px;margin:0;width:auto" type="password">
-      <button class="ghost" onclick="saveKey()">บันทึก Key</button>
-      <button class="ghost" id="neuralBtn" onclick="loadNeuralBrain()" title="Nexus One — single model">🧠 Full Brain</button>
-      <button class="ghost" id="liteBtn" onclick="toggleLite()" title="โหมดเบา: RAM น้อย · ตอบสั้น">🫘 Lite</button>
-    </div>
-    <p class="muted" style="margin-top:6px">💡 Gemini key ฟรีได้ที่ aistudio.google.com · ⚡Full Brain = LLM จริงในเครื่อง 100% (WebGPU auto · BitNet = experimental, fallback อัตโนมัติ)</p>
-  </div>
-
-  </section>
-<section class="pg" data-p="more">
-<!-- ══ ON-CHAIN ══ -->
-  <div class="card" style="margin-top:16px">
-    <h3>⛓ On-Chain — Polygon Amoy (จริง 100%)</h3>
-    <p class="muted">ProblemRegistry: <span style="font-family:Consolas" id="regAddr"></span></p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="ghost" onclick="readChain()">📖 อ่านภูเขาจาก Blockchain</button>
-      <button class="ghost" onclick="chainSubmit()">⛰ เสนอปัญหาบน Chain (MetaMask)</button>
-    </div>
-    <table id="chainOut"></table>
-  </div>
-
-  <!-- ══ REWARDS ADMIN ══ -->
-  <div class="card" style="margin-top:16px">
-    <h3>⚖️ RewardSplitter Admin — 20/80 บน Chain</h3>
-    <p class="muted">เฉพาะ deployer wallet · RewardSplitter: <span style="font-family:Consolas">0x97fb...79ecF</span></p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
-      <div style="flex:2;min-width:200px"><label>Participant address</label><input id="rwAddr" placeholder="0x..."></div>
-      <div style="flex:1;min-width:100px"><label>Points</label><input id="rwPts" type="number" value="10"></div>
-      <button class="ghost" onclick="rwAdd()">➕ Add</button>
-      <button class="ghost" onclick="rwAward()">🏅 Award</button>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:end">
-      <div style="flex:2;min-width:200px"><label>Solver address (รับ 20%)</label><input id="rwSolver" placeholder="0x..."></div>
-      <label style="display:flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="rwValue" style="width:auto"> ส่ง 0.01 POL พร้อม distribute</label>
-      <button onclick="rwDistribute()">💸 Distribute 20/80</button>
-    </div>
-    <p class="muted" id="rwStatus" style="margin-top:8px"></p>
-  </div>
-
-  </section>
-<section class="pg" data-p="jobs">
-<!-- ══ JOB MARKET PRO — Escrow + 10% platform fee ══ -->
-  <div class="card" style="margin-top:16px">
-    <h3>💼 Job Market Pro — Escrow บน Chain · เราเป็นตัวกลาง หัก 10%</h3>
-    <p class="muted" style="font-size:11px;font-family:Consolas" id="marketAddrs"></p>
-    <table id="marketStats" style="margin-bottom:6px"></table>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:4px">
-      <button class="ghost" onclick="marketConfig()" title="วาง address NEX Token + JobBoard">⚙️ ตั้งค่า Contracts</button>
-      <span class="muted" id="jobConfig"></span>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:10px;border-top:1px solid var(--line);padding-top:10px">
-      <div style="flex:2;min-width:200px"><label>📋 รายละเอียดงาน (โพสต์แล้วล็อกเงิน escrow ทันที)</label><input id="jobSpec" placeholder="เช่น ทำโลโก้ร้านกาแฟ 3 แบบ + ไฟล์ต้นฉบับ"></div>
-      <div style="flex:1;min-width:120px"><label>ค่าตอบแทน (NEX)</label><input id="jobReward" type="number" value="100" min="1"></div>
-      <button onclick="jobPost()">📢 โพสต์งาน</button>
-      <button class="ghost" onclick="jobRefresh()">🔄</button>
-    </div>
-    <div style="display:flex;gap:6px;margin-top:10px">
-      <button class="ghost" id="tabAll" onclick="jobTab('all')">🌐 ทั้งหมด</button>
-      <button class="ghost" id="tabPost" onclick="jobTab('posted')">📢 งานที่สั่ง</button>
-      <button class="ghost" id="tabWork" onclick="jobTab('working')">🔨 งานที่รับ</button>
-      <button class="ghost" onclick="aiFindJob()">🐉 AI จับคู่งานให้ฉัน</button>
-    </div>
-    <div id="jobList" style="margin-top:10px"></div>
-  </div>
-
-  </section>
-<section class="pg" data-p="presale">
-<!-- ══ PRESALE — ขาย NEX เป็นรอบ ══ -->
-  <div class="card" style="margin-top:16px">
-    <h3>🚀 NEX Presale — Genesis Rounds <span class="muted" style="font-weight:400;font-size:12px">ราคาขึ้น ×1.5 ทุกรอบ · testnet</span></h3>
-    <div style="display:flex;gap:6px;align-items:center">
-      <button class="ghost" onclick="presaleConfig()">⚙️ Presale Contract</button>
-      <span class="muted" id="psAddrTxt" style="font-size:11px;font-family:Consolas"></span>
-    </div>
-    <table id="psStats" style="margin-top:8px"></table>
-    <div style="background:var(--panel2);border-radius:8px;height:14px;margin-top:6px;border:1px solid var(--line)">
-      <div id="psBar" style="height:100%;background:linear-gradient(90deg,var(--acc),#fbbf24);border-radius:7px;width:0%;transition:.4s"></div>
-    </div>
-    <p class="muted" id="psProgress" style="font-size:12px;margin-top:4px"></p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
-      <div style="flex:1;min-width:160px"><label>จำนวน NEX ที่จะซื้อ</label><input id="psAmount" type="number" step="10" value="1000"></div>
-      <div style="min-width:110px"><label>จ่ายด้วย</label>
-        <select id="psPay" style="width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px" onchange="estimateOut()">
-          <option value="POL">POL</option>
-          <option value="USDT">USDT</option>
-        </select></div>
-      <button onclick="presaleBuy()">🛒 Buy</button>
-      <button class="ghost" onclick="renderPresale()">🔄</button>
-    </div>
-    <p class="muted" id="psEstimate" style="font-size:12px"></p>
-    <p class="muted" style="font-size:11px">⚠️ Testnet demo — เงินทดสอบเท่านั้น · ผู้ซื้อได้ token ทันที · เกินเงินคืนอัตโนมัติ · โอนเกิน cap = roll รอบถัดไป</p>
-  </div>
-
-  </section>
-<section class="pg" data-p="more">
-<!-- ═══ GOVERNANCE ═══ -->
-<div class="card" style="margin-top:14px">
-  <h3>📄 Whitepapers</h3>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-    <a class="ghost" style="text-decoration:none;padding:8px 12px;border-radius:9px;border:1px solid var(--line);font-size:12px" target="_blank" rel="noopener"
-       href="https://github.com/pp0910619247-netizen/nexus-architect/blob/main/WHITEPAPER_v1.0_GENESIS.md">📜 WP v1.0 Genesis</a>
-    <a class="ghost" style="text-decoration:none;padding:8px 12px;border-radius:9px;border:1px solid var(--line);font-size:12px" target="_blank" rel="noopener"
-       href="https://github.com/pp0910619247-netizen/nexus-architect/blob/main/WHITEPAPER_v1.1_CHANGELOG.md">🧪 WP v1.1 Changelog</a>
-  </div>
-</div>
-<!-- ═══ GOVERNANCE ═══ --> + REWARD ENGINE + HRW ═══ -->
-  <div class="grid">
-    <div class="card">
-      <h3>📊 Nexus Stats (สำหรับนักลงทุน/ชุมชน)</h3>
-      <table id="statsOut"></table>
-    </div>
-
-    <div class="card">
-      <h3>🏛 DAO Governance — 1 มนุษย์ 1 เสียง</h3>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
-        <div style="flex:2;min-width:180px"><label>Proposal</label><input id="propTitle" placeholder="เช่น ลด milestone เหลือ 200"></div>
-        <div style="flex:1;min-width:120px"><label>ประเภท</label>
-          <select id="propType" style="margin-top:8px"><option value="milestone">ปรับ Decay milestone</option><option value="treasury">ปรับ Treasury split</option></select></div>
-        <button onclick="createProposal()">📜 เสนอ (Lv.3+)</button>
-      </div>
-      <div id="proposalList" style="margin-top:10px"></div>
-    </div>
-
-    <div class="card">
-      <h3>📉 Reward Engine v1.1 — Solution-Mined</h3>
-      <label>Solutions สะสมที่แก้สำเร็จ</label>
-      <input id="reSolutions" type="number" value="800" oninput="renderRewardEngine()">
-      <table id="reOut"></table>
-      <p class="muted">Halving ทุกครบ 250 solutions · Tail floor กันรางวัล = 0 · Treasury 50/50</p>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:16px">
-    <h3>🛡 Human Rights Watch Module</h3>
-    <p class="muted">โจทย์ที่ตรวจพบเนื้อหาสิทธิมนุษยชน → ต้องการ supermajority + ตรวจสอบจากแหล่งข้อมูลอิสระก่อนขึ้น Mission Peak</p>
-    <div id="hrwList"></div>
-  </div>
-</main>
-</section>
-<footer>Nexus Architect — <a href="privacy.html" style="color:var(--acc)">Privacy</a> · <a href="waitlist.html" style="color:var(--acc)">Waitlist</a> · Open Source CC BY-SA 4.0 · Built with the Architect · <span id="ts"></span></footer>
-<div id="toast"></div>
-
-<script>
-/* ═══════════ STATE (localStorage) ═══════════ */
-const DB = {
-  get(k,d){ try{return JSON.parse(localStorage.getItem('nx_'+k)) ?? d}catch(e){return d} },
-  set(k,v){ localStorage.setItem('nx_'+k, JSON.stringify(v)) }
-};
-let user   = DB.get('user', {level:0, name:null});
-let twin   = DB.get('twin', {name:'', mem:''});
-let probs  = DB.get('probs', seedProblems());
-
-function seedProblems(){
-  return [
-    {id:1, title:'ค่าครองชีพสูง — เข้าถึงสินค้าจำเป็นราคายุติธรรม', cat:'HUMAN', votes:42, voted:false, status:'open', by:'Architect'},
-    {id:2, title:'พิสูจน์ทฤษฎีบทคณิตศาสตร์ที่ยังแก้ไม่ได้', cat:'AI_MOTHER', votes:31, voted:false, status:'open', by:'MotherOracle'},
-    {id:3, title:'ระบบตื่นเตือนภัยธรรมชาติล่วงหน้าสำหรับชุมชน', cat:'ANOMALY', votes:27, voted:false, status:'open', by:'Architect'},
-  ];
-}
-function persist(){ DB.set('user',user); DB.set('twin',twin); DB.set('probs',probs); }
-function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
-
-/* ═══════════ IDENTITY ═══════════ */
-const LEVELS=[
-  {l:0,n:'เงา Shadow',d:'ดาวน์โหลดแอป — อ่าน Mountain'},
-  {l:1,n:'มนุษย์ Human',d:'Passkey จริง — โหวต + แชท AI'},
-  {l:2,n:'พลเมือง Citizen',d:'บัตร+แสกนหน้า จริง — AI รับงาน ถอนได้'},
-  {l:3,n:'อธิปไตย Sovereign',d:'Validator — เปลี่ยน Protocol ได้'},
-];
-function renderLevels(){
-  document.getElementById('levels').innerHTML = LEVELS.map(x=>
-    `<div class="lvl ${user.level>=x.l?'active':''}">
-       <div class="n">${x.l>=user.level?'🔒':'✅'} Lv.${x.l} ${x.n}<small>${x.d}</small></div>
-       <span>${user.level>=x.l?'ACTIVE':''}</span></div>`).join('');
-  document.getElementById('twinInfo').innerHTML =
-    `ระดับปัจจุบัน: <b>Lv.${user.level} ${LEVELS[user.level].n}</b><br>`+
-    `Memory บนเครื่อง: <b>${(DB.get('memCount',0))} บันทึก</b> (ไม่ออกจาก device)`;
-  renderProblems();
-}
-function upgradeLevel(){
-  if(user.level>=3){ toast('ครบ Level สูงสุดแล้ว 🐉 (อธิปไตย)'); return; }
-  const names=['','Google Sign-In ✓ (sim)','KYC บัตร+ใบหน้า ✓ (sim)','NDID+FIDO2 ✓ (sim)'];
-  user.level++; toast(names[user.level]); persist(); renderLevels();
-}
-/* ── Identity จริง: Passkey (WebAuthn) + Wallet Signature ── */
-async function realPasskey(){
-  const r=await NexusIdentity.registerPasskey();
-  toast(r.msg); if(r.ok){ user.level=Math.max(user.level,1); persist(); renderLevels(); renderIdentitySummary(); }
-}
-
-async function googleFlow(){
-  try{
-    const inp=document.getElementById('gidIn');
-    if(inp.value.trim()) NexusIdentity.saveGoogleClientId(inp.value.trim());
-    const init=await NexusIdentity.googleFlow(async(credential)=>{
-      const r=await NexusIdentity.verifyGoogleCredential(credential);
-      toast(r.msg);
-      if(r.ok){ user.level=Math.max(user.level,1); persist(); renderLevels(); renderIdentitySummary(); }
-    });
-    if(!init.ok){ toast('⛔ '+init.msg); return; }
-    google.accounts.id.prompt(); // One Tap
-  }catch(e){ toast('Google Sign-In error: '+String(e.message||e).slice(0,70)); }
-}
-async function realWallet(){
-  const r=await NexusIdentity.walletProof();
-  if(r.ok){ user.level=Math.max(user.level,2); persist(); renderLevels(); }
-  toast(r.msg); renderIdentitySummary();
-}
-function renderIdentitySummary(){
-  document.getElementById('identitySummary').innerHTML=NexusIdentity.summary();
-}
-
-/* ═══════════ TWIN ═══════════ */
-function saveTwin(){
-  twin.name=document.getElementById('twinName').value.trim();
-  twin.mem =document.getElementById('twinMem').value.trim();
-  if(!twin.name){ toast('ตั้งชื่อ AI ก่อนนะ'); return; }
-  DB.set('memCount', DB.get('memCount',0)+1);
-  persist(); toast(`🥚 "${twin.name}" จำบันทึกแล้ว (on-device)`);
-  document.getElementById('twinInfo').innerHTML=`AI ของคุณ: <b>${twin.name}</b> · Memory ${(DB.get('memCount',0))} บันทึก`;
-}
-
-/* ═══════════ MOUNTAIN ═══════════ */
-const SURVIVE_VOTES = 10; // ต้องได้ "มากกว่า" 10 โหวตก่อนเที่ยงคืนถึงจะรอด
-const SOLVE_APPROVALS = 3; // Peer Review: 3 approvals = SOLVED
-let _showGrave=false;
-function endOfDay(ts){ const d=new Date(ts); d.setHours(24,0,0,0); return d.getTime(); }
-function myUid(){ let u=localStorage.getItem('nx_uid'); if(!u){ u='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); localStorage.setItem('nx_uid',u); } return u; }
-
-function submitProblem(){
-  if(user.level<2){ toast('⛔ ต้อง Level 2 (พลเมือง — ยืนยันบัตร+ใบหน้า) ถึงจะเสนอปัญหาได้'); return; }
-  const t=document.getElementById('pTitle').value.trim();
-  if(!t){ toast('พิมพ์ชื่อปัญหาก่อน'); return; }
-  probs.unshift({id:Date.now(), title:t, cat:document.getElementById('pCat').value,
-                 votes:1, voted:true, status:'open', by:user.name||'You'});
-  document.getElementById('pTitle').value='';
-  persist(); renderProblems(); renderHRW(); toast('⛰ ขึ้นภูเขาแล้ว — เก็บ 11 โหวตก่อนเที่ยงคืน!');
-}
-function vote(id){
-  const p=probs.find(x=>x.id===id);
-  if(user.level<1){ toast('⛔ ต้อง Level 1 (Human) ถึงจะโหวตได้'); return; }
-  if(p.voted){ toast('คุณโหวตปัญหานี้แล้ว (1 vote/คน/ปัญหา)'); return; }
-  p.votes++; p.voted=true;
-  persist(); renderProblems(); checkPeak(); renderHRW(); toast('🗳 +1 vote');
-}
-
-/* ── Daily Culling: เกินเที่ยงคืนแล้วโหวตไม่ผ่าน 10+ → หายจากภูเขา ── */
-function cullExpired(){
-  let culled=0;
-  probs.forEach(p=>{
-    if(p.status==='expired'||p.status==='solved') return;
-    if(!p.deadline) p.deadline=endOfDay(Number(p.id)||Date.now());
-    if(Date.now()>p.deadline && p.votes<=SURVIVE_VOTES){
-      p.status='expired'; p.expiredAt=Date.now(); culled++;
-    }
-  });
-  if(culled) persist();
-  return culled;
-}
-function toggleGrave(){ _showGrave=!_showGrave; renderProblems(); }
-function _fmtLeft(ms){
-  const h=Math.floor(ms/3600000), m=Math.floor(ms%3600000/60000);
-  return h>0 ? `${h} ชม. ${m} น.` : `${m} นาที`;
-}
-function checkPeak(){
-  const active=probs.filter(p=>p.status!=='expired'&&p.status!=='solved');
-  const top=[...active].sort((a,b)=>b.votes-a.votes)[0];
-  probs.forEach(p=>{
-    if(p.status==='expired'||p.status==='solved') return;
-    p.status=(top && p.id===top.id && top.votes>=30)?'peak':'open';
-  });
-  persist();
-}
-/* ── Solutions + Peer Review (WP ch6.2): เสนอทางแก้ → Lv1+ approve = SOLVED ── */
-function toggleSol(id){ const p=probs.find(x=>x.id===id); p._open=!p._open; renderProblems(); }
-function proposeSolution(id){
-  if(user.level<1){ toast('⛔ ต้อง Level 1+ ถึงจะเสนอทางแก้'); return; }
-  const t=prompt('ทางแก้ของคุณ (สั้นๆ ชัดๆ):');
-  if(!t||!t.trim()) return;
-  const p=probs.find(x=>x.id===id);
-  if(!p.solutions) p.solutions=[];
-  const nm=(user.name||'anon').slice(0,20);
-  p.solutions.push({sid:Date.now(), by:nm, text:t.trim().slice(0,300), up:0, voters:{}});
-  p._open=true; persist(); renderProblems(); toast('เสนอทางแก้แล้ว — รอ peer review');
-}
-function reviewSol(id,sid){
-  if(user.level<1){ toast('Peer Review ต้อง Level 1+'); return; }
-  const p=probs.find(x=>x.id===id); const s=(p.solutions||[]).find(x=>x.sid===sid);
-  if(!s) return;
-  const uid=myUid();
-  if(s.voters[uid]){ delete s.voters[uid]; s.up--; }
-  else { s.voters[uid]=1; s.up++; }
-  if(s.up>=SOLVE_APPROVALS && p.status!=='solved' && p.status!=='expired'){
-    p.status='solved'; p.solvedAt=Date.now();
-    persist(); renderProblems(); renderStats(); renderHRW();
-    toast('SOLVED! "'+p.title.slice(0,30)+'" ผ่าน peer review '+SOLVE_APPROVALS+' คน');
-    return;
-  }
-  persist(); renderProblems(); toast(s.up+' / '+SOLVE_APPROVALS+' approvals');
-}
-function renderProblems(){
-  cullExpired(); checkPeak();
-  const el=document.getElementById('problemList');
-  const alive=probs.filter(p=>p.status!=='expired');
-  const dead=probs.filter(p=>p.status==='expired');
-  const sorted=[...alive].sort((a,b)=>(b.status==='solved')-(a.status==='solved')||b.votes-a.votes);
-  let html=`<div class="muted" style="font-size:12px;margin-bottom:6px">📜 กติกาภูเขา: โจทย์ต้องได้ <b>มากกว่า ${SURVIVE_VOTES} โหวตก่อนเที่ยงคืน</b> ไม่งั้นถูกล้าง 🌙 · ทางแก้ผ่าน peer review ${SOLVE_APPROVALS} คน = ✅ SOLVED
-    ${dead.length?`<button class="vote-btn" style="margin-left:8px" onclick="toggleGrave()">☠️ culled (${dead.length})${_showGrave?' ▲':' ▼'}</button>`:''}</div>`;
-  html+=sorted.map(p=>{
-    const left=p.deadline-Date.now();
-    const need=Math.max(0,SURVIVE_VOTES+1-p.votes);
-    const survive=p.votes>SURVIVE_VOTES;
-    const nSol=(p.solutions||[]).length;
-    const badge=p.status==='solved'
-      ? '<span class="cat" style="background:#12331f;color:var(--good)">✅ SOLVED</span>'
-      : `<span class="cat ${esc(p.cat)}">${esc(p.cat)}</span>`;
-    const timeInfo=p.status==='solved'
-      ? `<span style="color:var(--good);font-size:12px">แก้สำเร็จ ${new Date(p.solvedAt||Date.now()).toLocaleDateString('th-TH')}</span>`
-      : (survive?'<span style="color:var(--good);font-size:12px">✓ รอดแล้ว</span>'
-        :`<span class="${left<6*3600000?'neg':'muted'}" style="font-size:12px">⏳ เหลือ ${_fmtLeft(left)} · ต้องอีก ${need} โหวต</span>`);
-    let solHtml='';
-    if(p._open){
-      solHtml='<div style="margin-top:8px;border-top:1px dashed var(--line);padding-top:6px">'+
-        (p.solutions||[]).map(s=>{
-          const voted=!!s.voters[myUid()];
-          return `<div class="muted" style="font-size:12px;padding:4px 0">💡 ${esc(s.text)} <small>— ${esc(s.by)}</small>
-            <button class="vote-btn ${voted?'voted':''}" style="margin-left:6px" onclick="reviewSol(${p.id},${s.sid})">👍 ${s.up}/${SOLVE_APPROVALS}</button></div>`;
-        }).join('')+
-        (p.status!=='solved'?`<button class="vote-btn" onclick="proposeSolution(${p.id})">➕ เสนอทางแก้ของฉัน</button>`:'')+
-        '</div>';
-    }
-    return `
-    <div class="prob ${p.status==='peak'?'peak':''}">
-      <div class="top"><div><div class="title">#${String(p.id).slice(-4)} ${esc(p.title)}</div>
-      <small class="muted">โดย ${esc(p.by)}</small></div>${badge}</div>
-      <div class="votes"><button class="vote-btn ${p.voted?'voted':''}" onclick="vote(${p.id})">${p.voted?'▲ Voted':'▲ Vote'}</button>
-      <b>${p.votes}</b> <span class="muted">votes</span>
-      ${timeInfo}
-      <button class="vote-btn" onclick="toggleSol(${p.id})">💡 ทางแก้ (${nSol})${p._open?' ▲':''}</button></div>
-      ${solHtml}
-    </div>`;
-  }).join('');
-  if(_showGrave&&dead.length) html+='<div class="muted" style="margin-top:8px">☠️ โจทย์ที่ถูกล้าง:</div>'+dead.map(p=>`
-    <div class="prob" style="opacity:.45"><div class="top"><div><div class="title">#${String(p.id).slice(-4)} ${esc(p.title)}</div>
-    <small class="muted">โดย ${esc(p.by)} · หายเมื่อ ${new Date(p.expiredAt||p.deadline).toLocaleString('th-TH')}</small></div>
-    <span class="cat">CULLED @${p.votes}</span></div></div>`).join('');
-  if(!sorted.length&&!dead.length) html+='<span class="muted">ภูเขาว่างเปล่า — เสนอโจทย์แรกได้เลย</span>';
-  else if(!sorted.length) html+='<span class="muted">ไม่มีโจทย์ที่รอด — ภูเขารอโจทย์ใหม่</span>';
-  el.innerHTML=html;
-}
-/* ตรวจ culling ทุก 60 วิ — เที่ยงคืนโจทย์หายทันทีแบบสดๆ */
-setInterval(()=>{ if(cullExpired()) { renderProblems(); renderHRW(); } }, 60000);
-
-/* ═══════════ 20/80 SIM ═══════════ */
-function runSplit(){
-  const total=+document.getElementById('rTotal').value||0;
-  const win=+document.getElementById('rWin').value||1;
-  const pool=+document.getElementById('rPool').value||1;
-  const cut=total*0.20, dist=total-cut;
-  const perVoter=dist*(pool/(win+pool))/Math.max(pool/10,1)/10; // ตัวอย่าง 10 voters
-  const rows=[
-    ['Solver (20%)', cut.toFixed(0), ''],
-    ['80% Pool รวม', dist.toFixed(0), ''],
-    ['— ผู้โหวต (10 คน)', (dist*0.35).toFixed(0)+' total', ''],
-    ['— Peer Reviewers', (dist*0.25).toFixed(0)+' total', ''],
-    ['— AI ที่ร่วมเสนอ', (dist*0.20).toFixed(0)+' total', ''],
-    ['— Impact Fund ❤️', (dist*0.20).toFixed(0)+' total', ''],
-  ];
-  document.getElementById('splitOut').innerHTML=
-    '<tr><th>รายการ</th><th style="text-align:right">Tokens</th></tr>'+
-    rows.map(r=>`<tr><td>${r[0]}</td><td class="num pos">${r[1]}</td></tr>`).join('');
-}
-
-/* ═══════════ DECAY v1.1 ═══════════ */
-(function decayTable(){
-  let r=1_000_000, supply=0, rows=[];
-  for(let s=1;s<=2000;s+=250){
-    rows.push([s, r, supply]);
-    supply+=r*250;
-    r=Math.max(r/2, 1_000_000/(2**12));
-  }
-  document.getElementById('decayOut').innerHTML=
-    '<tr><th>Solutions สะสม</th><th style="text-align:right">Reward/solution</th><th style="text-align:right">Supply ≈</th></tr>'+
-    rows.map(x=>`<tr><td>${x[0]}</td><td class="num">${x[1].toLocaleString()}</td><td class="num">${Math.round(x[2]).toLocaleString()}</td></tr>`).join('');
-})();
-
-/* ═══════════ WALLET (ethers CDN stub) ═══════════ */
-document.getElementById('walletBtn').onclick=async()=>{
-  if(typeof window.ethereum==='undefined'){ toast('ยังไม่มี MetaMask — Local Mode ทำงานได้ปกติ'); return; }
-  try{
-    const acc=(await window.ethereum.request({method:'eth_requestAccounts'}))[0];
-    window._myAddr=acc;
-    document.getElementById('netBadge').textContent='Wallet: '+acc.slice(0,6)+'…'+acc.slice(-4);
-    document.getElementById('netBadge').style.color='var(--good)';
-    toast('✅ เชื่อม wallet แล้ว — พร้อมใช้ตลาดงาน + on-chain');
-    jobRefresh();
-  }catch(e){ toast('ยกเลิกการเชื่อมต่อ'); }
-};
-
-/* ═══════════ ON-CHAIN (Polygon Amoy) ═══════════ */
-/* ═══════════ MULTI-NETWORK (Amoy ⇄ BSC ⇄ Mainnet) ═══════════ */
-const NETWORKS = {
-  amoy:    { name:'Polygon Amoy',  rpc:'https://polygon-amoy.drpc.org',                  chainId:80002, sym:'POL',
-             registry:'0x674d1b7b1c8FE6819AE7F22E6b46D8B02B7a8d32', splitter:'0x97fb5CEada36C721a4b82BF6a6ddFa565AC79ecF',
-             nex:'0x999dec3a199335e0a83d0Dc03d8d0ABB48542035', job:'0xD6CA3267356f91E3c43097adf8F02caFa42D358A',
-             presale:'0x8b6EC8d481A583d788B9C9d2c914E9bc0a220e24', usdt:'' },
-  bsc:     { name:'BSC Testnet',   rpc:'https://data-seed-prebsc-1-s1.binance.org:8545', chainId:97,    sym:'tBNB',
-             registry:'', splitter:'', nex:'', job:'', presale:'', usdt:'' },
-  mainnet: { name:'Polygon Mainnet', rpc:'https://polygon-bor-rpc.publicnode.com',       chainId:137,   sym:'POL',
-             registry:'', splitter:'', nex:'0x65A56978A60733B28cD1FD61C760AB5dC8FD3081',
-             presale:'0x97fb5CEada36C721a4b82BF6a6ddFa565AC79ecF', job:'',
-             usdt:'0xc2132D05D31c914a87C6611C10748AEb04B58e8F' },
-};
-let g_net = localStorage.getItem('nx_net') || 'amoy';
-if(!NETWORKS[g_net]) g_net='amoy';
-function NET(){ return NETWORKS[g_net]; }
-const REGISTRY = () => NET().registry;
-const SPLITTER = () => NET().splitter;
-const AMOY_RPC  = () => NET().rpc;
-
-async function switchNet(v){
-  if(!NETWORKS[v]) return;
-  localStorage.setItem('nx_net',v);
-  if(window.ethereum){
-    try{
-      await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x'+NETWORKS[v].chainId.toString(16)}]});
-    }catch(e){}
-  }
-  location.reload();
-}
-
-const ABI = [
-  "function problemCount() view returns (uint256)",
-  "function problems(uint256) view returns (uint256 id, address proposer, string title, string category, uint256 votes, uint8 status, uint64 createdAt)",
-  "function submitProblem(string,string) returns (uint256)",
-  "function vote(uint256)",
-];
-const _reg = REGISTRY();
-if(_reg) document.getElementById('regAddr').textContent =
-  _reg.slice(0,10)+'…'+_reg.slice(-6)+' · RewardSplitter: '+(SPLITTER()||'—').slice(0,10)+'…';
-
-function chainProvider(){ return new ethers.JsonRpcProvider(AMOY_RPC()); }
-function chainSigner(){
-  if(typeof window.ethereum==='undefined'){ toast('ต้องติดตั้ง MetaMask ก่อน'); return null; }
-  return new ethers.BrowserProvider(window.ethereum);
-}
-
-async function readChain(){
-  const out=document.getElementById('chainOut');
-  out.innerHTML='<tr><td>กำลังอ่าน...</td></tr>';
-  try{
-    const c=new ethers.Contract(REGISTRY(), ABI, chainProvider());
-    const n=await c.problemCount();
-    let rows=`<tr><th>Chain Problem #</th><th>หัวข้อ</th><th>หมวด</th><th style="text-align:right">Votes</th></tr>`;
-    const total=Number(n);
-    const start=Math.max(1,total-4);
-    for(let i=start;i<=total;i++){
-      const p=await c.problems(i);
-      rows+=`<tr><td>#${i}</td><td>${esc(p.title)}</td><td><span class="cat ${esc(p.category)}">${esc(p.category)}</span></td><td class="num">${p.votes}</td></tr>`;
-    }
-    out.innerHTML=rows||'<tr><td>ยังไม่มีปัญหาบน chain — เป็นคนแรกที่เสนอสิ!</td></tr>';
-    toast(`⛓ อ่านสำเร็จ: มี ${total} ปัญหาบน Amoy`);
-  }catch(e){ out.innerHTML=`<tr><td class="neg">อ่านไม่สำเร็จ: ${String(e.message||e).slice(0,80)}</td></tr>`; }
-}
-
-async function chainSubmit(){
-  const s=chainSigner(); if(!s) return;
-  const t=document.getElementById('pTitle').value.trim();
-  const cat=document.getElementById('pCat').value;
-  if(!t){ toast('พิมพ์ชื่อปัญหาในช่องด้านบนก่อน'); return; }
-  try{
-    toast('รอยืนยันใน MetaMask...');
-    const signer=await s.getSigner();
-    const c=new ethers.Contract(REGISTRY(), ABI, signer);
-    const tx=await c.submitProblem(t, cat);
-    toast('ส่งแล้ว รอ confirm...');
-    await tx.wait();
-    toast('⛓ ปัญหาขึ้น blockchain จริงแล้ว!');
-    readChain();
-  }catch(e){ toast('ผิดพลาด: '+String(e.message||e).slice(0,60)); }
-}
-
-/* ═══════════ DIGITAL TWIN CHAT ═══════════ */
-/* ── XSS guard: escape ทุก user-content ก่อน render ── */
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-/* ── Rate limit: 20 ข้อความ/นาที ── */
-let _chatTimes=[];
-function rateOK(){
-  const now=Date.now();
-  _chatTimes=_chatTimes.filter(t=>now-t<60000);
-  if(_chatTimes.length>=20){ toast('⏱ ช้าๆ หน่อย — จำกัด 20 ข้อความ/นาที'); return false; }
-  _chatTimes.push(now); return true;
-}
-function renderChat(){
-  const box=document.getElementById('chatBox');
-  const hist=window.Twin.mem.chat.slice(-30);
-  document.getElementById('twinChatName').textContent=window.Twin.cfg.name;
-  document.getElementById('twinStats').textContent=`· Lv ตาม XP ${window.Twin.mem.xp} · ความจำ ${window.Twin.mem.facts.length} บันทึก · สมอง: ${window.Twin.cfg.provider}`;
-  document.getElementById('brainSel').value=window.Twin.cfg.provider;
-  if(!hist.length){ box.innerHTML='<span class="muted">🐉 เริ่มบทสนทนาแรกของทวินได้เลย — มันจะจดจำทุกอย่างที่คุณบอก</span>'; return; }
-  box.innerHTML=hist.map((m,mi)=>`<div style="margin:6px 0;text-align:${m.role==='user'?'right':'left'}">
-    <span style="display:inline-block;max-width:85%;padding:7px 12px;border-radius:11px;font-size:13px;white-space:pre-wrap;
-      ${m.role==='user'?'background:var(--acc);color:#111':'background:#243044;color:var(--txt)'}">${esc(m.text)}</span>
-    ${m.role==='twin'?`<div style="font-size:11px;margin-top:2px"><a href="javascript:void(0)" onclick="chatFeedbackIdx(${mi},true)" style="color:var(--good);text-decoration:none">👍</a>
-    <a href="javascript:void(0)" onclick="chatFeedbackIdx(${mi},false)" style="color:var(--dim);text-decoration:none">👎</a> <span class="muted">สอน AI</span></div>`:''}</div>`).join('');
-  box.scrollTop=box.scrollHeight;
-}
-async function sendChat(){
-  if(!rateOK()) return;
-  const bot=NexusGov.botCheck();
-  if(bot.botlike){
-    toast('🤖 ตรวจพบพฤติกรรมบอท: '+bot.reason+' — Soft Reset!');
-    toast(NexusGov.softReset()); renderChat(); return;
-  }
-  const inp=document.getElementById('chatInput');
-  const msg=inp.value.trim().slice(0,1000); if(!msg) return;
-  inp.value=''; renderChat();
-  const box=document.getElementById('chatBox');
-  box.insertAdjacentHTML('beforeend','<div class="muted" id="typing">🐉 กำลังคิด...</div>');
-  box.scrollTop=box.scrollHeight;
-  const reply=await window.Twin.chat(msg);
-  document.getElementById('typing')?.remove();
-  renderChat();
-  speak(reply);
-}
-function brainChange(){
-  window.Twin.setCfg({provider:document.getElementById('brainSel').value});
-  renderChat(); toast('สมอง Twin: '+window.Twin.cfg.provider);
-}
-async function saveKey(){
-  const k=document.getElementById('apiKeyIn').value.trim().slice(0,200);
-  const p=window.Twin.cfg.provider;
-  if(p==='gemini') window.Twin.setCfg({geminiKeyEnc: await window.Twin.enc(k)});
-  else if(p==='openai') window.Twin.setCfg({openaiKeyEnc: await window.Twin.enc(k)});
-  else { toast('โหมดนี้ไม่ต้องใช้ key'); return; }
-  toast('🔐 บันทึก key (เข้ารหัส AES-GCM) แล้ว');
-}
-
-/* ═══════════ REWARDS ADMIN ═══════════ */
-const SPLIT_ABI=[
-  "function addParticipant(address)",
-  "function awardPoints(address,uint256)",
-  "function distribute(address) payable",
-  "function participantCount() view returns (uint256)",
-  "function totalPoints() view returns (uint256)",
-];
-async function rwContract(){
-  const s=chainSigner(); if(!s) return null;
-  const signer=await s.getSigner();
-  return new ethers.Contract(SPLITTER(), SPLIT_ABI, signer);
-}
-function rwStatus(msg,ok){ document.getElementById('rwStatus').innerHTML=`<span class="${ok?'pos':'neg'}">${esc(msg)}</span>`; }
-async function rwAdd(){
-  const c=await rwContract(); if(!c) return;
-  try{ const tx=await c.addParticipant(document.getElementById('rwAddr').value.trim());
-    rwStatus('tx: '+tx.hash.slice(0,18)+'… รอ confirm'); await tx.wait(); rwStatus('✅ เพิ่ม participant สำเร็จ',true);
-  }catch(e){ rwStatus('❌ '+String(e.message||e).slice(0,90)); }
-}
-async function rwAward(){
-  const c=await rwContract(); if(!c) return;
-  try{ const tx=await c.awardPoints(document.getElementById('rwAddr').value.trim(), document.getElementById('rwPts').value||'0');
-    rwStatus('tx: '+tx.hash.slice(0,18)+'… รอ confirm'); await tx.wait(); rwStatus('✅ award points สำเร็จ',true);
-  }catch(e){ rwStatus('❌ '+String(e.message||e).slice(0,90)); }
-}
-async function rwDistribute(){
-  const c=await rwContract(); if(!c) return;
-  try{
-    const opts={};
-    if(document.getElementById('rwValue').checked) opts.value=ethers.parseEther('0.01');
-    const tx=await c.distribute(document.getElementById('rwSolver').value.trim(), opts);
-    rwStatus('tx: '+tx.hash.slice(0,18)+'… รอ confirm'); await tx.wait();
-    rwStatus('💸 แบ่ง 20/80 สำเร็จ! ดูที่ amoy.polygonscan.com',true);
-  }catch(e){ rwStatus('❌ '+String(e.message||e).slice(0,90)); }
-}
-
-/* ═══════════ GOVERNANCE / REWARD ENGINE / HRW / LIFECYCLE / AI-MOTHER ═══════════ */
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-function createProposal(){
-  const t=document.getElementById('propTitle').value.trim().slice(0,200);
-  if(!t){ toast('พิมพ์ชื่อ proposal ก่อน'); return; }
-  const r=NexusGov.propose(t, document.getElementById('propType').value);
-  toast(r.msg); document.getElementById('propTitle').value=''; renderProposals();
-}
-function renderProposals(){
-  const ps=NexusGov.getProposals();
-  const el=document.getElementById('proposalList');
-  if(!ps.length){ el.innerHTML='<span class="muted">ยังไม่มี proposal — คนแรกของ DAO ได้เปรียบเสมอ</span>'; return; }
-  el.innerHTML=ps.slice(-5).reverse().map(p=>{
-    const total=p.yes+p.no, pct= total? Math.round(p.yes/total*100):0;
-    const badge=p.status==='passed'?'<span class="pos">✅ PASSED</span>':p.status==='rejected'?'<span class="neg">❌ REJECTED</span>':'<span class="muted">active</span>';
-    return `<div class="prob"><div class="top"><div class="title">${esc(p.title)}</div>${badge}</div>
-      <div class="votes"><button class="vote-btn" onclick="govVote(${p.id},true)">👍 ${p.yes}</button>
-      <button class="vote-btn" onclick="govVote(${p.id},false)">👎 ${p.no}</button>
-      <span class="muted">${pct}% yes (ต้อง ≥67%)</span></div></div>`;
-  }).join('');
-}
-function govVote(id,yes){
-  if(!rateOK()) return;
-  const r=NexusGov.voteProposal(id,yes); toast(r.msg); renderProposals();
-}
-function renderRewardEngine(){
-  const s=+document.getElementById('reSolutions').value||0;
-  const r=NexusGov.rewardFor(s);
-  const nextHalving=NexusGov.economy.milestone-(s%NexusGov.economy.milestone);
-  const split=NexusGov.split20x80(r*10); // ตัวอย่าง 10 solutions/รอบ
-  document.getElementById('reOut').innerHTML=`
-    <tr><td>Reward/solution ปัจจุบัน</td><td class="num pos">${Math.round(r).toLocaleString()}</td></tr>
-    <tr><td>อีก ${nextHalving} solutions → halving</td><td class="num">${Math.round(Math.max(r/2,NexusGov.economy.R0/NexusGov.economy.tailFloorDiv)).toLocaleString()}</td></tr>
-    <tr><td>Solver ได้ (20%) ต่อ 10 ไม้</td><td class="num">${Math.round(split.solver).toLocaleString()}</td></tr>
-    <tr><td>Impact Fund ❤️ (80%×20%)</td><td class="num">${Math.round(split.impactFund).toLocaleString()}</td></tr>`;
-}
-function renderLifecycle(){
-  const lc=NexusGov.lifecycle();
-  document.getElementById('lifecycleInfo').innerHTML=
-    `${lc.icon} ระยะ: <b>${lc.name}</b> · ทำได้: ${lc.can.join(', ')}${lc.next?` · <span style="color:var(--acc)">${lc.next}</span>`:''}`;
-}
-function renderHRW(){
-  const probs=JSON.parse(localStorage.getItem('nx_probs')||'[]');
-  const hrw=probs.filter(p=>NexusGov.isHumanRights(p.title));
-  const el=document.getElementById('hrwList');
-  if(!hrw.length){ el.innerHTML='<span class="muted">ไม่พบโจทย์ที่เกี่ยวกับสิทธิมนุษยชนในขณะนี้</span>'; return; }
-  el.innerHTML=hrw.map(p=>{
-    const src=NexusGov.factCheckSources(p.title).map(s=>`<a href="${s.url}" target="_blank" rel="noopener" style="color:var(--acc2);font-size:12px;margin-right:10px">🔎 ${s.name}</a>`).join('');
-    const need=NexusGov.hrwThreshold(30);
-    return `<div class="prob"><div class="top"><div class="title">⚠️ ${esc(p.title)}</div><span class="cat HUMAN">HRW FLAGGED</span></div>
-      <div class="muted" style="margin-top:6px">ต้องการ ${need} votes (supermajority 67%+base) กว่าจะขึ้น Mission Peak</div>
-      <div style="margin-top:6px">${src}</div></div>`;
-  }).join('');
-}
-function twinProposeProblem(){
-  if(!rateOK()) return;
-  const ideas=[
-    {t:'ระบบจัดการขยะอัจฉริยะสำหรับเทศบาล', c:'ANOMALY'},
-    {t:'AI ตรวจจับข่าวปลอมเชิงสิทธิมนุษยชน', c:'AI_MOTHER'},
-    {t:'ลดช่องว่างการเข้าถึงการศึกษาในถิ่นห่างไกล', c:'HUMAN'},
-    {t:'ออกแบบ consensus algorithm ประหยัดพลังงาน', c:'AI_DEV'},
-  ];
-  const pick=ideas[Math.floor(Math.random()*ideas.length)];
-  probs.unshift({id:Date.now(), title:pick.t, cat:pick.c, votes:1, voted:true, status:'open', by:(window.Twin.cfg.name||'AI')+' (AI Mother Oracle)'});
-  persist(); renderProblems(); renderHRW();
-  toast('🐉 AI Mother เสนอโจทย์ใหม่: '+pick.t);
-}
-/* ── เสียง: ไมค์ (Web Speech) + ผู้พูด (TTS) — ใช้ฟรีในเบราว์เซอร์ ── */
-let _voiceOn=localStorage.getItem('nx_voice')==='1', _rec=null;
-function toggleVoice(){
-  _voiceOn=!_voiceOn; localStorage.setItem('nx_voice',_voiceOn?'1':'0');
-  document.getElementById('voiceBtn').style.borderColor=_voiceOn?'var(--good)':'';
-  toast(_voiceOn?'🔊 Twin จะพูดตอบ':'ปิดเสียงแล้ว');
-}
-function speak(text){
-  if(!_voiceOn || !('speechSynthesis' in window)) return;
-  const clean=text.replace(/[🐉🧠⛰🏔📚🔬🧮📋🕒🤔⚠️✅❌💡]/gu,'').slice(0,300);
-  const u=new SpeechSynthesisUtterance(clean); u.lang='th-TH'; u.rate=1.05;
-  speechSynthesis.cancel(); speechSynthesis.speak(u);
-}
-function toggleMic(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){ toast('เบราว์เซอร์นี้ไม่รองรับไมค์ (ใช้ Chrome/Edge)'); return; }
-  if(_rec){ _rec.stop(); _rec=null; document.getElementById('micBtn').style.borderColor=''; return; }
-  _rec=new SR(); _rec.lang='th-TH'; _rec.interimResults=false;
-  _rec.onresult=e=>{ const t=e.results[0][0].transcript; document.getElementById('chatInput').value=t; sendChat(); };
-  _rec.onend=()=>{ _rec=null; document.getElementById('micBtn').style.borderColor=''; };
-  _rec.onerror=()=>{ toast('ไม่ได้ยิน — ลองใหม่'); _rec=null; };
-  _rec.start(); document.getElementById('micBtn').style.borderColor='var(--bad)';
-  toast('🎤 กำลังฟัง... พูดได้เลย');
-}
-/* ── KYC-Lite: บัตรประชาชน + แสกนหน้า (มาตรฐานสากล, on-device) ── */
-let _kycStep=0,_kycIdHash=null,_kycSelfie=null,_kycStream=null;
-function startKYC(){
-  const w=window.open('','_blank','width=480,height=680');
-  if(!w){ toast('ป็อปอัปถูกบล็อก — อนุญาต popup แล้วลองใหม่'); return; }
-  w.document.write(`<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8"><title>Nexus KYC</title>
-  <style>body{font-family:'Segoe UI',Tahoma;background:#0a0e17;color:#e5ecf5;padding:20px}
-  .step{background:#111827;border:1px solid #243044;border-radius:12px;padding:16px;margin-bottom:12px}
-  h3{margin:0 0 8px;color:#f59e0b}input{width:100%;padding:10px;background:#1a2333;border:1px solid #243044;
-  color:#fff;border-radius:8px;font-size:16px;letter-spacing:2px}button{background:#f59e0b;border:0;padding:10px 16px;
-  border-radius:8px;font-weight:700;cursor:pointer;width:100%;margin-top:8px}.ghost{background:#1a2333;color:#e5ecf5;border:1px solid #243044}
-  video{width:100%;border-radius:10px;background:#000}img{max-width:100%;border-radius:10px}
-  .ok{color:#34d399}.bad{color:#f87171}.muted{color:#8fa0b8;font-size:12px}</style></head><body>
-  <h2>🪪 Nexus KYC — ยืนยันตัวตนจริง</h2>
-  <p class="muted">ประมวลผล 100% บนเครื่องคุณ · ไม่อัปโหลดรูป/เลขบัตรขึ้นเซิร์ฟเวอร์ใด</p>
-  <div class="step"><h3>1️⃣ เอกสารยืนยัน</h3>
-    <input id="thaiId" maxlength="13" placeholder="เลขบัตรประชาชน 13 หลัก" inputmode="numeric">
-    <div style="display:flex;gap:8px;margin-top:6px">
-      <label style="flex:1">วันเกิด<input type="date" id="idBirth"></label>
-      <label style="flex:1">บัตรหมดอายุ<input type="date" id="idExp"></label>
-    </div>
-    <button onclick="checkId()">ตรวจเลขบัตร (checksum + อายุ 18+ + วันหมดอายุ)</button>
-    <details style="margin-top:10px"><summary class="muted" style="cursor:pointer;color:#f59e0b">🌐 ใช้ Passport แทน? (MRZ ICAO 9303)</summary>
-      <textarea id="mrz" rows="2" placeholder="P<THN... (2 บรรทัดจากท้ายหนังสือเดินทาง)" style="margin-top:6px;font-family:Consolas,monospace;font-size:11px"></textarea>
-      <button class="ghost" onclick="checkMrz()">ตรวจ MRZ (passport สากล)</button>
-    </details>
-    <div id="idResult" class="muted"></div></div>
-  <div class="step"><h3>2️⃣ รูปหน้าบนบัตร</h3>
-    <input type="file" accept="image/*" id="idPhoto" style="color:#8fa0b8">
-    <img id="idPrev" style="display:none;margin-top:8px"><div id="idFaceResult" class="muted"></div></div>
-  <div class="step"><h3>3️⃣ Active Liveness (anti-spoof)</h3>
-    <video id="cam" autoplay muted playsinline></video>
-    <div id="scanStatus" class="muted">ระบบจะสุ่มสั่ง: กระพริบตา + หันหน้าซ้าย→ขวา (กันรูปถ่าย/วิดีโอ)</div>
-    <button class="ghost" onclick="startCam()">📷 เปิดกล้อง</button>
-    <button id="scanBtn" style="display:none" onclick="doScan()">🤳 เริ่มแสกน liveness</button></div>
-  <div class="step"><h3>4️⃣ ผลลัพธ์</h3><div id="finalResult" class="muted">รอขั้นตอนก่อนหน้า...</div></div>
-  <script src="https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/dist/face-api.min.js"><\/script>
-  <script src="${location.origin}${location.pathname}kyc.js"><\/script>
-  <script src="${location.origin}${location.pathname}nexus-memory.js"><\/script>
-  <script>
-  const K=window.NexusKYC; let idHash=null,idDesc=null,selfieDesc=null;
-  async function checkId(){
-    const r=await K.verifyThaiID(document.getElementById('thaiId').value,{
-      birth:document.getElementById('idBirth').value||undefined,
-      expiry:document.getElementById('idExp').value||undefined});
-    document.getElementById('idResult').innerHTML=r.ok?'<span class="ok">'+r.msg+'</span>':'<span class="bad">'+r.msg+'</span>';
-    if(r.ok){ idHash=r.idHash; stepCheck(); }
-  }
-  async function checkMrz(){
-    const lines=document.getElementById('mrz').value.trim().split('\n');
-    const r=await K.verifyMRZ(lines[0],lines[1]);
-    document.getElementById('idResult').innerHTML=r.ok?'<span class="ok">'+r.msg+'</span>':'<span class="bad">'+r.msg+'</span>';
-    if(r.ok){ idHash=r.idHash; stepCheck(); }
-  }
-  document.getElementById('idPhoto').onchange=e=>{
-    const f=e.target.files[0]; if(!f) return;
-    const img=document.getElementById('idPrev'); img.src=URL.createObjectURL(f); img.style.display='block';
-    img.onload=async()=>{ document.getElementById('idFaceResult').textContent='กำลังตรวจหน้าบนบัตร...';
-      try{ const r=await K.faceFromImage(img);
-        document.getElementById('idFaceResult').innerHTML=r.ok?'<span class="ok">✓ พบใบหน้าบนบัตร</span>':'<span class="bad">'+r.msg+'</span>';
-        if(r.ok){ idDesc=r.descriptor; stepCheck(); } }catch(err){ document.getElementById('idFaceResult').textContent='โหลดโมเดลไม่สำเร็จ: '+err.message; } };
-  };
-  async function startCam(){
-    try{ _stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}});
-      document.getElementById('cam').srcObject=_stream;
-      document.getElementById('scanStatus').textContent='กล้องพร้อม — หน้าตรงกล้องแล้วกดแสกน';
-      document.getElementById('scanBtn').style.display='block';
-    }catch(e){ document.getElementById('scanStatus').textContent='เปิดกล้องไม่ได้: '+e.message; }
-  }
-  async function doScan(){
-    document.getElementById('scanBtn').disabled=true;
-    const r=await K.scanLiveFace(document.getElementById('cam'),t=>{document.getElementById('scanStatus').textContent=t;});
-    if(_stream) _stream.getTracks().forEach(t=>t.stop());
-    if(!r.ok){ document.getElementById('scanStatus').innerHTML='<span class="bad">'+r.msg+'</span>'; document.getElementById('scanBtn').disabled=false; return; }
-    selfieDesc=r.descriptor; document.getElementById('scanStatus').innerHTML='<span class="ok">✓ liveness ผ่าน (กระพริบตา+หันหน้า+anti-photo)</span>'; window._kycLive=(r.liveness&&r.liveness.blink&&r.liveness.turn)?'blink+turn':'partial'; stepCheck();
-  }
-  function stepCheck(){
-    if(idHash&&idDesc&&selfieDesc){
-      const c=K.compareFaces(idDesc,selfieDesc);
-      const el=document.getElementById('finalResult');
-      if(c.match){
-        el.innerHTML='<span class="ok">✅ ยืนยันสำเร็จ! คะแนนเทียบหน้า '+c.score+'% (distance '+c.distance+', threshold มาตรฐาน 0.6)</span><br><span class="muted">เก็บเฉพาะ: hash เอกสาร + score + ผล liveness — ไม่มีรูปถูกเก็บ</span>';
-        localStorage.setItem('nx_kyc',JSON.stringify({idHash:idHash,matchScore:c.score,distance:c.distance,liveness:window._kycLive||'blink+turn',at:Date.now()}));
-        setTimeout(()=>{ window.opener&&window.opener.postMessage({type:'nexus_kyc_ok',score:c.score},'*'); window.close(); },1800);
-      } else el.innerHTML='<span class="bad">❌ หน้าบนบัตรไม่ตรงกับหน้าสด (score '+c.score+'%) — ลองรูปบัตรที่ชัดกว่านี้</span>';
-    } else document.getElementById('finalResult').textContent='เหลือขั้นตอน: '+[!idHash&&'เลขบัตร',!idDesc&&'รูปบัตร',!selfieDesc&&'แสกนหน้า'].filter(Boolean).join(', ');
-  }
-  <\/script>
-
-</body></html>`);
-  w.document.close();
-}
-window.addEventListener('message',e=>{
-  if(e.data&&e.data.type==='nexus_kyc_ok'){
-    user.level=Math.max(user.level,2); persist(); renderLevels();
-    const s=NexusIdentity.state; s.kycScore=e.data.score; NexusIdentity.save(s);
-    renderIdentitySummary(); toast('🪪 KYC ผ่าน! Lv.2 CITIZEN (REAL) — score '+e.data.score+'%');
-  }
-});
-/* ── เทรน AI จาก feedback: 👍 = ยืนยัน intent / 👎 = ถอนออก (online learning) ── */
-function chatFeedbackIdx(i, positive){
-  const h = (window.Twin.mem.chat.slice(-30));
-  const m = h[i];
-  if (!m || m.role !== 'twin') return;
-  // v6.1: ใช้ "คำถามของผู้ใช้" เป็นสัญญาณสอน (ไม่ใช่ข้อความตอบ)
-  let utext = m.text;
-  for (let k = i - 1; k >= 0; k--) {
-    if (h[k] && h[k].role === 'user') { utext = h[k].text; break; }
-  }
-  chatFeedback(utext, positive);
-}
-function chatFeedback(text, positive){
-  const c=window.NexusBrain.classify(text);
-  if(!NexusBrain.TRAINING[c.intent]){ toast('ข้อความนี้สอนเป็น intent ไม่ได้ — ลองกด 👍 ที่คำถามของคุณแทน'); return; }
-  const ok=window.NexusBrain.feedback(text.slice(0,120), c.intent, positive);
-  toast(ok ? (positive?`👍 เทรนแล้ว — จับ "${c.intent}" แม่นขึ้น`:`👎 ปรับโมเดล "${c.intent}" แล้ว`) : 'ข้อความนี้ยังไม่ผูก intent');
-}
-function exportMemory(){
-  const data={ exported:new Date().toISOString(), twin:{name:window.Twin.cfg.name, mem:window.Twin.mem}, user, problems:probs };
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download='nexus-memory-backup.json'; a.click();
-  toast('💾 export ความจำแล้ว (ไฟล์เดียวจบ นำกลับเข้าได้)');
-}
-function importMemory(input){
-  const f=input.files[0]; if(!f) return;
-  const r=new FileReader();
-  r.onload=()=>{ try{
-      const d=JSON.parse(r.result);
-      if(d.twin){ window.Twin.setCfg({name:d.twin.name}); window.Twin.mem=d.twin.mem; window.Twin.save(); }
-      if(d.problems){ probs=d.problems; persist(); }
-      if(d.user){ user=d.user; persist(); }
-      renderChat(); renderLevels(); renderProblems(); renderHRW();
-      toast('📂 นำเข้าความจุำสำเร็จ');
-    }catch(e){ toast('ไฟล์ไม่ถูกต้อง'); } };
-  r.readAsText(f); input.value='';
-}
-function renderStats(){
-  const ps=JSON.parse(localStorage.getItem('nx_probs')||'[]');
-  const votes=ps.reduce((s,p)=>s+p.votes,0);
-  const solved=ps.filter(p=>p.status==='solved').length;
-  const sols=ps.reduce((s,p)=>s+((p.solutions||[]).length),0);
-  const el=document.getElementById('statsOut');
-  if(el) el.innerHTML=`
-    <tr><td>ปัญหาบนภูเขา</td><td class="num pos">${ps.length}</td></tr>
-    <tr><td>Votes รวม</td><td class="num">${votes}</td></tr>
-    <tr><td>Solutions เสนอ</td><td class="num">${sols}</td></tr>
-    <tr><td>✅ Solved (peer-reviewed)</td><td class="num pos">${solved}</td></tr>
-    <tr><td>Twin ความจำ</td><td class="num">${window.Twin?window.Twin.mem.facts.length:0} บันทึก</td></tr>
-    <tr><td>Twin XP</td><td class="num">${window.Twin?window.Twin.mem.xp:0}</td></tr>
-    <tr><td>Contracts live</td><td class="num pos">2 (Amoy)</td></tr>
-    <tr><td>Tests passing</td><td class="num pos">18 contracts · 21 brain · 7 memory</td></tr>`;
-}
-
-/* ═══════════ JOB MARKET PRO — Escrow + 10% platform fee (feeCollector = เจ้าของระบบ) ═══════════ */
-const NEX_TOKEN_DEFAULT  = NET().nex;   // per-network default
-const JOB_BOARD_DEFAULT  = NET().job;
-const TOKEN_ABI = [
-  "function approve(address,uint256) returns (bool)",
-  "function balanceOf(address) view returns (uint256)",
-  "function symbol() view returns (string)",
-];
-const JOB_ABI = [
-  "function postJob(uint256 reward,string specHash) returns (uint256)",
-  "function takeJob(uint256)",
-  "function submitWork(uint256,string)",
-  "function approveWork(uint256)",
-  "function cancelJob(uint256)",
-  "function raiseDispute(uint256)",
-  "function resolveDispute(uint256,address)",
-  "function jobCount() view returns (uint256)",
-  "function jobs(uint256) view returns (uint256 id,address employer,address worker,uint256 reward,string specHash,string resultHash,uint8 status,uint64 createdAt)",
-  "function FEE_BPS() view returns (uint16)",
-  "function feeCollector() view returns (address)",
-  "function totalFeesCollected() view returns (uint256)",
-];
-const JOB_STATUS = ["🟢 Open","🔵 Taken","🟡 Submitted","✅ Done","⚪ Cancelled","🔴 Disputed"];
-const ZERO_ADDR = '0x'+'0'.repeat(40);
-let _jobTab='all';
-
-function nexToken(){ return localStorage.getItem('nx_nex_token') || NEX_TOKEN_DEFAULT; }
-function jobBoard(){ return localStorage.getItem('nx_job_board') || JOB_BOARD_DEFAULT; }
-function jobReady(){ return !!(nexToken() && jobBoard() && window.ethereum); }
-async function jobContract(withSigner){
-  if(withSigner){ const bp=chainSigner(); if(!bp) return null; return new ethers.Contract(jobBoard(),JOB_ABI,await bp.getSigner()); }
-  return new ethers.Contract(jobBoard(),JOB_ABI,chainProvider());
-}
-async function tokenContract(withSigner){
-  if(withSigner){ const bp=chainSigner(); if(!bp) return null; return new ethers.Contract(nexToken(),TOKEN_ABI,await bp.getSigner()); }
-  return new ethers.Contract(nexToken(),TOKEN_ABI,chainProvider());
-}
-
-function marketConfig(){
-  const t=prompt('NEX Token address (ERC-20):',localStorage.getItem('nx_nex_token')||NEX_TOKEN_DEFAULT);
-  if(t===null) return;
-  const b=prompt('JobBoard address:',localStorage.getItem('nx_job_board')||JOB_BOARD_DEFAULT);
-  if(b===null) return;
-  localStorage.setItem('nx_nex_token',t.trim()); localStorage.setItem('nx_job_board',b.trim());
-  toast('⚙️ บันทึก addresses — โหลดสถานะใหม่'); jobRefresh();
-}
-
-function jobTab(t){ _jobTab=t; ['all','posted','working'].forEach(x=>document.getElementById('tab'+x[0].toUpperCase()+x.slice(1)).style.borderColor=x===t?'var(--acc)':''); jobRefresh(); }
-
-async function jobPost(){
-  if(!jobReady()){ toast('ต้องตั้งค่า NEX + JobBoard ก่อน — กด ⚙️ ตั้งค่า Contracts'); return; }
-  const spec=document.getElementById('jobSpec').value.trim().slice(0,300);
-  const reward=document.getElementById('jobReward').value;
-  if(!spec||!reward||Number(reward)<=0){ toast('กรอกงาน+ค่าตอบแทนก่อน'); return; }
-  try{
-    const signer=await chainSigner().getSigner();
-    const token=await tokenContract(true);
-    toast('1/2 approve NEX...'); await (await token.approve(jobBoard(), ethers.parseEther(reward))).wait();
-    toast('2/2 โพสต์งาน...'); await (await (await jobContract(true)).postJob(ethers.parseEther(reward), spec)).wait();
-    document.getElementById('jobSpec').value='';
-    toast('📢 งานขึ้นตลาด — NEX ล็อกใน escrow แล้ว'); jobRefresh();
-  }catch(e){ toast('❌ '+String(e.message||e).slice(0,70)); }
-}
-
-async function jobRefresh(){
-  renderMarketChrome();
-  const el=document.getElementById('jobList');
-  if(!jobReady()){
-    el.innerHTML='<span class="muted">ยังไม่เชื่อม chain — กด <b>⚙️ ตั้งค่า Contracts</b> วาง address NEX Token + JobBoard<br>deploy ได้ด้วย contracts/deploy-market.ps1</span>';
-    return;
-  }
-  try{
-    const c=await jobContract(false), n=Number(await c.jobCount());
-    const collector=(await c.feeCollector()).toLowerCase();
-    const me=window._myAddr?window._myAddr.toLowerCase():null;
-    const isOwner=me&&me===collector;
-    let rows='';
-    for(let i=n;i>=1&&i>=n-49;i--){
-      const j=await c.jobs(i);
-      const st=Number(j.status);
-      const isEmp=me&&j.employer.toLowerCase()===me, isWrk=me&&j.worker.toLowerCase()===me;
-      if(_jobTab==='posted'&&!isEmp) continue;
-      if(_jobTab==='working'&&!isWrk) continue;
-      const rw=Number(ethers.formatEther(j.reward));
-      const payout=(rw*0.9).toFixed(2), fee=(rw*0.1).toFixed(2);
-      rows+=`<div class="prob"><div class="top"><div><div class="title">#${i} ${esc(j.specHash)}</div>
-        <small class="muted">👤 ${j.employer.slice(0,6)}…${j.worker!==ZERO_ADDR?' → 🔨 '+j.worker.slice(0,6)+'…':''} · ${new Date(Number(j.createdAt)*1000).toLocaleDateString('th-TH')}</small></div>
-        <span class="cat">${JOB_STATUS[st]}</span></div>
-        <div class="votes"><b>${rw}</b> <span class="muted">NEX</span>
-        <span class="muted" style="font-size:11px">(worker ${payout} · platform fee ${fee})</span>
-        ${st===0&&!isEmp?`<button class="vote-btn" onclick="jobTake(${i})">🙋 รับงาน</button>`:''}
-        ${st===0&&isEmp?`<button class="vote-btn" onclick="jobCancel(${i})">✖ ยกเลิก (คืนเงิน)</button>`:''}
-        ${st===1&&isWrk?`<button class="vote-btn" onclick="jobSubmit(${i})">📤 ส่งงาน</button>`:''}
-        ${st===2&&isEmp?`<button class="vote-btn" onclick="jobApprove(${i})">💸 Approve → จ่าย worker ${payout} NEX</button>`:''}
-        ${(st===1||st===2)?`<button class="vote-btn" onclick="jobDispute(${i})">⚖️ Dispute</button>`:''}
-        ${st===5&&isOwner?`<button class="vote-btn" onclick="jobResolvePrompt(${i},'${j.employer}','${j.worker}')">⚖️ ตัดสิน (admin)</button>`:''}
-        ${st===3&&j.resultHash?`<a href="${esc(j.resultHash)}" target="_blank" rel="noopener" style="font-size:12px;color:var(--acc2)">🔗 ผลงาน</a>`:''}
-        </div></div>`;
-    }
-    el.innerHTML=rows||'<span class="muted">ไม่มีงานในมุมมองนี้</span>';
-  }catch(e){ el.innerHTML='<span class="neg">'+esc(String(e.message||e).slice(0,90))+'</span>'; }
-}
-
-async function renderMarketChrome(){
-  const cfg=document.getElementById('marketAddrs'), stats=document.getElementById('marketStats');
-  const ok=jobReady();
-  const _r=REGISTRY(), _s=SPLITTER();
-  cfg.innerHTML=`REGISTRY <b style="color:${_r?'var(--good)':'var(--bad)'}">${_r?_r.slice(0,8)+'…':'—'}</b> · SPLITTER <b style="color:${_s?'var(--good)':'var(--bad)'}">${_s?_s.slice(0,8)+'…':'—'}</b> · NEX <b style="color:${nexToken()?'var(--good)':'var(--bad)'}">${nexToken()?nexToken().slice(0,8)+'…':'—'}</b> · JOBBOARD <b style="color:${jobBoard()?'var(--good)':'var(--bad)'}">${jobBoard()?jobBoard().slice(0,8)+'…':'—'}</b>`;
-  document.getElementById('jobConfig').textContent=ok?(window._myAddr?('wallet: '+window._myAddr.slice(0,6)+'…'):''):'';
-  if(!ok){ stats.innerHTML=''; return; }
-  try{
-    const c=await jobContract(false), n=Number(await c.jobCount());
-    const fees=Number(ethers.formatEther(await c.totalFeesCollected()));
-    const collector=await c.feeCollector();
-    const bps=Number(await c.FEE_BPS())/100;
-    let mine='';
-    if(window._myAddr){
-      const bal=Number(ethers.formatEther(await (await tokenContract(false)).balanceOf(window._myAddr)));
-      mine=`<td class="num">💰 ฉัน: <b>${bal.toLocaleString()}</b> NEX</td>`;
-    }
-    stats.innerHTML=`<tr>${mine}<td class="num">📋 Jobs: <b>${n}</b></td><td class="num">🏛 Platform revenue (fee ${bps}%): <b style="color:var(--acc)">${fees.toLocaleString()}</b> NEX</td></tr><tr><td colspan="2" class="muted" style="font-size:11px">fee wallet: ${collector} ${window._myAddr&&collector.toLowerCase()===window._myAddr.toLowerCase()?'<b style="color:var(--acc)">← wallet ของคุณ ✓</b>':''}</td></tr>`;
-  }catch(e){ stats.innerHTML='<tr><td class="neg">'+esc(String(e.message||e).slice(0,60))+'</td></tr>'; }
-}
-
-async function _jobTx(fn,msg){
-  if(!jobReady()) return;
-  try{ const c=await jobContract(true); if(!c) return; toast(msg); await (await fn(c)).wait(); toast('✅ สำเร็จ — บันทึกบน blockchain'); jobRefresh(); }
-  catch(e){ toast('❌ '+String(e.message||e).slice(0,70)); }
-}
-function jobTake(i){ _jobTx(c=>c.takeJob(i),'🙋 รับงาน...'); }
-function jobCancel(i){ _jobTx(c=>c.cancelJob(i),'ยกเลิก + คืน escrow...'); }
-function jobSubmit(i){ const h=prompt('ลิงก์ผลงาน (URL/IPFS/CID):'); if(h) _jobTx(c=>c.submitWork(i,h.trim().slice(0,200)),'📤 ส่งงาน...'); }
-function jobApprove(i){ if(confirm('Approve = จ่าย worker 90% + platform 10% จาก escrow ทันที (ถอนไม่ได้)')) _jobTx(c=>c.approveWork(i),'💸 Release escrow...'); }
-function jobDispute(i){ if(confirm('เปิดข้อพิพาท? Admin/DAO จะตัดสินภายหลัง')) _jobTx(c=>c.raiseDispute(i),'⚖️ Raise dispute...'); }
-function jobResolvePrompt(i,employer,worker){
-  const w=prompt('ตัดสินให้ฝ่ายใด?\nพิมพ์: employer หรือ worker', 'worker');
-  if(w===null) return;
-  const winner=/^e/i.test(w)?employer:(/^w/i.test(w)?worker:null);
-  if(!winner){ toast('พิมพ์ employer หรือ worker เท่านั้น'); return; }
-  _jobTx(c=>c.resolveDispute(i,winner),'⚖️ Resolve dispute...');
-}
-async function jobResolve(i,winner){ _jobTx(c=>c.resolveDispute(i,winner),'⚖️ Resolve...'); }
-
-/* ═══════════ PRESALE DUAL (USDT/POL) — rounds ═══════════ */
-const PRESALE_ABI = [
-  "function buyWithUSDT(uint256)",
-  "function buyWithPOL(uint256) payable",
-  "function quote(uint256,bool) view returns (uint256,uint8)",
-  "function currentRound() view returns (uint8)",
-  "function priceOfUSDT(uint8) view returns (uint256)",
-  "function priceOfPOL(uint8) view returns (uint256)",
-  "function perRoundCap() view returns (uint256)",
-  "function roundSold(uint8) view returns (uint256)",
-  "function startAt() view returns (uint256)",
-  "function ROUNDS() view returns (uint256)",
-];
-const PS_SYM_BY_CHAIN = { 80002:'POL', 97:'tBNB', 137:'POL', 421614:'ETH' };
-const PRESALE_DEFAULT = NET().presale;
-function presaleAddr(){ return localStorage.getItem('nx_presale_'+g_net) || PRESALE_DEFAULT; }
-function payTokenAddr(){ return localStorage.getItem('nx_pay_token_'+g_net) || NET().usdt || ''; }
-function presaleReady(){ return !!(presaleAddr() && nexToken()); }
-async function psContract(withSigner){
-  if(withSigner){ const bp=chainSigner(); if(!bp) return null; return new ethers.Contract(presaleAddr(),PRESALE_ABI,await bp.getSigner()); }
-  return new ethers.Contract(presaleAddr(),PRESALE_ABI,chainProvider());
-}
-function presaleConfig(){
-  const p=prompt('Presale (dual) contract address:',localStorage.getItem('nx_presale_'+g_net)||PRESALE_DEFAULT);
-  if(p===null) return;
-  localStorage.setItem('nx_presale_'+g_net,p.trim());
-  const pt=prompt('Payment token address (USDT on this network):',localStorage.getItem('nx_pay_token_'+g_net)||payTokenAddr());
-  if(pt!==null) localStorage.setItem('nx_pay_token_'+g_net,pt.trim());
-  toast('⚙️ Presale config saved'); renderPresale();
-}
-
-async function renderPresale(){
-  const addrTxt=document.getElementById('psAddrTxt');
-  document.querySelectorAll('.psSym').forEach(el=>el.textContent=PS_SYM_BY_CHAIN[Number(NET().chainId)]||'POL');
-  addrTxt.textContent = presaleAddr()? presaleAddr().slice(0,10)+'… · pay:'+String(payTokenAddr()||'—').slice(0,10)+'…' : 'ยังไม่ตั้งค่า presale/pay-token';
-  const stats=document.getElementById('psStats'), bar=document.getElementById('psBar'),
-        prog=document.getElementById('psProgress'), est=document.getElementById('psEstimate');
-  if(!presaleReady()){ stats.innerHTML=''; bar.style.width='0%'; prog.textContent=''; est.textContent=''; return; }
-  try{
-    const c=await psContract(false);
-    const rounds=Number(await c.ROUNDS());
-    let cur=Number(await c.currentRound());
-    const cap=Number(await c.perRoundCap());
-    const pol=true;
-    const [qCost]=await c.quote(ethers.parseEther("1"),pol);
-    const pNow=Number(ethers.formatEther(qCost));
-    let soldNEX=0;
-    const rows=[`<tr><th>รอบ</th><th style="text-align:right">USDT/NEX</th><th style="text-align:right">${PS_SYM_BY_CHAIN[Number(NET().chainId)]||'POL'}/NEX</th><th>สถานะ</th></tr>`];
-    for(let i=0;i<rounds;i++){
-      const pu=Number(ethers.formatUnits(await c.priceOfUSDT(i),6));
-      const pp=Number(ethers.formatEther(await c.priceOfPOL(i)));
-      const s=Number(await c.roundSold(i));
-      soldNEX+=s;
-      rows.push(`<tr><td>${i+1}</td><td class="num">${pu.toFixed(4)}</td><td class="num">${pp.toFixed(6)}</td><td class="num">${i<cur?'✅ เต็ม':i===cur?'🔥 กำลังขาย':'⏳ ถัดไป'}</td></tr>`);
-    }
-    stats.innerHTML=rows.join('');
-    bar.style.width=Math.min(100,(soldNEX/(cap*rounds))*100)+'%';
-    prog.textContent=`🔥 Round ${cur+1}/${rounds} · ขายแล้ว ${Math.floor(soldNEX/1e18).toLocaleString()} / ${(cap*rounds/1e18).toLocaleString()} NEX`;
-    estimateOut();
-  }catch(e){
-    stats.innerHTML=`<tr><td class="neg">${esc(String(e.message||e).slice(0,80))}</td></tr>`;
-    if(String(e).includes('SoldOut')){ prog.textContent='🏁 Presale ปิดแล้ว — ขายหมดทุกรอบ!'; bar.style.width='100%'; }
-  }
-}
-function estimateOut(){
-  const nex=parseFloat(document.getElementById('psAmount').value)||0;
-  const est=document.getElementById('psEstimate');
-  if(nex<=0||!presaleReady()){ est.textContent=''; return; }
-  psContract(false).then(async c=>{
-    try{
-      const pol=(document.getElementById('psPay').value==='POL');
-      const cost=BigInt((await c.quote(ethers.parseEther(String(nex)),pol))[0]);
-      const sym=pol?(PS_SYM_BY_CHAIN[Number(NET().chainId)]||'POL'):'USDT';
-      const dec=sym==='USDT'?6:18;
-      const fmt=Number(cost)/10**dec;
-      est.textContent=`≈ จ่าย ${fmt.toLocaleString(undefined,{maximumFractionDigits:dec===6?2:6})} ${sym} @ราคาปัจจุบัน (เกินรอบ → roll อัตโนมัติ)`;
-    }catch(e){ est.textContent='⚠️ '+String(e.message||e).slice(0,50); }
-  }).catch(()=>est.textContent='');
-}
-document.getElementById('psAmount').addEventListener?.('input',estimateOut);
-document.getElementById('psPay').addEventListener?.('change',estimateOut);
-
-async function presaleBuy(){
-  if(!presaleReady()){ toast('ตั้งค่า Presale + NEX ก่อน (⚙️)'); return; }
-  const amt=parseFloat(document.getElementById('psAmount').value);
-  if(!(amt>0)){ toast('ใส่จำนวน NEX ก่อน'); return; }
-  const amtWei=ethers.parseEther(String(amt));
-  const useUSDT=(document.getElementById('psPay').value==='USDT');
-  try{
-    if(useUSDT && !payTokenAddr()){ toast('ต้องมี USDT address ก่อน (⚙️)'); return; }
-    if(!window._myAddr){ toast('Connect Wallet ก่อน'); return; }
-    const rd=await psContract(false);
-    const [cost]=await rd.quote(amtWei,!useUSDT);
-    if(useUSDT){
-      toast('1/2 approve '+symOf()+'...');
-      const tk=await tokenContract(true); if(!tk) return;
-      await (await tk.approve(presaleAddr(),cost)).wait();
-      toast('2/2 ซื้อ NEX ด้วย USDT...');
-      const c=await psContract(true); if(!c) return;
-      await (await c.buyWithUSDT(amtWei)).wait();
-    }else{
-      toast('🛒 ซื้อด้วย POL...');
-      const c=await psContract(true); if(!c) return;
-      await (await c.buyWithPOL(amtWei,{value:cost,gasLimit:600000})).wait();
-    }
-    toast('🎉 ซื้อสำเร็จ! NEX เข้า wallet แล้ว'); renderPresale(); jobRefresh();
-  }catch(e){ toast('❌ '+String(e.message||e).slice(0,90)); }
-}
-function symOf(){ return document.getElementById('psPay').value==='USDT'?'USDT':(PS_SYM_BY_CHAIN[Number(NET().chainId)]||'POL'); }
-
-/* AI หางาน: จับคู่งานกับความจำ/ทักษะของเจ้าของ Twin */
-async function aiFindJob(){
-  if(!jobReady()){ toast('ตลาดงานยังไม่เชื่อม — deploy ก่อน'); return; }
-  const c=await jobContract(false); const n=Number(await c.jobCount());
-  const mems=(window.NexusLTM?window.NexusLTM.store.semantic:[]).map(m=>m.text.toLowerCase()).join(' ');
-  let best=null,bestScore=0;
-  for(let i=1;i<=n;i++){
-    const j=await c.jobs(i);
-    if(Number(j.status)!==0) continue;
-    const words=j.specHash.toLowerCase().split(/\s+/);
-    const score=words.filter(w=>w.length>2&&mems.includes(w)).length;
-    if(score>bestScore){bestScore=score;best={i,spec:j.specHash,reward:Number(ethers.formatEther(j.reward))};}
-  }
-  const reply=best?`🐉 ผมเจองานที่เข้ากับทักษะคุณ: #${best.i} "${best.spec}" (${best.reward} NEX)\nความเข้ากัน: ${Math.min(100,bestScore*25)}% — กด "รับงาน" ในลิสต์เพื่อรับ`
-                  :'🐉 ยังไม่มีงานที่ตรงกับโปรไฟล์ของคุณ (ผมจับคู่จากความจำระยะยาวของคุณ) — ลองเพิ่มทักษะ: บอกผมว่า "จำว่า ฉันทำงานออกแบบ"';
-  toast(reply.split('\n')[0]); speak(reply);
-  if(window.Twin){ window.Twin.mem.chat.push({role:'twin',text:reply,at:Date.now()}); window.Twin.save(); renderChat(); }
-}
-
-/* ── 🧠 Neural Brain loader (catalog: Fast/Smart/Llama/Big/BitNet · WebGPU auto) ── */
-window.renderChatSafe = () => { try { renderChat(); } catch (e) {} };
-/* ── 🪶 Lite Mode toggle (RAM เบา · ตอบสั้น · เครื่องจนก็รันได้) ── */
-function toggleLite(){
-  const v = !NexusBrain.liteMode();
-  NexusBrain.setLite(v);
-  const b = document.getElementById('liteBtn');
-  b.style.borderColor = v ? 'var(--good)' : '';
-  toast(v ? '🪶 Lite ON — เบา เร็ว ประหยัดเครื่อง' : '🪶 Lite OFF — โหมดเต็ม');
-}
-async function loadNeuralBrain(){
-  if(!window.NexusBrain){ toast('Brain ยังไม่พร้อม'); return; }
-  const key='one';
-  if(window.NexusBrain.neuralLoaded() && window.NexusBrain.neuralModel()===key){ toast('⚡ โหลดไว้แล้ว — พิมพ์คุยได้เลย!'); return; }
-  const btn=document.getElementById('neuralBtn');
-  btn.disabled=true; btn.textContent='⏳ 0%';
-  try{
-    await NexusBrain.loadNeural(key,(pct,file)=>{
-      if(pct!=null) btn.textContent='⏳ '+pct+'%';
-    });
-    const label=NexusBrain.MODELS[key]?NexusBrain.MODELS[key].label:key;
-    btn.textContent='🧠 ON'; btn.style.borderColor='var(--good)';
-    toast('⚡ Full Brain ['+label+'] พร้อม!'+(navigator.gpu?' (WebGPU 🚀)':''));
-    if(window.Twin&&window.Twin.mem.chat){
-      window.Twin.mem.chat.push({role:'twin',text:'🧠 Full Brain เปิดแล้ว ('+label+') — ถามอะไรก็ได้เลยนะ!',at:Date.now()});
-      window.Twin.save(); renderChat();
-    }
-  }catch(e){
-    btn.textContent='⚡ Full Brain'; btn.disabled=false;
-    toast('❌ โหลดไม่สำเร็จ: '+String(e.message||e).slice(0,60));
-  }
-}
-
-document.getElementById('netSel').value=g_net;
-renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats(); renderIdentitySummary(); jobRefresh(); renderPresale();
-if(_voiceOn) document.getElementById('voiceBtn').style.borderColor='var(--good)';
-if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');
-renderLevels(); runSplit();
-if(twin.name) document.getElementById('twinName').value=twin.name;
-if(twin.mem)  document.getElementById('twinMem').value=twin.mem;
-</script>
-<nav id="tabbar">
-  <button data-p="chat" class="on" onclick="go('chat')"><span class="ic">💬</span>Twin</button>
-  <button data-p="presale" onclick="go('presale')"><span class="ic">🚀</span>Sale</button>
-  <button data-p="mountain" onclick="go('mountain')"><span class="ic">🏔️</span>Peak</button>
-  <button data-p="jobs" onclick="go('jobs')"><span class="ic">💼</span>Jobs</button>
-  <button data-p="more" onclick="go('more')"><span class="ic">🧩</span>Hub</button>
 </nav>
-<script>
-function _setPg(pg){
-  document.querySelectorAll('.pg').forEach(el=>{
-    const on = el.dataset.p===pg;
-    if(window.innerWidth<=900) el.classList.toggle('on',on);
-    else el.classList.add('on');
-  });
-  document.querySelectorAll('#tabbar button').forEach(b=>b.classList.toggle('on', b.dataset.p===pg));
-  window.scrollTo({top:0});
-}
-function go(pg){
-  _setPg(pg);
-  if(pg==='jobs') try{jobRefresh()}catch(e){}
-  if(pg==='presale') try{renderPresale()}catch(e){}
-  if(pg==='more') try{renderHome()}catch(e){}
-}
-function renderHome(){
-  const g=document.getElementById('homeGreet'); if(!g) return;
-  const h=new Date().getHours();
-  const t=h<12?'สวัสดียามเช้า':h<18?'สวัสดียามบ่าย':'สวัสดียามค่ำ';
-  g.textContent=t+' — '+(window.Twin?.cfg?.name||'Hunter');
-  const lm=(window.Twin?.mem?.chat||[]).filter(m=>m.role==='twin').slice(-1)[0];
-  document.getElementById('homeLast').textContent =
-    lm ? ('“'+String(lm.text).replace(/\n/g,' ').slice(0,70)+'…”') : 'เริ่มคุยกับ Twin ของคุณได้เลย';
-  (async()=>{ try{
-    const el=document.getElementById('homeBal'); if(!el) return;
-    if(!window._myAddr){ el.innerHTML='🔗 Connect Wallet เพื่อดูยอดและซื้อ NEX'; return; }
-    const prov=new ethers.JsonRpcProvider(NET().rpc);
-    const pol=Number(ethers.formatEther(await prov.getBalance(window._myAddr))).toFixed(3);
-    let nx='—';
-    if(nexToken()){
-      const c=new ethers.Contract(nexToken(),['function balanceOf(address) view returns (uint256)'],prov);
-      nx=Number(ethers.formatEther(await c.balanceOf(window._myAddr))).toLocaleString(undefined,{maximumFractionDigits:2});
-    }
-    el.innerHTML='💰 '+pol+' '+(PS_SYM_BY_CHAIN[Number(NET().chainId)]||'POL')+' &nbsp;·&nbsp; ⚡ '+nx+' NEX';
-  }catch(e){} })();
-}
-window.addEventListener('resize',()=>{ if(window.innerWidth>900){document.querySelectorAll('.pg').forEach(el=>el.classList.add('on'));} });
-</script>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <div class="badge">🏔 Polygon Mainnet · AI × Blockchain</div>
+    <h1>The Future of<br><span class="g">Decentralized AI</span></h1>
+    <p>Nexus Architect คือระบบนิเวศที่รวม <strong>AI ที่ทำงานบนอุปกรณ์ของคุณเอง</strong> เข้ากับ <strong>Blockchain บน Polygon</strong> — ปัญหาของชุมชนถูกโหวต งานถูกจับคู่ด้วย Escrow และทุกอย่างโปร่งใสบน链</p>
+    <div class="btns">
+      <a class="btn btn-p" href="#presale">🚀 เข้าร่วม Presale</a>
+      <a class="btn btn-s" href="#whitepaper">📄 Whitepaper</a>
+      <a class="btn btn-s" href="#roadmap">🗺️ Roadmap</a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / WHITEPAPER -->
+<section id="about">
+  <div class="container">
+    <div class="sec-title">Whitepaper <span class="g">สรุป</span></div>
+    <div class="sec-sub">ทำความเข้าใจโปรเจกต์ใน 3 นาที</div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p><strong>Nexus Architect</strong> คือโปรเจกต์ที่สร้าง "AI คู่ชีวิต" ที่ทำงานบนอุปกรณ์ของคุณเอง — ไม่ต้องพึ่ง cloud ไม่ต้องเสียค่า API ไม่ต้องกลัวข้อมูลรั่ว</p>
+        <p>ทุกคนมี <strong>Digital Twin</strong> ของตัวเอง — AI ที่เรียนรู้จากข้อความสนทนาของคุณ จดจำความชอบ และช่วยคิด ช่วยทำในแบบที่คุณต้องการ</p>
+        <p>บน <strong>Polygon Blockchain</strong> ปัญหาของชุมชนถูกเสนอ โหวต และคัดออกทุกวัน (The Mountain) งาน freelancing ใช้ <strong>Smart Contract Escrow</strong> ที่ปลอดภัย และ Token <strong>NEX</strong> เป็นรางวัลสำหรับผู้มีส่วนร่วม</p>
+        <p><strong>เป้าหมาย:</strong> สร้างระบบนิเวศที่ AI + Blockchain ทำงานร่วมกันเพื่อแก้ปัญหาจริงของผู้คน — เริ่มจากชุมชนเล็กๆ สู่การเปลี่ยนแปลงระดับโลก</p>
+      </div>
+      <div class="about-card">
+        <h4>💡 คุณสมบัติหลัก</h4>
+        <ul>
+          <li><strong>AI Twin</strong> — AI ที่ทำงานบนเบราว์เซอร์ ไม่ต้องติดตั้ง</li>
+          <li><strong>The Mountain</strong> — เสนอและโหวตปัญหาชุมชนบน Blockchain</li>
+          <li><strong>Escrow Jobs</strong> — จ้างงานด้วย Smart Contract ปลอดภัย 100%</li>
+          <li><strong>NEX Token</strong> — รางวัลสำหรับการมีส่วนร่วมในระบบนิเวศ</li>
+          <li><strong>KYC On-Device</strong> — ยืนยันตัวตนบนอุปกรณ์ของคุณ ไม่ส่งข้อมูลไปไหน</li>
+          <li><strong>Dual Presale</strong> — ซื้อ NEX ด้วย USDT หรือ POL</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOKENOMICS -->
+<section id="tokenomics">
+  <div class="container">
+    <div class="sec-title">Tokenomics <span class="g">NEX</span></div>
+    <div class="sec-sub">Total Supply: 1,000,000,000 NEX · Polygon Mainnet</div>
+    <div class="toko-grid">
+      <div class="toko-card">
+        <div class="pct">50%</div>
+        <div class="lbl">Public Sale</div>
+        <div class="det">500,000,000 NEX<br>5 รอบ · ราคา x1.5/รอบ</div>
+      </div>
+      <div class="toko-card">
+        <div class="pct">30%</div>
+        <div class="lbl">Mining Rewards</div>
+        <div class="det">300,000,000 NEX<br> distributed 48 เดือน</div>
+      </div>
+      <div class="toko-card">
+        <div class="pct">20%</div>
+        <div class="lbl">Founder</div>
+        <div class="det">200,000,000 NEX<br>Vesting 12 เดือน</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="container">
+    <div class="sec-title">Roadmap <span class="g">2025 – 2026</span></div>
+    <div class="sec-sub">จาก Prototype สู่ Production</div>
+    <div class="road-timeline">
+      <div class="road-item done">
+        <div class="when">Phase 1 · Q3 2025 — Genesis</div>
+        <h4>✅ สร้างรากฐาน</h4>
+        <ul>
+          <li>AI Twin v6 Quantum Hybrid (WebGPU/WASM)</li>
+          <li>Smart Contracts 28 ตัว · 35 Tests ผ่านหมด</li>
+          <li>Presale บน Polygon Mainnet (USDT + POL)</li>
+          <li>NEX Token 1B supply deployed</li>
+          <li>เว็บ landing page + Whitepaper</li>
+        </ul>
+      </div>
+      <div class="road-item">
+        <div class="when">Phase 2 · Q4 2025 — Growth</div>
+        <h4>🌐 ขยายชุมชน</h4>
+        <ul>
+          <li>External smart contract audit</li>
+          <li>Genesis 100 early adopters</li>
+          <li>AI Twin APK (Android)</li>
+          <li>Mobile push notifications</li>
+          <li>Grant applications (Questbook, Gitcoin)</li>
+        </ul>
+      </div>
+      <div class="road-item">
+        <div class="when">Phase 3 · Q1 2026 — Scale</div>
+        <h4>📈 ขยายระบบ</h4>
+        <ul>
+          <li>DEX liquidity pool (POL/NEX)</li>
+          <li>Job Board mainnet</li>
+          <li>Verified Human on-chain</li>
+          <li>Cross-chain (BSC/Polygon)</li>
+        </ul>
+      </div>
+      <div class="road-item">
+        <div class="when">Phase 4 · Q2 2026 — Decentralize</div>
+        <h4>🏛️ DAO Governance</h4>
+        <ul>
+          <li>DAO governance activation</li>
+          <li>AI model marketplace</li>
+          <li>Community treasury management</li>
+          <li>Full tokenomics activation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRESALE -->
+<section id="presale">
+  <div class="container">
+    <div class="presale-box">
+      <h3>🚀 NEX Presale — กำลังดำเนินการ</h3>
+      <div class="price">1 NEX = $0.001</div>
+      <div class="detail">
+        5 รอบ · 200,000 NEX ต่อรอบ · ราคา x1.5 ทุกรอบ<br>
+        จ่ายได้ทั้ง <strong>USDT</strong> (Polygon PoS) หรือ <strong>POL</strong><br>
+        Whitelist: ปิดอยู่ (เปิดสาธารณะ)
+      </div>
+      <div class="contracts">
+        <div>🪙 <b>NEX Token</b></div>
+        <div class="contract-addr">0x65A56978A60733B28cD1FD61C760AB5dC8FD3081</div>
+        <div style="margin-top:.5rem">🚀 <b>Presale (USDT/POL)</b></div>
+        <div class="contract-addr">0x97fb5CEada36C721a4b82BF6a6ddFa565AC79ecF</div>
+      </div>
+      <a class="btn btn-p" href="https://pp0910619247-netizen.github.io/nexus-architect/" target="_blank" style="margin-top:1rem">🛒 ซื้อ NEX ตอนนี้ →</a>
+      <p style="color:var(--txt3);font-size:.75rem;margin-top:1rem">⚠️ Smart contract ยังไม่ผ่าน external audit · ลงทุนด้วยความเสี่ยงของคุณเอง</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="sec-title">FAQ <span class="g">คำถามที่พบบ่อย</span></div>
+    <div style="max-width:700px">
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <h4>Nexus Architect คืออะไร? ▾</h4>
+        <p>ระบบ AI + Blockchain ที่รวม AI ที่ทำงานบนอุปกรณ์ของคุณ (ไม่พึ่ง cloud) เข้ากับ Polygon Blockchain เพื่อแก้ปัญหาจริงของชุมชน</p>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <h4>AI Twin ทำงานยังไง? ▾</h4>
+        <p>AI ทำงานบนเบราว์เซอร์ของคุณเองผ่าน WebGPU/WASM ใช้โมเดล Qwen2.5-1.5B ข้อมูลไม่ถูกส่งไป cloud ใดๆ</p>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <h4>ซื้อ NEX ยังไง? ▾</h4>
+        <p>ซื้อผ่านเว็บ Presale ด้วย USDT (Polygon PoS) หรือ POL เชื่อม MetaMask แล้วกด Buy</p>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <h4>Smart contract ผ่าน audit 了吗? ▾</h4>
+        <p>ยังไม่ผ่าน external audit — มี 35 tests ผ่านหมด内部 แผน audit ภายนอก Q4 2025</p>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <h4>AI Twin APK 什么时候มี? ▾</h4>
+        <p>แผน Q4 2025 — สร้าง Android APK ก่อน แล้วค่อยลง Play Store เมื่อมีงบประมาณ</p>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <h4>The Mountain คืออะไร? ▾</h4>
+        <p>ระบบเสนอปัญหาของชุมชน — ทุกคนเสนอบน Blockchain โหวตได้ ปัญหาที่มีคะแนนสูงสุดจะอยู่รอด ปัญหาที่ไม่ผ่านจะถูกคัดออกทุกวัน</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="socials">
+      <a href="https://t.me/YOUR_TELEGRAM" target="_blank">✈️ Telegram</a>
+      <a href="https://x.com/YOUR_TWITTER" target="_blank">𝕏 Twitter / X</a>
+      <a href="https://facebook.com/YOUR_PAGE" target="_blank">📘 Facebook</a>
+      <a href="https://github.com/pp0910619247-netizen/nexus-architect" target="_blank">🐙 GitHub</a>
+    </div>
+    <p>© 2025 Nexus Architect · Built on Polygon · MIT License</p>
+    <p style="margin-top:.3rem">⚠️ ข้อมูลนี้ไม่ใช่คำแนะนำในการลงทุน · โปรดศึกษาข้อมูลก่อนตัดสินใจ</p>
+  </div>
+</footer>
+
 </body>
 </html>
