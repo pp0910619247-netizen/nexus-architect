@@ -330,12 +330,15 @@ class NexusBrain {
     // knowledge KB fallback
     const kb = this.skills['knowledge'](msg);
     if (kb) { this.lastIntent = 'knowledge'; return { ...kb, intent: 'knowledge' }; }
-    // LTM semantic search — ตอบแบบ "จำได้" ไม่ใช่ dump ข้อมูล
-    const mems = window.NexusLTM ? window.NexusLTM.search(msg, 2) : [];
-    if (mems.length) {
-      this.lastIntent = 'recall';
-      const lead = this._pick(['นึกออกครับ! เคยคุยเรื่องนี้:', 'จากความจำของผม — คุณเล่าไว้ว่า:', 'อ๋อ ผมจำได้:']);
-      return { text: `${lead}\n• ${mems.map(m => m.text).join('\n• ')}`, conf: 0.7, intent: 'recall' };
+    // v6.1: คำถามเชิงข้อเท็จจริง → ห้ามใช้ LTM recall ปกคลุม (ให้ trust chain ลงมือ)
+    const FACT_Q = /ไหม|หรือไม่|จริงไหม|หรือเปล่า|^what\b|^why\b|^how\b|^who\b/i;
+    if (!FACT_Q.test(msg)) {
+      const mems = window.NexusLTM ? window.NexusLTM.search(msg, 2) : [];
+      if (mems.length) {
+        this.lastIntent = 'recall';
+        const lead = this._pick(['นึกออกครับ! เคยคุยเรื่องนี้:', 'จากความจำของผม — คุณเล่าไว้ว่า:', 'อ๋อ ผมจำได้:']);
+        return { text: `${lead}\n• ${mems.map(m => m.text).join('\n• ')}`, conf: 0.7, intent: 'recall' };
+      }
     }
     // unknown — ถามกลับแบบช่วยคิด ไม่ใช่ปัด
     const nameQ = /คืออะไร|what is|who is/i.test(msg);

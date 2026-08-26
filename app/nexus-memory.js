@@ -47,22 +47,46 @@ class NexusMemory {
     return found;
   }
 
-  /* ── เพิ่มความจำถาวร (dedupe แบบ normalize) ── */
+  /* ── เพิ่มความจำถาวร (dedupe normalize + quality gate v1.2) ── */
+  static JUNK = /^(เข้า|ไป|มา|ดี|ใช่|ไม่|ok|yes|no|555|ครับ|ค่ะ|จ้า)$/i;
   add(text, type = 'fact', tags = [], importance = 0.6) {
-    const key = text.toLowerCase().replace(/\s+/g, ' ').trim();
+    const clean = String(text || '').trim();
+    // quality gate: สั้นเกิน/คำขยะ/ไม่มีสาระ → เก็บแต่ทำเครื่องหมาย ไม่ให้ search หยิบ
+    const lowQuality =
+      clean.length < 4 ||
+      NexusMemory.JUNK.test(clean) ||
+      (!/[0-9]/.test(clean) && clean.split(/\s+/).length < 2 && [...clean].filter(c => c === c.toUpperCase() && /[A-Z]/.test(c)).length === 0 && clean.length < 6);
+    const key = clean.toLowerCase().replace(/\s+/g, ' ');
     const dup = this.store.semantic.find(s => s.text.toLowerCase().replace(/\s+/g, ' ') === key);
-    if (dup) { dup.accessCount++; dup.lastAccess = Date.now(); dup.importance = Math.min(1, dup.importance + 0.1); this.save(); return dup; }
+    if (dup) {
+      dup.accessCount++; dup.lastAccess = Date.now();
+      dup.importance = Math.min(1, dup.importance + 0.1);
+      this.save(); return dup;
+    }
     const item = {
       id: Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-      text, type, tags,
+      text: clean, type, tags,
       importance,
+      lowQuality,
       created: Date.now(), lastAccess: Date.now(), accessCount: 0,
-      words: text.toLowerCase().split(/\s+/).filter(w => w.length > 2), // index คำ
+      words: clean.toLowerCase().split(/\s+/).filter(w => w.length > 2),
     };
     this.store.semantic.push(item);
     if (this.store.semantic.length > 500) this._prune();
     this.save();
     return item;
+  }
+
+  /* ── migration: mark legacy junk จากเวอร์ชันเก่า ── */
+  _sanitizeLegacy() {
+    let changed = false;
+    for (const s of this.store.semantic) {
+      if (s.lowQuality === undefined) {
+        s.lowQuality = String(s.text || '').trim().length < 4 || NexusMemory.JUNK.test(String(s.text || '').trim());
+        changed = true;
+      }
+    }
+    if (changed) this.save();
   }
 
   /* ── ลืมตามคำ (GDPR-style: เจ้าของสั่งลบได้) ── */
@@ -73,25 +97,33 @@ class NexusMemory {
     return before - this.store.semantic.length;
   }
 
-  /* ── ค้นความจำแบบถ่วงน้ำหนัก ── */
+  /* ── ค้นความจำแบบถ่วงน้ำหนัก (v1.2: ต้องมี keyword/tag overlap จริงเท่านั้น) ── */
   search(query, limit = 3) {
+    this._sanitizeLegacy();
     const q = query.toLowerCase();
     const qWords = q.split(/\s+/).filter(w => w.length > 2);
+    if (!qWords.length) return [];
     const now = Date.now();
-    const scored = this.store.semantic.map(s => {
-      let score = s.importance * 2;
+    const scored = [];
+    for (const s of this.store.semantic) {
+      if (s.lowQuality) continue;
+      let matchScore = 0;
       for (const w of qWords) {
-        if (s.text.toLowerCase().includes(w)) score += 3;
-        if (s.words.includes(w)) score += 2;
-        if (s.tags.some(t => q.includes(t))) score += 2.5;
+        if (w.length > 2 && s.text.toLowerCase().includes(w)) matchScore += 3;
+        if ((s.words || []).includes(w)) matchScore += 2;
       }
-      score += s.accessCount * 0.3;
-      score += Math.max(0, 1 - (now - s.lastAccess) / (86400000 * 30)) * 1.5; // recency 30 วัน
-      return { s, score };
-    }).filter(x => x.score > 1.5).sort((a, b) => b.score - a.score).slice(0, limit);
-    scored.forEach(x => { x.s.accessCount++; x.s.lastAccess = now; });
-    if (scored.length) this.save();
-    return scored.map(x => x.s);
+      for (const t of (s.tags || [])) if (q.includes(t)) matchScore += 2.5;
+      if (matchScore <= 0) continue;              // ← ไม่มี overlap = ไม่ใช่ความจำที่เกี่ยว
+      let score = matchScore + s.importance * 2
+                + s.accessCount * 0.3
+                + Math.max(0, 1 - (now - s.lastAccess) / (86400000 * 30)) * 1.5;
+      scored.push({ s, score });
+    }
+    const out = scored.filter(x => x.score >= 3)
+      .sort((a, b) => b.score - a.score).slice(0, limit);
+    out.forEach(x => { x.s.accessCount++; x.s.lastAccess = now; });
+    if (out.length) this.save();
+    return out.map(x => x.s);
   }
 
   /* ── Consolidation: ย่อยแชทเก่า → episodic (เหมือนการหลับ) ── */
