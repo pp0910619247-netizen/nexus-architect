@@ -193,7 +193,22 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
         <a href="https://x.com/nexusarchitect2" target="_blank" title="X">𝕏</a>
         <a href="https://www.facebook.com/groups/28128540746755286/" target="_blank" title="Facebook">📘</a>
       </div>
-      <a class="btn-nav" href="#presale">🚀 เข้าร่วม</a>
+      <div id="navWallet">
+        <button id="navWalletBtn" onclick="connectWallet()" style="
+          background:var(--panel2);color:var(--txt2);padding:.45rem 1rem;border-radius:10px;
+          font-weight:600;font-size:.82rem;border:1px solid var(--line);cursor:pointer;
+          font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:.4rem;
+        ">🦊 เชื่อมกระเป๋า</button>
+        <div id="navWalletInfo" style="display:none;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:.5rem .8rem;display:none;align-items:center;gap:.8rem">
+          <span id="navWalletNet" style="font-size:.65rem;padding:.15rem .5rem;border-radius:6px;background:var(--good);color:#fff;font-weight:600;white-space:nowrap"></span>
+          <span id="navWalletAddr" style="font-family:monospace;font-size:.78rem;color:var(--acc2)"></span>
+          <span style="color:var(--txt3);font-size:.7rem">·</span>
+          <span style="font-size:.78rem"><span style="color:var(--txt3)">POL</span> <b id="navPol" style="color:var(--txt)">—</b></span>
+          <span style="color:var(--txt3);font-size:.7rem">·</span>
+          <span style="font-size:.78rem"><span style="color:var(--txt3)">NEX</span> <b id="navNex" style="color:var(--acc2)">—</b></span>
+          <button onclick="disconnectWallet()" style="background:none;border:none;color:var(--txt3);cursor:pointer;font-size:.75rem;padding:.2rem" title="ยกเลิก">✕</button>
+        </div>
+      </div>
     </div>
   </div>
 </nav>
@@ -472,48 +487,6 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
   </div>
 </section>
 
-<!-- ═══════ WALLET CONNECT ═══════ -->
-<section id="wallet" style="padding:3rem 0;border-top:1px solid var(--line)">
-  <div class="container" style="text-align:center">
-    <div style="background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:2rem;max-width:500px;margin:0 auto">
-      <div style="font-size:2rem;margin-bottom:.8rem">🦊</div>
-      <h4 style="font-weight:700;margin-bottom:.5rem">เชื่อมต่อกระเป๋าเงิน</h4>
-      <p style="color:var(--txt2);font-size:.85rem;margin-bottom:1.2rem">เชื่อม MetaMask เพื่อดูยอดเงินและซื้อ NEX Token</p>
-      <div id="walletArea">
-        <button id="walletBtn" onclick="connectWallet()" style="
-          background:var(--grad);color:#fff;padding:.7rem 2rem;border-radius:12px;
-          font-weight:700;font-size:.95rem;border:none;cursor:pointer;font-family:inherit;
-          transition:all .2s;
-        ">🦊 เชื่อมต่อ MetaMask</button>
-      </div>
-      <div id="walletInfo" style="display:none;margin-top:1rem">
-        <div style="background:var(--bg2);border-radius:12px;padding:1rem;text-align:left">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-            <span style="color:var(--txt2);font-size:.8rem">กระเป๋าเงิน</span>
-            <span id="walletNet" style="font-size:.72rem;padding:.2rem .6rem;border-radius:8px;background:var(--good);color:#fff;font-weight:600"></span>
-          </div>
-          <div id="walletAddr" style="font-family:monospace;font-size:.82rem;color:var(--acc2);word-break:break-all;margin-bottom:.6rem"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem">
-            <div style="background:var(--panel2);border-radius:10px;padding:.6rem;text-align:center">
-              <div style="color:var(--txt3);font-size:.7rem">POL</div>
-              <div id="walletPol" style="font-weight:700;font-size:.95rem">—</div>
-            </div>
-            <div style="background:var(--panel2);border-radius:10px;padding:.6rem;text-align:center">
-              <div style="color:var(--txt3);font-size:.7rem">NEX</div>
-              <div id="walletNex" style="font-weight:700;font-size:.95rem">—</div>
-            </div>
-          </div>
-          <button onclick="disconnectWallet()" style="
-            width:100%;margin-top:.8rem;background:transparent;color:var(--txt3);
-            border:1px solid var(--line);border-radius:10px;padding:.5rem;font-size:.8rem;
-            cursor:pointer;font-family:inherit;transition:all .2s
-          ">ยกเลิกการเชื่อมต่อ</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ═══════ FOOTER ═══════ -->
 <footer>
   <div class="container">
@@ -540,20 +513,21 @@ const POLYGON_CHAIN='0x89';
 const POLYGON_NAME='Polygon Mainnet';
 
 function showWallet(addr,bal,nexBal,chainId){
-  document.getElementById('walletBtn').style.display='none';
-  document.getElementById('walletInfo').style.display='block';
-  document.getElementById('walletAddr').textContent=addr.slice(0,6)+'…'+addr.slice(-4);
-  document.getElementById('walletPol').textContent=bal;
-  document.getElementById('walletNex').textContent=nexBal;
-  const net=document.getElementById('walletNet');
-  if(chainId===137){net.textContent='Polygon Mainnet';net.style.background='var(--good)';}
-  else{net.textContent='เครือข่ายอื่น';net.style.background='var(--warn)';}
+  document.getElementById('navWalletBtn').style.display='none';
+  const info=document.getElementById('navWalletInfo');
+  info.style.display='flex';
+  document.getElementById('navWalletAddr').textContent=addr.slice(0,6)+'…'+addr.slice(-4);
+  document.getElementById('navPol').textContent=bal;
+  document.getElementById('navNex').textContent=nexBal;
+  const net=document.getElementById('navWalletNet');
+  if(chainId===137){net.textContent='Polygon';net.style.background='var(--good)';}
+  else{net.textContent='Chain '+chainId;net.style.background='var(--warn)';}
 }
 
 function disconnectWallet(){
   localStorage.removeItem('nx_wallet');
-  document.getElementById('walletBtn').style.display='';
-  document.getElementById('walletInfo').style.display='none';
+  document.getElementById('navWalletBtn').style.display='';
+  document.getElementById('navWalletInfo').style.display='none';
 }
 
 async function connectWallet(){
