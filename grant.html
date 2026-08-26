@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nexus Architect — Building the Future of Decentralized AI × Blockchain</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🏔</text></svg>">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e17;--panel:#111827;--panel2:#1a2236;--panel3:#232e48;
+  --acc:#6366f1;--acc2:#818cf8;--acc3:#4f46e5;
+  --good:#22c55e;--warn:#f59e0b;--err:#ef4444;
+  --txt:#e5e7eb;--txt2:#9ca3af;--txt3:#6b7280;
+  --line:#1e293b;--glass:rgba(17,24,39,0.85);
+  --grad:linear-gradient(135deg,#6366f1 0%,#8b5cf6 40%,#a855f7 70%,#c084fc 100%);
+}
+body{
+  font-family:'Inter','SF Pro Display',system-ui,sans-serif;
+  background:var(--bg);color:var(--txt);
+  line-height:1.65;-webkit-font-smoothing:antialiased;
+}
+a{color:var(--acc2);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:var(--glass);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--line);padding:0 2rem;
+}
+nav .inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px}
+nav .logo{font-size:1.2rem;font-weight:800;color:var(--txt)}
+nav .logo span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+nav .links{display:flex;gap:2rem}
+nav .links a{color:var(--txt2);font-size:.9rem;font-weight:500}
+nav .links a:hover{color:var(--txt);text-decoration:none}
+nav .cta{background:var(--acc);color:#fff;padding:.5rem 1.2rem;border-radius:8px;font-weight:600;font-size:.9rem}
+nav .cta:hover{text-decoration:none;background:var(--acc3)}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:120px 2rem 80px;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;top:-40%;left:-20%;width:140%;height:140%;
+  background:radial-gradient(circle at 50% 30%,rgba(99,102,241,0.15) 0%,transparent 60%);
+  pointer-events:none;
+}
+.hero h1{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;line-height:1.1;margin-bottom:1.5rem}
+.hero h1 .grad{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:1.25rem;color:var(--txt2);max-width:700px;margin:0 auto 2.5rem}
+.hero .btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn-primary{
+  background:var(--grad);color:#fff;padding:.85rem 2rem;border-radius:12px;
+  font-weight:700;font-size:1.05rem;border:none;cursor:pointer;
+  transition:transform .15s,box-shadow .2s;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,0.35);text-decoration:none;color:#fff}
+.btn-secondary{
+  background:var(--panel2);color:var(--txt);padding:.85rem 2rem;border-radius:12px;
+  font-weight:600;font-size:1.05rem;border:1px solid var(--line);cursor:pointer;
+  transition:border-color .2s;
+}
+.btn-secondary:hover{border-color:var(--acc);text-decoration:none;color:var(--txt)}
+
+/* ── STATS ── */
+.stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;
+  max-width:1000px;margin:-40px auto 0;padding:0 2rem;position:relative;z-index:2;
+}
+.stat-card{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  padding:1.8rem;text-align:center;
+}
+.stat-card .num{font-size:2.2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-card .label{color:var(--txt2);font-size:.85rem;margin-top:.3rem}
+
+/* ── SECTION ── */
+section{max-width:1200px;margin:0 auto;padding:5rem 2rem}
+section h2{font-size:2.2rem;font-weight:800;margin-bottom:.5rem}
+section h2 .grad{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+section .sub{color:var(--txt2);font-size:1.05rem;margin-bottom:3rem;max-width:600px}
+
+/* ── TRACKS ── */
+.tracks{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.5rem}
+.track{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  padding:2rem;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;
+}
+.track:hover{border-color:var(--acc);transform:translateY(-3px)}
+.track .icon{font-size:2.2rem;margin-bottom:1rem}
+.track h3{font-size:1.15rem;font-weight:700;margin-bottom:.5rem}
+.track p{color:var(--txt2);font-size:.9rem;line-height:1.55}
+.track .badge{
+  position:absolute;top:1rem;right:1rem;
+  background:var(--good);color:#000;padding:.2rem .7rem;border-radius:20px;
+  font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+}
+
+/* ── HOW IT WORKS ── */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem;margin-top:2rem}
+.step{text-align:center}
+.step .circle{
+  width:60px;height:60px;border-radius:50%;background:var(--panel2);border:2px solid var(--acc);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;
+  font-size:1.5rem;font-weight:800;color:var(--acc);
+}
+.step h4{font-weight:700;margin-bottom:.4rem}
+.step p{color:var(--txt2);font-size:.85rem}
+.step .line{
+  display:none;width:40px;height:2px;background:var(--line);
+  position:absolute;top:30px;right:-30px;
+}
+
+/* ── FEATURES ── */
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.feature{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.8rem;
+}
+.feature .ico{font-size:1.8rem;margin-bottom:.8rem}
+.feature h4{font-weight:700;margin-bottom:.4rem}
+.feature p{color:var(--txt2);font-size:.85rem;line-height:1.5}
+
+/* ── ROADMAP ── */
+.roadmap{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem}
+.rm-phase{
+  background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.5rem;
+  border-top:3px solid var(--acc);
+}
+.rm-phase h4{font-weight:700;margin-bottom:.6rem;color:var(--acc2)}
+.rm-phase .when{font-size:.75rem;color:var(--txt3);margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.5px}
+.rm-phase ul{list-style:none;padding:0}
+.rm-phase li{color:var(--txt2);font-size:.85rem;padding:.3rem 0;padding-left:1.2rem;position:relative}
+.rm-phase li::before{content:'→';position:absolute;left:0;color:var(--acc)}
+
+/* ── FAQ ── */
+.faq{max-width:800px}
+.faq-item{
+  border-bottom:1px solid var(--line);padding:1.5rem 0;
+}
+.faq-item h4{font-weight:700;margin-bottom:.5rem;cursor:pointer;display:flex;justify-content:space-between}
+.faq-item h4::after{content:'+';color:var(--acc);font-size:1.3rem}
+.faq-item p{color:var(--txt2);font-size:.9rem;line-height:1.6}
+
+/* ── CTA ── */
+.cta-box{
+  text-align:center;padding:4rem 2rem;
+  background:linear-gradient(180deg,transparent 0%,rgba(99,102,241,0.08) 100%);
+  border-radius:24px;margin:2rem 0;
+}
+.cta-box h2{font-size:2rem;margin-bottom:1rem}
+.cta-box p{color:var(--txt2);margin-bottom:2rem}
+
+/* ── FOOTER ── */
+footer{
+  text-align:center;padding:3rem 2rem;border-top:1px solid var(--line);
+  color:var(--txt3);font-size:.85rem;
+}
+footer .links{display:flex;gap:2rem;justify-content:center;margin-top:.8rem}
+footer a{color:var(--txt2)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .features{grid-template-columns:1fr}
+  .roadmap{grid-template-columns:repeat(2,1fr)}
+  nav .links{display:none}
+}
+@media(max-width:600px){
+  .stats{grid-template-columns:1fr}
+  .tracks{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr}
+  .roadmap{grid-template-columns:1fr}
+  .hero h1{font-size:2rem}
+}
+
+/* ── ANIM ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.hero,.stats,.track,.step,.feature,.rm-phase,.faq-item{animation:fadeUp .6s ease-out both}
+.stats .stat-card:nth-child(1){animation-delay:.1s}
+.stats .stat-card:nth-child(2){animation-delay:.15s}
+.stats .stat-card:nth-child(3){animation-delay:.2s}
+.stats .stat-card:nth-child(4){animation-delay:.25s}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="inner">
+    <div class="logo"><span>Nexus</span> Architect</div>
+    <div class="links">
+      <a href="#tracks">Tracks</a>
+      <a href="#features">Features</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <a class="cta" href="#apply">Apply for Grant →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <p style="color:var(--acc2);font-weight:600;margin-bottom:.8rem;font-size:.95rem">🏔 Polygon Ecosystem · AI × Blockchain · Live on Mainnet</p>
+    <h1>Build the Future of<br><span class="grad">Decentralized AI × Blockchain</span></h1>
+    <p>Nexus Architect is a full-stack ecosystem: on-device AI Twin, on-chain problem economy, escrow job marketplace, and dual presale — all on Polygon. Now seeking grants to scale.</p>
+    <div class="btns">
+      <a class="btn-primary" href="#apply">Apply for Grant →</a>
+      <a class="btn-secondary" href="https://pp0910619247-netizen.github.io/nexus-architect/" target="_blank">Launch App →</a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-card"><div class="num">$18M+</div><div class="label">Grants Target</div></div>
+  <div class="stat-card"><div class="num">70+</div><div class="label">Planned Projects</div></div>
+  <div class="stat-card"><div class="num">28</div><div class="label">Smart Contracts</div></div>
+  <div class="stat-card"><div class="num">35</div><div class="label">Tests Passing</div></div>
+</div>
+
+<!-- TRACKS -->
+<section id="tracks">
+  <h2>What We're <span class="grad">Building</span></h2>
+  <p class="sub">Six pillars of the Nexus ecosystem — each open for grant funding and community contributions.</p>
+  <div class="tracks">
+
+    <div class="track">
+      <span class="badge">Live</span>
+      <div class="icon">🧠</div>
+      <h3>AI Twin (On-Device LLM)</h3>
+      <p>Quantum-inspired hybrid routing with TF-IDF bagged ensemble ×5 models, self-healing, emotion engine, and trust chain (KB→Wiki→DDG). Runs entirely in-browser — no cloud AI dependency.</p>
+    </div>
+
+    <div class="track">
+      <span class="badge">Live</span>
+      <div class="icon">🏔</div>
+      <h3>The Mountain — Problem Economy</h3>
+      <p>Submit problems → community votes → top 10 survive daily culling → on-chain V3 with anti-spam deposit. A decentralized governance layer for real-world issue discovery and prioritization.</p>
+    </div>
+
+    <div class="track">
+      <span class="badge">Live</span>
+      <div class="icon">💼</div>
+      <h3>Escrow Job Marketplace</h3>
+      <p>Smart contract escrow with 10% platform fee, automatic completion verification, and SOLIDITY 0.8.19 security. Trustless job matching on Polygon.</p>
+    </div>
+
+    <div class="track">
+      <span class="badge">Live</span>
+      <div class="icon">🚀</div>
+      <h3>Dual Presale (USDT + POL)</h3>
+      <p>5-round price escalation ×1.5, 200k NEX cap per round, whitelist gate, time-lock protection. Live on Polygon Mainnet with real token inventory.</p>
+    </div>
+
+    <div class="track">
+      <span class="badge">Live</span>
+      <div class="icon">🔐</div>
+      <h3>Identity v2.1 + KYC v2.0</h3>
+      <p>ICAO 9303 MRZ passport scan, Thai ID checksum, active liveness detection (blink + yaw), Google OAuth, Passkey/WebAuthn. Zero cloud dependency — all on-device.</p>
+    </div>
+
+    <div class="track">
+      <span class="badge">Testnet</span>
+      <div class="icon">📱</div>
+      <h3>Mobile App Shell</h3>
+      <p>Android Studio WebView project with 5-tab bottom navigation. Chat-first UX. Ready for Capacitor iOS wrapper. FCM push notification pending Firebase setup.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- WHY POLYGON -->
+<section id="features">
+  <h2>Why <span class="grad">Polygon</span></h2>
+  <p class="sub">Low fees, Ethereum security, and a thriving ecosystem.</p>
+  <div class="features">
+    <div class="feature">
+      <div class="ico">⚡</div>
+      <h4>Ultra-Low Gas</h4>
+      <p>Problem submission, voting, and job escrow cost fractions of a cent. Accessible to users worldwide.</p>
+    </div>
+    <div class="feature">
+      <div class="ico">🔒</div>
+      <h4>Ethereum Security</h4>
+      <p>Full EVM compatibility with Polygon's secured infrastructure. Battle-tested by DeFi giants.</p>
+    </div>
+    <div class="feature">
+      <div class="ico">📊</div>
+      <h4>High Throughput</h4>
+      <p>Fast block times enable real-time governance voting and instant escrow settlements.</p>
+    </div>
+    <div class="feature">
+      <div class="ico">🌐</div>
+      <h4>Massive Ecosystem</h4>
+      <p>Access to 400M+ users, major DEXs, and established wallet infrastructure like MetaMask.</p>
+    </div>
+    <div class="feature">
+      <div class="ico">🛡️</div>
+      <h4>Security First</h4>
+      <p>35 passing tests. On-chain culling. Dual-signature treasury. Audit-ready before public sale.</p>
+    </div>
+    <div class="feature">
+      <div class="ico">🤖</div>
+      <h4>AI-Native Ready</h4>
+      <p>On-device inference means no API keys, no cloud costs, no privacy leaks. True 1 Human : 1 AI.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <h2>Grant <span class="grad">Process</span></h2>
+  <p class="sub">A simple, transparent path from proposal to funding.</p>
+  <div class="steps">
+    <div class="step"><div class="circle">1</div><h4>Submit Proposal</h4><p>Outline your project goals, timeline, and requested funding amount.</p></div>
+    <div class="step"><div class="circle">2</div><h4>Review & Feedback</h4><p>Domain allocators review within 1–2 weeks with structured feedback.</p></div>
+    <div class="step"><div class="circle">3</div><h4>Advanced Review</h4><p>Approved proposals undergo final technical and community review.</p></div>
+    <div class="step"><div class="circle">4</div><h4>Receive Funding</h4><p>Milestone-based payouts with ongoing support and accountability.</p></div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <h2>Roadmap <span class="grad">2025–2026</span></h2>
+  <p class="sub">From hackathon prototype to production ecosystem.</p>
+  <div class="roadmap">
+    <div class="rm-phase">
+      <div class="when">Phase 1 — Q3 2025</div>
+      <h4>Genesis</h4>
+      <ul>
+        <li>Brain v6.0 quantum hybrid</li>
+        <li>11 contracts deployed</li>
+        <li>Mainnet presale live</li>
+        <li>35 tests passing</li>
+        <li>Whitepaper v1.0 published</li>
+      </ul>
+    </div>
+    <div class="rm-phase">
+      <div class="when">Phase 2 — Q4 2025</div>
+      <h4>Growth</h4>
+      <ul>
+        <li>External smart contract audit</li>
+        <li>Genesis 100 early adopters</li>
+        <li>Mobile FCM push notifications</li>
+        <li>Lite Mode rollout</li>
+        <li>Grants from Questbook/Gitcoin</li>
+      </ul>
+    </div>
+    <div class="rm-phase">
+      <div class="when">Phase 3 — Q1 2026</div>
+      <h4>Scale</h4>
+      <ul>
+        <li>DEX liquidity pool (POL/NEX)</li>
+        <li>Job Board mainnet launch</li>
+        <li>Verified Human on-chain registry</li>
+        <li>Cross-chain bridge (BSC/Polygon)</li>
+        <li>Partnership with Thai universities</li>
+      </ul>
+    </div>
+    <div class="rm-phase">
+      <div class="when">Phase 4 — Q2 2026</div>
+      <h4>Decentralize</h4>
+      <ul>
+        <li>DAO governance activation</li>
+        <li>Multi-chain deployment</li>
+        <li>AI model marketplace</li>
+        <li>Community treasury management</li>
+        <li>Full tokenomics activation</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <h2>Frequently Asked <span class="grad">Questions</span></h2>
+  <div class="faq">
+    <div class="faq-item">
+      <h4>What types of projects qualify for Nexus grants?</h4>
+      <p>AI innovation, DeFi solutions, consumer products, infrastructure tools, research, and community events — all built on or integrated with the Nexus Architect ecosystem.</p>
+    </div>
+    <div class="faq-item">
+      <h4>How much funding can I request?</h4>
+      <p>Any amount subject to track guidelines. Grants are milestone-based with accountability. Final amount at the discretion of the grant committee.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Is KYC required?</h4>
+      <p>Yes, KYC is mandatory for all grant recipients. KYB applies for registered businesses. We use our on-device KYC v2.0 (MRZ + liveness) — your data never leaves your device.</p>
+    </div>
+    <div class="faq-item">
+      <h4>What chain is Nexus Architect on?</h4>
+      <p>Primary deployment on Polygon Mainnet (chain ID 137). Testnet on Polygon Amoy. Plans for BSC cross-chain expansion.</p>
+    </div>
+    <div class="faq-item">
+      <h4>Has the smart contract been audited?</h4>
+      <p>Currently undergoing internal review (35 tests passing). External audit planned for Q4 2025 as a grant milestone. All contracts use Solidity 0.8.19 with overflow protection.</p>
+    </div>
+    <div class="faq-item">
+      <h4>How does the AI Twin work?</h4>
+      <p>On-device inference using Qwen2.5-1.5B via transformers.js. Quantum-inspired routing, persona distillation from twin-persona.md, and trust chain (local KB→Wikipedia→DuckDuckGo). Zero cloud dependency.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-box" id="apply">
+  <h2>Ready to Build <span class="grad">Together</span>?</h2>
+  <p>Join the Nexus ecosystem. Apply for a grant, contribute to the protocol, or become a Genesis citizen.</p>
+  <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+    <a class="btn-primary" href="https://pp0910619247-netizen.github.io/nexus-architect/" target="_blank">Launch App →</a>
+    <a class="btn-secondary" href="https://github.com/pp0910619247-netizen/nexus-architect" target="_blank">View on GitHub →</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 Nexus Architect · Built on Polygon · MIT License</p>
+  <div class="links">
+    <a href="https://github.com/pp0910619247-netizen/nexus-architect" target="_blank">GitHub</a>
+    <a href="https://pp0910619247-netizen.github.io/nexus-architect/" target="_blank">Live App</a>
+    <a href="#">Discord</a>
+    <a href="#">Twitter/X</a>
+  </div>
+</footer>
+
+<!-- GSAP-like scroll animation (vanilla) -->
+<script>
+const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.style.opacity=1;e.target.style.transform='translateY(0)';obs.unobserve(e.target)}}),{threshold:.1});
+document.querySelectorAll('.track,.step,.feature,.rm-phase,.faq-item').forEach(el=>{el.style.opacity=0;el.style.transform='translateY(20px)';el.style.transition='opacity .5s ease, transform .5s ease';obs.observe(el)});
+</script>
+</body>
+</html>
