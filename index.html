@@ -146,6 +146,7 @@
     <button class="ghost" style="padding:6px 10px;font-size:11px" onclick="go('more')">⚙️</button>
   </div>
   <div class="bal" id="homeBal">🔗 Connect Wallet เพื่อดูยอดและซื้อ NEX</div>
+  <div id="homeLast" class="muted" style="font-size:12px;padding:0 16px;margin-top:2px"></div>
   <div class="qgrid">
     <button onclick="go('presale')"><span class="ic">🚀</span><span>Buy NEX</span></button>
     <button onclick="go('jobs')"><span class="ic">💼</span><span>Jobs</span></button>
@@ -663,7 +664,20 @@ const NETWORKS = {
 let g_net = localStorage.getItem('nx_net') || 'amoy';
 if(!NETWORKS[g_net]) g_net='amoy';
 function NET(){ return NETWORKS[g_net]; }
-function switchNet(v){ localStorage.setItem('nx_net',v); location.reload(); }
+const REGISTRY = () => NET().registry;
+const SPLITTER = () => NET().splitter;
+const AMOY_RPC  = () => NET().rpc;
+
+async function switchNet(v){
+  if(!NETWORKS[v]) return;
+  localStorage.setItem('nx_net',v);
+  if(window.ethereum){
+    try{
+      await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x'+NETWORKS[v].chainId.toString(16)}]});
+    }catch(e){}
+  }
+  location.reload();
+}
 
 const ABI = [
   "function problemCount() view returns (uint256)",
@@ -671,10 +685,11 @@ const ABI = [
   "function submitProblem(string,string) returns (uint256)",
   "function vote(uint256)",
 ];
-document.getElementById('regAddr').textContent =
-  REGISTRY.slice(0,10)+'…'+REGISTRY.slice(-6)+' · RewardSplitter: '+SPLITTER.slice(0,10)+'…';
+const _reg = REGISTRY();
+if(_reg) document.getElementById('regAddr').textContent =
+  _reg.slice(0,10)+'…'+_reg.slice(-6)+' · RewardSplitter: '+(SPLITTER()||'—').slice(0,10)+'…';
 
-function chainProvider(){ return new ethers.JsonRpcProvider(AMOY_RPC); }
+function chainProvider(){ return new ethers.JsonRpcProvider(AMOY_RPC()); }
 function chainSigner(){
   if(typeof window.ethereum==='undefined'){ toast('ต้องติดตั้ง MetaMask ก่อน'); return null; }
   return new ethers.BrowserProvider(window.ethereum);
@@ -684,7 +699,7 @@ async function readChain(){
   const out=document.getElementById('chainOut');
   out.innerHTML='<tr><td>กำลังอ่าน...</td></tr>';
   try{
-    const c=new ethers.Contract(REGISTRY, ABI, chainProvider());
+    const c=new ethers.Contract(REGISTRY(), ABI, chainProvider());
     const n=await c.problemCount();
     let rows=`<tr><th>Chain Problem #</th><th>หัวข้อ</th><th>หมวด</th><th style="text-align:right">Votes</th></tr>`;
     const total=Number(n);
@@ -706,7 +721,7 @@ async function chainSubmit(){
   try{
     toast('รอยืนยันใน MetaMask...');
     const signer=await s.getSigner();
-    const c=new ethers.Contract(REGISTRY, ABI, signer);
+    const c=new ethers.Contract(REGISTRY(), ABI, signer);
     const tx=await c.submitProblem(t, cat);
     toast('ส่งแล้ว รอ confirm...');
     await tx.wait();
@@ -782,7 +797,7 @@ const SPLIT_ABI=[
 async function rwContract(){
   const s=chainSigner(); if(!s) return null;
   const signer=await s.getSigner();
-  return new ethers.Contract(SPLITTER, SPLIT_ABI, signer);
+  return new ethers.Contract(SPLITTER(), SPLIT_ABI, signer);
 }
 function rwStatus(msg,ok){ document.getElementById('rwStatus').innerHTML=`<span class="${ok?'pos':'neg'}">${esc(msg)}</span>`; }
 async function rwAdd(){
@@ -1159,7 +1174,8 @@ async function jobRefresh(){
 async function renderMarketChrome(){
   const cfg=document.getElementById('marketAddrs'), stats=document.getElementById('marketStats');
   const ok=jobReady();
-  cfg.innerHTML=`REGISTRY <b style="color:${REGISTRY?'var(--good)':'var(--bad)'}">${REGISTRY?REGISTRY.slice(0,8)+'…':'—'}</b> · SPLITTER <b style="color:${SPLITTER?'var(--good)':'var(--bad)'}">${SPLITTER?SPLITTER.slice(0,8)+'…':'—'}</b> · NEX <b style="color:${nexToken()?'var(--good)':'var(--bad)'}">${nexToken()?nexToken().slice(0,8)+'…':'—'}</b> · JOBBOARD <b style="color:${jobBoard()?'var(--good)':'var(--bad)'}">${jobBoard()?jobBoard().slice(0,8)+'…':'—'}</b>`;
+  const _r=REGISTRY(), _s=SPLITTER();
+  cfg.innerHTML=`REGISTRY <b style="color:${_r?'var(--good)':'var(--bad)'}">${_r?_r.slice(0,8)+'…':'—'}</b> · SPLITTER <b style="color:${_s?'var(--good)':'var(--bad)'}">${_s?_s.slice(0,8)+'…':'—'}</b> · NEX <b style="color:${nexToken()?'var(--good)':'var(--bad)'}">${nexToken()?nexToken().slice(0,8)+'…':'—'}</b> · JOBBOARD <b style="color:${jobBoard()?'var(--good)':'var(--bad)'}">${jobBoard()?jobBoard().slice(0,8)+'…':'—'}</b>`;
   document.getElementById('jobConfig').textContent=ok?(window._myAddr?('wallet: '+window._myAddr.slice(0,6)+'…'):''):'';
   if(!ok){ stats.innerHTML=''; return; }
   try{
