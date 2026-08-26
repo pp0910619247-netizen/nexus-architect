@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nexus Architect — Decentralized AI × Blockchain</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🏔</text></svg>">
+<meta name="description" content="Nexus Architect — On-device AI Twin + Blockchain Problem Economy. Build the future of decentralized AI.">
+<meta property="og:title" content="Nexus Architect — Decentralized AI × Blockchain">
+<meta property="og:description" content="On-device AI Twin · Problem Economy · Escrow Jobs · All on Polygon">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://nexusarchitect.online">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e17;--panel:#111827;--panel2:#1a2236;
+  --acc:#6366f1;--acc2:#818cf8;--acc3:#4f46e5;
+  --good:#22c55e;--warn:#f59e0b;--err:#ef4444;
+  --txt:#e5e7eb;--txt2:#9ca3af;--txt3:#6b7280;
+  --line:#1e293b;
+  --grad:linear-gradient(135deg,#6366f1 0%,#8b5cf6 40%,#a855f7 70%,#c084fc 100%);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter','SF Pro Display',system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.7;-webkit-font-smoothing:antialiased}
+a{color:var(--acc2);text-decoration:none}a:hover{text-decoration:underline}
+.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,14,23,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--line)}
+nav .inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px;padding:0 1.5rem}
+nav .logo{font-size:1.1rem;font-weight:800}
+nav .logo span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+nav .links{display:flex;gap:1.5rem}
+nav .links a{color:var(--txt2);font-size:.85rem;font-weight:500}
+nav .links a:hover{color:var(--txt);text-decoration:none}
+.social-row{display:flex;gap:.8rem}
+.social-row a{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:var(--panel2);color:var(--txt2);font-size:1rem;transition:all .2s}
+.social-row a:hover{background:var(--acc);color:#fff;text-decoration:none}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:100px 1.5rem 60px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-30%;left:-10%;width:120%;height:120%;background:radial-gradient(circle at 50% 40%,rgba(99,102,241,0.12) 0%,transparent 60%);pointer-events:none}
+.hero .badge{display:inline-block;background:var(--panel2);border:1px solid var(--line);padding:.4rem 1rem;border-radius:20px;font-size:.8rem;color:var(--acc2);margin-bottom:1.5rem;font-weight:600}
+.hero h1{font-size:clamp(2.2rem,5.5vw,4rem);font-weight:900;line-height:1.1;margin-bottom:1.2rem}
+.hero h1 .g{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:1.15rem;color:var(--txt2);max-width:650px;margin:0 auto 2rem}
+.hero .btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.8rem;border-radius:12px;font-weight:700;font-size:.95rem;border:none;cursor:pointer;transition:transform .15s,box-shadow .2s}
+.btn:hover{transform:translateY(-2px);text-decoration:none}
+.btn-p{background:var(--grad);color:#fff;box-shadow:0 4px 20px rgba(99,102,241,0.3)}
+.btn-p:hover{box-shadow:0 8px 30px rgba(99,102,241,0.45)}
+.btn-s{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+.btn-s:hover{border-color:var(--acc)}
+
+/* SECTION */
+section{padding:5rem 0}
+.sec-title{font-size:1.8rem;font-weight:800;margin-bottom:.4rem}
+.sec-title .g{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sec-sub{color:var(--txt2);font-size:1rem;margin-bottom:2.5rem;max-width:550px}
+
+/* ABOUT */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
+.about-text p{color:var(--txt2);margin-bottom:1rem;font-size:.95rem}
+.about-text strong{color:var(--txt)}
+.about-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:2rem}
+.about-card h4{font-weight:700;margin-bottom:.8rem;font-size:1rem}
+.about-card ul{list-style:none;padding:0}
+.about-card li{color:var(--txt2);font-size:.88rem;padding:.35rem 0;padding-left:1.2rem;position:relative}
+.about-card li::before{content:'→';position:absolute;left:0;color:var(--acc)}
+
+/* TOKENOMICS */
+.toko-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.2rem}
+.toko-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.5rem;text-align:center}
+.toko-card .pct{font-size:2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.toko-card .lbl{color:var(--txt2);font-size:.82rem;margin-top:.3rem}
+.toko-card .det{color:var(--txt3);font-size:.75rem;margin-top:.5rem}
+
+/* ROADMAP */
+.road-timeline{position:relative;padding-left:2rem}
+.road-timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--line)}
+.road-item{position:relative;margin-bottom:2.5rem;padding-left:1.5rem}
+.road-item::before{content:'';position:absolute;left:-2rem;top:.5rem;width:18px;height:18px;border-radius:50%;background:var(--panel2);border:2px solid var(--acc)}
+.road-item.done::before{background:var(--good);border-color:var(--good)}
+.road-item .when{font-size:.75rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem}
+.road-item h4{font-weight:700;margin-bottom:.4rem}
+.road-item ul{list-style:none;padding:0}
+.road-item li{color:var(--txt2);font-size:.85rem;padding:.25rem 0;padding-left:1rem;position:relative}
+.road-item li::before{content:'·';position:absolute;left:0;color:var(--acc);font-weight:800}
+
+/* PRESALE */
+.presale-box{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:2.5rem;text-align:center;position:relative;overflow:hidden}
+.presale-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
+.presale-box h3{font-size:1.5rem;font-weight:800;margin-bottom:.5rem}
+.presale-box .price{font-size:2.5rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:.8rem 0}
+.presale-box .detail{color:var(--txt2);font-size:.9rem;margin-bottom:1.5rem;line-height:1.8}
+.presale-box .contracts{background:var(--panel2);border-radius:12px;padding:1rem;margin:1.5rem 0;text-align:left;font-size:.8rem;font-family:monospace}
+.presale-box .contracts div{padding:.3rem 0;color:var(--txt2)}
+.presale-box .contracts b{color:var(--txt)}
+.contract-addr{word-break:break-all;font-size:.75rem;color:var(--acc2)}
+
+/* FAQ */
+.faq-item{border-bottom:1px solid var(--line);padding:1.2rem 0}
+.faq-item h4{font-weight:700;cursor:pointer;font-size:.95rem}
+.faq-item p{color:var(--txt2);font-size:.88rem;margin-top:.5rem;display:none}
+.faq-item.open p{display:block}
+
+/* FOOTER */
+footer{text-align:center;padding:3rem 0;border-top:1px solid var(--line);color:var(--txt3);font-size:.8rem}
+footer .socials{display:flex;gap:1rem;justify-content:center;margin-bottom:1rem}
+footer .socials a{display:flex;align-items:center;gap:.4rem;background:var(--panel2);padding:.5rem 1rem;border-radius:10px;color:var(--txt2);font-size:.85rem}
+footer .socials a:hover{background:var(--acc);color:#fff;text-decoration:none}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .about-grid{grid-template-columns:1fr}
+  nav .links{display:none}
+  .hero h1{font-size:2rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <div class="logo"><span>Nexus</span> Architect</div>
+    <div class="links">
+      <a href="#about">About</a>
+      <a href="#tokenomics">Token</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#presale">Presale</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="social-row">
+      <a href="https://t.me/YOUR_TELEGRAM" target="_blank" title="Telegram">✈️</a>
+      <a href="https://x.com/YOUR_TWITTER" target="_blank" title="X / Twitter">𝕏</a>
+      <a href="https://facebook.com/YOUR_PAGE" target="_blank" title="Facebook">📘</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <div class="badge">🏔 Polygon Mainnet · AI × Blockchain</div>
+    <h1>The Future of<br><span class="g">Decentralized AI</span></h1>
+    <p>Nexus Architect คือระบบนิเวศที่รวม <strong>AI ที่ทำงานบนอุปกรณ์ของคุณเอง</strong> เข้ากับ <strong>Blockchain บน Polygon</strong> — ปัญหาของชุมชนถูกโหวต งานถูกจับคู่ด้วย Escrow และทุกอย่างโปร่งใสบน链</p>
+    <div class="btns">
+      <a class="btn btn-p" href="#presale">🚀 เข้าร่วม Presale</a>
+      <a class="btn btn-s" href="#whitepaper">📄 Whitepaper</a>
+      <a class="btn btn-s" href="#roadmap">🗺️ Roadmap</a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / WHITEPAPER -->
+<section id="about">
+  <div class="container">
+    <div class="sec-title">Whitepaper <span class="g">สรุป</span></div>
+    <div class="sec-sub">ทำความเข้าใจโปรเจกต์ใน 3 นาที</div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p><strong>Nexus Architect</strong> คือโปรเจกต์ที่สร้าง "AI คู่ชีวิต" ที่ทำงานบนอุปกรณ์ของคุณเอง — ไม่ต้องพึ่ง cloud ไม่ต้องเสียค่า API ไม่ต้องกลัวข้อมูลรั่ว</p>
+        <p>ทุกคนมี <strong>Digital Twin</strong> ของตัวเอง — AI ที่เรียนรู้จากข้อความสนทนาของคุณ จดจำความชอบ และช่วยคิด ช่วยทำในแบบที่คุณต้องการ</p>
+        <p>บน <strong>Polygon Blockchain</strong> ปัญหาของชุมชนถูกเสนอ โหวต และคัดออกทุกวัน (The Mountain) งาน freelancing ใช้ <strong>Smart Contract Escrow</strong> ที่ปลอดภัย และ Token <strong>NEX</strong> เป็นรางวัลสำหรับผู้มีส่วนร่วม</p>
+        <p><strong>เป้าหมาย:</strong> สร้างระบบนิเวศที่ AI + Blockchain ทำงานร่วมกันเพื่อแก้ปัญหาจริงของผู้คน — เริ่มจากชุมชนเล็กๆ สู่การเปลี่ยนแปลงระดับโลก</p>
+      </div>
+      <div class="about-card">
+        <h4>💡 คุณสมบัติหลัก</h4>
+        <ul>
+          <li><strong>AI Twin</strong> — AI ที่ทำงานบนเบราว์เซอร์ ไม่ต้องติดตั้ง</li>
+          <li><strong>The Mountain</strong> — เสนอและโหวตปัญหาชุมชนบน Blockchain</li>
+          <li><strong>Escrow Jobs</strong> — จ้างงานด้วย Smart Contract ปลอดภัย 100%</li>
+          <li><strong>NEX Token</strong> — รางวัลสำหรับการมีส่วนร่วมในระบบนิเวศ</li>
+          <li><strong>KYC On-Device</strong> — ยืนยันตัวตนบนอุปกรณ์ของคุณ ไม่ส่งข้อมูลไปไหน</li>
+          <li><strong>Dual Presale</strong> — ซื้อ NEX ด้วย USDT หรือ POL</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOKENOMICS -->
+<section id="tokenomics">
+  <div class="container">
+    <div class="sec-title">Tokenomics <span class="g">NEX</span></div>
+    <div class="sec-sub">Total Supply: 1,000,000,000 NEX · Polygon Mainnet</div>
+    <div class="toko-grid">
+      <div class="toko-card">
+        <div class="pct">50%</div>
+        <div class="lbl">Public Sale</div>
+        <div class="det">500,000,000 NEX<br>5 รอบ · ราคา x1.5/รอบ</div>
+      </div>
+      <div class="toko-card">
+        <div class="pct">30%</div>
+        <div class="lbl">Mining Rewards</div>
+        <div class="det">300,000,000 NEX<br> distributed 48 เดือน</div>
+      </div>
+      <div class="toko-card">
+        <div class="pct">20%</div>
+        <div class="lbl">Founder</div>
+        <div class="det">200,000,000 NEX<br>Vesting 12 เดือน</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="container">
+    <div class="sec-title">Roadmap <span class="g">2025 – 2026</span></div>
+    <div class="sec-sub">จาก Prototype สู่ Production</div>
+    <div class="road-timeline">
+      <div class="road-item done">
+        <div class="when">Phase 1 · Q3 2025 — Genesis</div>
+        <h4>✅ สร้างรากฐาน</h4>
+        <ul>
+          <li>AI Twin v6 Quantum Hybrid (WebGPU/WASM)</li>
+          <li>Smart Contracts 28 ตัว · 35 Tests ผ่านหมด</li>
+          <li>Presale บน Polygon Mainnet (USDT + POL)</li>
+          <li>NEX Token 1B supply deployed</li>
+          <li>เว็บ landing page + Whitepaper</li>
+        </ul>
+      </div>
+      <div class="road-item">
+        <div class="when">Phase 2 · Q4 2025 — Growth</div>
+        <h4>🌐 ขยายชุมชน</h4>
+        <ul>
+          <li>External smart contract audit</li>
+          <li>Genesis 100 early adopters</li>
+          <li>AI Twin APK (Android)</li>
+          <li>Mobile push notifications</li>
+          <li>Grant applications (Questbook, Gitcoin)</li>
+        </ul>
+      </div>
+      <div class="road-item">
+        <div class="when">Phase 3 · Q1 2026 — Scale</div>
+        <h4>📈 ขยายระบบ</h4>
+        <ul>
+          <li>DEX liquidity pool (POL/NEX)</li>
+          <li>Job Board mainnet</li>
+          <li>Verified Human on-chain</li>
+          <li>Cross-chain (BSC/Polygon)</li>
+        </ul>
+      </div>
+      <div class="road-item">
+        <div class="when">Phase 4 · Q2 2026 — Decentralize</div>
+        <h4>🏛️ DAO Governance</h4>
+        <ul>
+          <li>DAO governance activation</li>
+          <li>AI model marketplace</li>
+          <li>Community treasury management</li>
+          <li>Full tokenomics activation</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRESALE -->
+<section id="presale">
+  <div class="container">
+    <div class="presale-box">
+      <h3>🚀 NEX Presale — กำลังดำเนินการ</h3>
+      <div class="price">1 NEX = $0.001</div>
+      <div class="detail">
+        5 รอบ · 200,000 NEX ต่อรอบ · ราคา x1.5 ทุกรอบ<br>
+        จ่ายได้ทั้ง <strong>USDT</strong> (Polygon PoS) หรือ <strong>POL</strong><br>
+        Whitelist: ปิดอยู่ (เปิดสาธารณะ)
+      </div>
+      <div class="contracts">
+        <div>🪙 <b>NEX Token</b></div>
+        <div class="contract-addr">0x65A56978A60733B28cD1FD61C760AB5dC8FD3081</div>
+        <div style="margin-top:.5rem">🚀 <b>Presale (USDT/POL)</b></div>
+        <div class="contract-addr">0x97fb5CEada36C721a4b82BF6a6ddFa565AC79ecF</div>
+      </div>
+      <a class="btn btn-p" href="https://pp0910619247-netizen.github.io/nexus-architect/" target="_blank" style="margin-top:1rem">🛒 ซื้อ NEX ตอนนี้ →</a>
+      <p style="color:var(--txt3);font-size:.75rem;margin-top:1rem">⚠️ Smart contract ยังไม่ผ่าน external audit · ลงทุนด้วยความเสี่ยงของคุณเอง</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="sec-title">FAQ <span class="g">คำถามที่พบบ่อย</span></div>
+    <div style="max-width:700px">
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <h4>Nexus Architect คืออะไร? ▾</h4>
+        <p>ระบบ AI + Blockchain ที่รวม AI ที่ทำงานบนอุปกรณ์ของคุณ (ไม่พึ่ง cloud) เข้ากับ Polygon Blockchain เพื่อแก้ปัญหาจริงของชุมชน</p>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <h4>AI Twin ทำงานยังไง? ▾</h4>
+        <p>AI ทำงานบนเบราว์เซอร์ของคุณเองผ่าน WebGPU/WASM ใช้โมเดล Qwen2.5-1.5B ข้อมูลไม่ถูกส่งไป cloud ใดๆ</p>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <h4>ซื้อ NEX ยังไง? ▾</h4>
+        <p>ซื้อผ่านเว็บ Presale ด้วย USDT (Polygon PoS) หรือ POL เชื่อม MetaMask แล้วกด Buy</p>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <h4>Smart contract ผ่าน audit 了吗? ▾</h4>
+        <p>ยังไม่ผ่าน external audit — มี 35 tests ผ่านหมด内部 แผน audit ภายนอก Q4 2025</p>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <h4>AI Twin APK 什么时候มี? ▾</h4>
+        <p>แผน Q4 2025 — สร้าง Android APK ก่อน แล้วค่อยลง Play Store เมื่อมีงบประมาณ</p>
+      </div>
+      <div class="faq-item" onclick="this.classList.toggle('open')">
+        <h4>The Mountain คืออะไร? ▾</h4>
+        <p>ระบบเสนอปัญหาของชุมชน — ทุกคนเสนอบน Blockchain โหวตได้ ปัญหาที่มีคะแนนสูงสุดจะอยู่รอด ปัญหาที่ไม่ผ่านจะถูกคัดออกทุกวัน</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="socials">
+      <a href="https://t.me/YOUR_TELEGRAM" target="_blank">✈️ Telegram</a>
+      <a href="https://x.com/YOUR_TWITTER" target="_blank">𝕏 Twitter / X</a>
+      <a href="https://facebook.com/YOUR_PAGE" target="_blank">📘 Facebook</a>
+      <a href="https://github.com/pp0910619247-netizen/nexus-architect" target="_blank">🐙 GitHub</a>
+    </div>
+    <p>© 2025 Nexus Architect · Built on Polygon · MIT License</p>
+    <p style="margin-top:.3rem">⚠️ ข้อมูลนี้ไม่ใช่คำแนะนำในการลงทุน · โปรดศึกษาข้อมูลก่อนตัดสินใจ</p>
+  </div>
+</footer>
+
+</body>
+</html>
