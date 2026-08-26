@@ -419,14 +419,43 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 <section id="presale">
   <div class="container">
     <div class="presale-box reveal">
-      <h3>🚀 NEX Presale — กำลังดำเนินการ</h3>
-      <div class="presale-price">1 NEX = $0.001</div>
-      <div class="presale-details">
-        <strong>5 รอบ</strong> · <strong>200,000 NEX</strong> ต่อรอบ · ราคา <strong>x1.5</strong> ทุกรอบ<br>
-        จ่ายได้ทั้ง <strong>USDT</strong> (Polygon PoS) หรือ <strong>POL</strong><br>
-        Whitelist: ปิดอยู่ (เปิดสาธารณะ) · ซื้อขั้นต่ำ: 100 NEX
+      <h3>🚀 NEX Presale</h3>
+      <div class="presale-price" id="psPrice">1 NEX = $0.001</div>
+      <div class="presale-details" id="psDetails">
+        กำลังโหลดข้อมูลจาก Blockchain...
       </div>
-      <a class="btn btn-p" href="https://pp0910619247-netizen.github.io/nexus-architect/app/" target="_blank">🛒 ซื้อ NEX ตอนนี้ →</a>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin:1.5rem 0" id="psRounds"></div>
+      <div style="background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:1.5rem;margin:1.5rem 0;text-align:left">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <span style="font-weight:700">ซื้อ NEX Token</span>
+          <span id="psStatus" style="font-size:.75rem;color:var(--txt3)">เชื่อมกระเป๋าก่อน</span>
+        </div>
+        <div style="display:flex;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
+          <div style="flex:1;min-width:140px">
+            <label style="font-size:.78rem;color:var(--txt3);display:block;margin-bottom:.3rem">จำนวน NEX</label>
+            <input id="psAmount" type="number" step="100" min="100" value="1000" placeholder="1000"
+              style="width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.7rem;font-size:.95rem;font-family:inherit"
+              oninput="psEstimate()">
+          </div>
+          <div style="min-width:120px">
+            <label style="font-size:.78rem;color:var(--txt3);display:block;margin-bottom:.3rem">จ่ายด้วย</label>
+            <select id="psPay" style="width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.7rem;font-size:.95rem;font-family:inherit" onchange="psEstimate()">
+              <option value="USDT">USDT</option>
+              <option value="POL">POL</option>
+            </select>
+          </div>
+        </div>
+        <div style="background:var(--panel2);border-radius:10px;padding:.8rem;margin-bottom:1rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;text-align:center;font-size:.82rem">
+          <div><div style="color:var(--txt3);font-size:.7rem">ต้องจ่าย</div><div id="psCost" style="font-weight:700;font-size:1rem">—</div></div>
+          <div><div style="color:var(--txt3);font-size:.7rem">รอบปัจจุบัน</div><div id="psRound" style="font-weight:700;font-size:1rem">—</div></div>
+          <div><div style="color:var(--txt3);font-size:.7rem">คงเหลือรอบนี้</div><div id="psLeft" style="font-weight:700;font-size:1rem;color:var(--good)">—</div></div>
+        </div>
+        <button id="psBuyBtn" onclick="psBuy()" style="
+          width:100%;background:var(--grad);color:#fff;padding:.85rem;border-radius:12px;
+          font-weight:700;font-size:1rem;border:none;cursor:pointer;font-family:inherit;
+          transition:all .2s;opacity:.5;pointer-events:none
+        ">เชื่อมกระเป๋าก่อน</button>
+      </div>
       <p class="presale-warn">⚠️ Smart contract ยังไม่ผ่าน external audit · ลงทุนด้วยความเสี่ยงของคุณเอง<br>ตรวจสอบ contract ได้ที่ <a href="https://polygonscan.com/address/0x97fb5CEada36C721a4b82BF6a6ddFa565AC79ecF" target="_blank" style="color:var(--acc2)">Polygonscan</a></p>
     </div>
   </div>
@@ -593,6 +622,121 @@ if(window.ethereum){
   window.ethereum.on('accountsChanged',()=>location.reload());
   window.ethereum.on('chainChanged',()=>location.reload());
 }
+
+/* ═══════ PRESALE ═══════ */
+const PS_ADDR='0x97fb5CEada36C721a4b82BF6a6ddFa565AC79ecF';
+const USDT_ADDR='0xc2132D05D31c914a87C6611C10748AEb04B58e8F';
+const PS_ABI=[
+  'function ROUNDS() view returns (uint256)',
+  'function currentRound() view returns (uint256)',
+  'function perRoundCap() view returns (uint256)',
+  'function roundSold(uint256) view returns (uint256)',
+  'function priceOfUSDT() view returns (uint256)',
+  'function priceOfPOL() view returns (uint256)',
+  'function quote(uint256,bool) view returns (uint256)',
+  'function buyWithUSDT(uint256)',
+  'function buyWithPOL(uint256) payable',
+];
+const USDT_ABI=[
+  'function balanceOf(address) view returns (uint256)',
+  'function approve(address,uint256) returns (bool)',
+  'function decimals() view returns (uint8)',
+];
+const SCALE=BigInt(10**18);
+let _psData={};
+
+async function psLoad(){
+  try{
+    const p=new ethers.JsonRpcProvider('https://polygon-bor-rpc.publicnode.com');
+    const c=new ethers.Contract(PS_ADDR,PS_ABI,p);
+    const rounds=Number(await c.ROUNDS());
+    const cur=Number(await c.currentRound());
+    const cap=Number(ethers.formatEther(await c.perRoundCap()));
+    const priceUSDT=Number(ethers.formatUnits(await c.priceOfUSDT(),6));
+    const pricePOL=Number(ethers.formatEther(await c.priceOfPOL()));
+    let sold=0;
+    try{ sold=Number(ethers.formatEther(await c.roundSold(cur))); }catch(e){}
+    const left=Math.max(0,cap-sold);
+    _psData={rounds,cur,cap,priceUSDT,pricePOL,sold,left};
+
+    document.getElementById('psPrice').textContent='1 NEX = $'+priceUSDT.toFixed(4);
+    document.getElementById('psDetails').innerHTML=
+      '<strong>'+rounds+'</strong> รอบ · <strong>'+cap.toLocaleString()+'</strong> NEX ต่อรอบ · ราคา USDT = <strong>$'+priceUSDT.toFixed(4)+'</strong> · POL = <strong>'+pricePOL.toFixed(6)+' POL</strong>';
+
+    let rh='';
+    for(let i=1;i<=rounds;i++){
+      const s=Number(ethers.formatEther(await c.roundSold(i).catch(()=>0n)));
+      const pct=Math.min(100,Math.round(s/cap*100));
+      const isCur=i===cur;
+      rh+='<div style="background:'+(isCur?'var(--acc)':'var(--panel2)')+';border-radius:10px;padding:.6rem;text-align:center;border:1px solid '+(isCur?'var(--acc)':'var(--line)')+'"><div style="font-size:.7rem;color:'+(isCur?'#fff':'var(--txt3)')+'">Round '+i+'</div><div style="font-weight:700;font-size:.85rem;color:'+(isCur?'#fff':'var(--txt)')+'">'+pct+'%</div><div style="height:4px;background:var(--line);border-radius:2px;margin-top:.3rem"><div style="height:100%;width:'+pct+'%;background:'+(isCur?'#fff':'var(--acc)')+';border-radius:2px"></div></div></div>';
+    }
+    document.getElementById('psRounds').innerHTML=rh;
+    document.getElementById('psRound').textContent='Round '+cur+'/'+rounds;
+    document.getElementById('psLeft').textContent=left.toLocaleString()+' NEX';
+    document.getElementById('psDetails').innerHTML+=' · เหลือรอบนี้: <strong>'+left.toLocaleString()+'</strong> NEX';
+
+    psEstimate();
+  }catch(e){
+    document.getElementById('psDetails').textContent='ไม่สามารถเชื่อมต่อ contract ได้';
+  }
+}
+
+function psEstimate(){
+  const n=Number(document.getElementById('psAmount').value)||0;
+  const pay=document.getElementById('psPay').value;
+  if(n<100||!_psData.cur){document.getElementById('psCost').textContent='—';return;}
+  const cost=pay==='USDT'? n*_psData.priceUSDT : n*_psData.pricePOL;
+  document.getElementById('psCost').textContent=cost.toFixed(pay==='USDT'?4:6)+' '+pay;
+}
+
+async function psBuy(){
+  if(!window.ethereum||!window._myAddr){alert('เชื่อม MetaMask ก่อน');return;}
+  const n=Number(document.getElementById('psAmount').value)||0;
+  if(n<100){alert('ขั้นต่ำ 100 NEX');return;}
+  const pay=document.getElementById('psPay').value;
+  const btn=document.getElementById('psBuyBtn');
+  const status=document.getElementById('psStatus');
+
+  try{
+    const provider=new ethers.BrowserProvider(window.ethereum);
+    const signer=await provider.getSigner();
+    const c=new ethers.Contract(PS_ADDR,PS_ABI,signer);
+    const amt=ethers.parseEther(String(n));
+
+    if(pay==='USDT'){
+      status.textContent='⏳ กำลังอนุมัติ USDT...';
+      btn.textContent='⏳ กำลังอนุมัติ...';
+      btn.style.opacity='.5';btn.style.pointerEvents='none';
+      const tk=new ethers.Contract(USDT_ADDR,USDT_ABI,signer);
+      const cost=await c.quote(amt,true);
+      const tx1=await tk.approve(PS_ADDR,cost);
+      await tx1.wait();
+      status.textContent='⏳ กำลังซื้อ NEX...';
+      btn.textContent='⏳ กำลังซื้อ...';
+      const tx2=await c.buyWithUSDT(amt);
+      await tx2.wait();
+    }else{
+      status.textContent='⏳ กำลังซื้อด้วย POL...';
+      btn.textContent='⏳ กำลังซื้อ...';
+      btn.style.opacity='.5';btn.style.pointerEvents='none';
+      const cost=await c.quote(amt,false);
+      const tx=await c.buyWithPOL(amt,{value:cost,gasLimit:600000n});
+      await tx.wait();
+    }
+
+    status.textContent='✅ ซื้อสำเร็จ!';
+    btn.textContent='✅ สำเร็จ';
+    btn.style.background='var(--good)';
+    psLoad();
+    setTimeout(()=>{btn.textContent='🛒 ซื้อ NEX';btn.style.background='';btn.style.opacity='1';btn.style.pointerEvents='';},3000);
+  }catch(e){
+    status.textContent='❌ ล้มเหลว: '+String(e.message||e).slice(0,40);
+    btn.textContent='🛒 ซื้อ NEX';btn.style.opacity='1';btn.style.pointerEvents='';
+  }
+}
+
+// Auto-load presale on page load
+psLoad();
 </script>
 
 </body>
