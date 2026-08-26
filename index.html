@@ -555,6 +555,11 @@ function showWallet(addr,bal,nexBal,usdtBal,chainId){
   const net=document.getElementById('navWalletNet');
   if(chainId===137){net.textContent='Polygon';net.style.background='var(--good)';}
   else{net.textContent='Chain '+chainId;net.style.background='var(--warn)';}
+  // Enable buy button
+  const buyBtn=document.getElementById('psBuyBtn');
+  if(buyBtn){buyBtn.style.opacity='1';buyBtn.style.pointerEvents='';buyBtn.textContent='🛒 ซื้อ NEX';}
+  const st=document.getElementById('psStatus');
+  if(st) st.textContent='พร้อมซื้อ';
 }
 
 function disconnectWallet(){
