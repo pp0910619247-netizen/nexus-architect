@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nexus World — Prototype</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box} body{overflow:hidden;background:#0A0A0F;font-family:system-ui}
+  #ui{position:fixed;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none}
+  #ui>div{background:rgba(17,17,24,.85);backdrop-filter:blur(8px);border:1px solid #1E1E2E;border-radius:12px;padding:10px 14px;color:#E5E7EB}
+  #title{font-weight:700} #title span{color:#6366F1}
+  #controls{font-size:11px;color:#9CA3AF;line-height:1.6}
+  #chat{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:8px;background:rgba(17,17,24,.9);border:1px solid #1E1E2E;border-radius:24px;padding:8px 10px}
+  #chat input{width:320px;background:#16162A;border:none;border-radius:18px;padding:10px 16px;color:#fff;outline:none}
+  #chat button{background:linear-gradient(135deg,#6366F1,#8B5CF6);border:none;border-radius:18px;padding:10px 18px;color:#fff;font-weight:600;cursor:pointer}
+  #labels{position:fixed;inset:0;pointer-events:none}
+  .label{position:absolute;transform:translate(-50%,-100%);background:rgba(0,0,0,.6);border-radius:8px;padding:4px 8px;font-size:11px;white-space:nowrap}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="ui">
+  <div id="title"><span>NEXUS</span> WORLD <small style="color:#6B7280">prototype · Sandbox-like</small><br><small style="font-weight:400;color:#9CA3AF">WASD เดิน · เมาส์ลากหมุนกล้อง · VR กดปุ่มล่างขวา</small></div>
+  <div id="controls">👤 คุณ (น้ำเงิน) · 🤖 AI Twin (ม่วง) · สีเขียว = LAND NFT (Polygon)</div>
+</div>
+<div id="labels">
+  <div id="lbl-human" class="label" style="color:#60A5FA">👤 คุณ</div>
+  <div id="lbl-ai" class="label" style="color:#A78BFA">🤖 Nexus Twin</div>
+</div>
+<div id="chat">
+  <input id="msg" placeholder="พิมพ์คุยกับ AI ในโลก...">
+  <button onclick="sendChat()">ส่ง</button>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0A0A0F); scene.fog=new THREE.Fog(0x0A0A0F,18,42);
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,0.1,100); camera.position.set(8,6,10);
+const renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setSize(innerWidth,innerHeight); renderer.shadowMap.enabled=true; document.body.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement); controls.target.set(0,0,0); controls.enableDamping=true; controls.maxPolarAngle=Math.PI/2.05;
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x222233,1.1));
+const dir=new THREE.DirectionalLight(0xffffff,1.2); dir.position.set(6,12,4); dir.castShadow=true; dir.shadow.mapSize.set(2048,2048); scene.add(dir);
+
+// ground — voxel style
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(40,40),new THREE.MeshStandardMaterial({color:0x16162A})); ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+const grid=new THREE.GridHelper(40,40,0x1E1E2E,0x1E1E2E); scene.add(grid);
+// LAND parcels
+for(let x=-3;x<=3;x++) for(let z=-3;z<=3;z++){
+  if((x+z)%3!==0) continue;
+  const m=new THREE.Mesh(new THREE.BoxGeometry(1.9,0.15,1.9),new THREE.MeshStandardMaterial({color:0x065F46})); m.position.set(x*2,0.08,z*2); m.receiveShadow=true; scene.add(m);
+}
+
+// avatars — capsule-like
+function makeAvatar(color){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.CapsuleGeometry(0.35,0.7,4,12),new THREE.MeshStandardMaterial({color})); body.position.y=0.9; body.castShadow=true; g.add(body);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.28,16,16),new THREE.MeshStandardMaterial({color:0xE5E7EB})); head.position.y=1.55; head.castShadow=true; g.add(head);
+  return g;
+}
+const human=makeAvatar(0x3B82F6); human.position.set(-2,0,1); scene.add(human);
+const ai=makeAvatar(0x8B5CF6); ai.position.set(2,0,-1); scene.add(ai);
+
+// simple AI wander
+let aiTarget=new THREE.Vector3(2,0,-1);
+setInterval(()=>{ aiTarget.set((Math.random()-0.5)*6,0,(Math.random()-0.5)*6); },4000);
+
+// movement
+const keys={}; addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true); addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+function updateHuman(dt){
+  const speed=3*dt; let dx=0,dz=0;
+  if(keys['w']) dz-=speed; if(keys['s']) dz+=speed; if(keys['a']) dx-=speed; if(keys['d']) dx+=speed;
+  // move relative to camera
+  const fwd=new THREE.Vector3(); camera.getWorldDirection(fwd); fwd.y=0; fwd.normalize();
+  const right=new THREE.Vector3().crossVectors(fwd,new THREE.Vector3(0,1,0)).negate();
+  human.position.addScaledVector(fwd,-dz).addScaledVector(right,-dx);
+  human.position.x=Math.max(-10,Math.min(10,human.position.x));
+  human.position.z=Math.max(-10,Math.min(10,human.position.z));
+  if(dx||dz) human.lookAt(human.position.x+dx,0,human.position.z+dz);
+}
+function updateAI(dt){
+  const dir=new THREE.Vector3().subVectors(aiTarget,ai.position); dir.y=0; const d=dir.length(); if(d>0.05){ dir.normalize().multiplyScalar(1.2*dt); ai.position.add(dir); ai.lookAt(aiTarget.x,0,aiTarget.z); }
+  // bobbing
+  ai.position.y=Math.sin(performance.now()*0.002)*0.04;
+  human.position.y=Math.sin(performance.now()*0.002+1)*0.03;
+}
+function updateLabels(){
+  [ [human,'lbl-human'], [ai,'lbl-ai'] ].forEach(([obj,id])=>{
+    const p=new THREE.Vector3(0,2.1,0).add(obj.position).project(camera);
+    const el=document.getElementById(id);
+    el.style.left=(p.x*0.5+0.5)*innerWidth+'px';
+    el.style.top=(-p.y*0.5+0.5)*innerHeight+'px';
+    el.style.opacity=p.z<1?1:0;
+  });
+}
+window.sendChat=()=>{
+  const v=document.getElementById('msg').value.trim(); if(!v) return;
+  document.getElementById('msg').value='';
+  // show bubble (simple)
+  const prev=ai.position.clone();
+  // AI reply placeholder — ต่อ BitNet ตรงนี้
+  aiTarget.copy(human.position).add(new THREE.Vector3((Math.random()-0.5)*2,0,(Math.random()-0.5)*2));
+  console.log('chat:',v);
+};
+
+let last=performance.now();
+function animate(){
+  requestAnimationFrame(animate);
+  const now=performance.now(), dt=Math.min(0.033,(now-last)/1000); last=now;
+  updateHuman(dt); updateAI(dt); controls.update(); updateLabels(); renderer.render(scene,camera);
+}
+animate();
+addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+</script>
+</body>
+</html>
