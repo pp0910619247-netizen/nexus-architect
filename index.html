@@ -423,43 +423,21 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
   <div class="container">
     <div class="presale-box reveal">
       <h3>🚀 NEX Presale</h3>
-      <div class="presale-price" id="psPrice">1 NEX = $0.001</div>
+      <div class="presale-price" id="psPrice">Presale — ปิดชั่วคราว ⏸️</div>
       <div class="presale-details" id="psDetails">
-        กำลังโหลดข้อมูลจาก Blockchain...
+        ข้อมูลเดิม: 1 NEX = $0.0001 · 5 รอบ × 100M NEX = 500M NEX · ขณะนี้หยุดขายเพื่อยื่น Grants
       </div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin:1.5rem 0" id="psRounds"></div>
-      <div style="background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:1.5rem;margin:1.5rem 0;text-align:left">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-          <span style="font-weight:700">ซื้อ NEX Token</span>
-          <span id="psStatus" style="font-size:.75rem;color:var(--txt3)">เชื่อมกระเป๋าก่อน</span>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin:1.5rem 0;opacity:.4;pointer-events:none" id="psRounds"></div>
+      <div style="background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:1.5rem;margin:1.5rem 0;text-align:center">
+        <div style="font-size:2rem;margin-bottom:.5rem">⏸️</div>
+        <div style="font-weight:700;font-size:1.1rem;margin-bottom:.5rem">Presale ปิดชั่วคราว</div>
+        <div style="color:var(--txt3);font-size:.9rem;line-height:1.6">เราปิดระบบซื้อเหรียญชั่วคราวเพื่อปรับโครงสร้างให้ถูกต้องตามกฎหมาย<br>และเตรียมยื่นขอทุน Grants แบบโปร่งใส — ไม่มี private sale ในช่วงนี้</div>
+        <div style="margin-top:1rem;display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
+          <a href="grant.html" style="background:var(--grad);color:#fff;padding:.6rem 1.2rem;border-radius:10px;text-decoration:none;font-weight:600;font-size:.9rem">ดูหน้า Grants</a>
+          <a href="https://polygonscan.com/address/0xC30Fe7CCad56fE8470093798BB02ff5E3b2693fe" target="_blank" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);padding:.6rem 1.2rem;border-radius:10px;text-decoration:none;font-weight:600;font-size:.9rem">ดู NEX บน Polygonscan</a>
         </div>
-        <div style="display:flex;gap:.8rem;margin-bottom:1rem;flex-wrap:wrap">
-          <div style="flex:1;min-width:140px">
-            <label style="font-size:.78rem;color:var(--txt3);display:block;margin-bottom:.3rem">จำนวน NEX</label>
-            <input id="psAmount" type="number" step="100" min="100" value="1000" placeholder="1000"
-              style="width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.7rem;font-size:.95rem;font-family:inherit"
-              oninput="psEstimate()">
-          </div>
-          <div style="min-width:120px">
-            <label style="font-size:.78rem;color:var(--txt3);display:block;margin-bottom:.3rem">จ่ายด้วย</label>
-            <select id="psPay" style="width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:.7rem;font-size:.95rem;font-family:inherit" onchange="psEstimate()">
-              <option value="USDT">USDT</option>
-              <option value="POL">POL</option>
-            </select>
-          </div>
-        </div>
-        <div style="background:var(--panel2);border-radius:10px;padding:.8rem;margin-bottom:1rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;text-align:center;font-size:.82rem">
-          <div><div style="color:var(--txt3);font-size:.7rem">ต้องจ่าย</div><div id="psCost" style="font-weight:700;font-size:1rem">—</div></div>
-          <div><div style="color:var(--txt3);font-size:.7rem">รอบปัจจุบัน</div><div id="psRound" style="font-weight:700;font-size:1rem">—</div></div>
-          <div><div style="color:var(--txt3);font-size:.7rem">คงเหลือรอบนี้</div><div id="psLeft" style="font-weight:700;font-size:1rem;color:var(--good)">—</div></div>
-        </div>
-        <button id="psBuyBtn" onclick="psBuy()" style="
-          width:100%;background:var(--grad);color:#fff;padding:.85rem;border-radius:12px;
-          font-weight:700;font-size:1rem;border:none;cursor:pointer;font-family:inherit;
-          transition:all .2s;opacity:.5;pointer-events:none
-        ">เชื่อมกระเป๋าก่อน</button>
       </div>
-      <p class="presale-warn">⚠️ Smart contract ยังไม่ผ่าน external audit · ลงทุนด้วยความเสี่ยงของคุณเอง<br>ตรวจสอบ contract ได้ที่ <a href="https://polygonscan.com/address/0xB0169b1654bd41Fb34d0bf7c0cE11673040772df" target="_blank" style="color:var(--acc2)">Polygonscan</a></p>
+      <p class="presale-warn">ℹ️ Token: 0xC30Fe7...93fe · Presale: 0xB0169...72df (paused) · ตรวจสอบได้บน Polygon Mainnet</p>
     </div>
   </div>
 </section>
@@ -481,7 +459,7 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
       </div>
       <div class="faq-item" onclick="this.classList.toggle('open')">
         <h4>ซื้อ NEX ยังไง? <span class="arrow">▾</span></h4>
-        <p>ไปที่หน้า Presale เชื่อม MetaMask (Polygon Network) แล้วกด Buy จ่ายได้ทั้ง USDT (Polygon PoS) หรือ POL ขั้นต่ำ 100 NEX</p>
+        <p>Presale ปิดชั่วคราวเพื่อยื่นขอทุน Grants และปรับให้ถูกต้องตามกฎหมาย — จะเปิดใหม่หลังผ่านการตรวจสอบและได้รับทุนสนับสนุน ติดตามได้ที่หน้า Grants และช่องทางโซเชียล</p>
       </div>
       <div class="faq-item" onclick="this.classList.toggle('open')">
         <h4>Smart contract ผ่าน audit 了吗? <span class="arrow">▾</span></h4>
