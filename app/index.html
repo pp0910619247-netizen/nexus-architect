@@ -16,6 +16,7 @@
 <script src="kyc.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script src="twin.js"></script>
+<script src="ai-pipe.js"></script>
 <style>
   :root{
     --bg:#0a0e17; --panel:#111827; --panel2:#1a2333; --line:#243044;
@@ -122,7 +123,7 @@
 <body>
 <header>
   <div class="logo">⛰ NEXUS <b>ARCHITECT</b></div>
-  <span class="tag">Whitepaper v1.1 · MVP · runs 100% local</span>
+  <span class="tag">Whitepaper v1.1 · Mainnet LIVE · runs 100% local</span>
   <div class="spacer"></div>
   <span class="badge" id="netBadge">Local Mode</span>
   <select id="netSel" onchange="switchNet(this.value)" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-size:12px">
@@ -185,9 +186,46 @@
         <button style="width:100%;margin-top:10px" onclick="saveTwin()">บันทึกลง On-Device Memory</button>
       </div>
     </div>
+</div>
+
+  <!-- ══ NEX32 LIVE COIN + MINE KNOWLEDGE (ท่อเชื่อม) ══ -->
+  <div class="grid">
+    <div class="card">
+      <h3>🪙 NEX32 — Live on Polygon <span class="muted" style="font-weight:400;font-size:11px">Mainnet</span></h3>
+      <div id="coinLive" class="muted" style="font-size:13px">กำลังอ่านจาก Chainlink...</div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button style="flex:1" onclick="go('presale')">🚀 ไปซื้อ NEX (ฟรีเซล)</button>
+        <button class="ghost" style="flex:1" onclick="renderCoin()">🔄</button>
+      </div>
+      <p class="muted" style="font-size:11px;margin-top:8px" id="coinAddr"></p>
+    </div>
+
+    <div class="card">
+      <h3>⛏️ ขุดความรู้ (Mine) <span class="muted" style="font-weight:400;font-size:11px">ต้อง Lv.3 อธิปไตย</span></h3>
+      <p class="muted" id="pipeGate" style="font-size:12px"></p>
+      <label>สมอง (ค่ายไหนก็ได้ / GGUF ทั้งหมด)</label>
+      <select id="pipeBrain" style="width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:8px" onchange="pipeBrainChange(this.value)"></select>
+      <div id="pipeKeyRow" style="display:none;margin-top:8px">
+        <input id="pipeKey" placeholder="API key ของค่ายนี้" style="width:100%" type="password" autocomplete="off">
+        <button class="ghost" style="width:100%;margin-top:4px" onclick="pipeSaveKey()">🔐 บันทึก key (เข้ารหัสบนเครื่อง)</button>
+      </div>
+      <label style="margin-top:8px">ชื่องาน / ความรู้ของคุณ</label>
+      <input id="mineTitle" placeholder="เช่น วิธีเทรดหุ้นไทยให้กำไรในตลาดผันผวน" style="width:100%">
+      <label>ความรู้ที่อยาก "ขุด" เป็นการ์ด (ขั้นตอน/ผลลัพธ์ จริงๆ ที่ผ่านมา)</label>
+      <textarea id="mineText" style="min-height:84px" placeholder="เช่น ผมเจอว่าการใช้ RSI + EMA200 + การตั้ง stop-loss แบบ ATR ช่วยให้..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button style="flex:1" id="mineBtn" onclick="doMine()">⛏️ ขุดความรู้</button>
+        <button class="ghost" onclick="doMine(true)">🛠 ออฟไลน์</button>
+      </div>
+      <p class="muted" id="mineResult" style="font-size:12px;margin-top:8px"></p>
+    </div>
+  </div>
+  <div class="card" id="minedList" style="margin-top:12px">
+    <h3>🗂 คลังความรู้ที่ขุดแล้ว <span class="muted" style="font-weight:400;font-size:11px">เชื่อมกับแอปผ่าน nx_mined_kb</span></h3>
+    <div id="minedBody" class="muted">ยังไม่มีการ์ด — ขุดงานแรกได้เลย (+NEX จาก Mining Pool 300M)</div>
   </div>
 
-  </section>
+</section>
 <section class="pg" data-p="mountain">
 <!-- ══ MOUNTAIN ══ -->
   <div class="card" style="margin-top:16px">
@@ -315,9 +353,9 @@
 
   </section>
 <section class="pg" data-p="presale">
-<!-- ══ PRESALE — ขาย NEX เป็นรอบ ══ -->
+<!-- ══ PRESALE — NEX32 PublicSale (POL only + Chainlink oracle) · Polygon Mainnet ══ -->
   <div class="card" style="margin-top:16px">
-    <h3>🚀 NEX Presale — Genesis Rounds <span class="muted" style="font-weight:400;font-size:12px">ราคาขึ้น ×1.5 ทุกรอบ · testnet</span></h3>
+    <h3>🚀 NEX32 Presale — 5 Genesis Rounds <span class="muted" style="font-weight:400;font-size:12px">POL เท่านั้น · ราคาจาก Chainlink · Mainnet</span></h3>
     <div style="display:flex;gap:6px;align-items:center">
       <button class="ghost" onclick="presaleConfig()">⚙️ Presale Contract</button>
       <span class="muted" id="psAddrTxt" style="font-size:11px;font-family:Consolas"></span>
@@ -329,16 +367,11 @@
     <p class="muted" id="psProgress" style="font-size:12px;margin-top:4px"></p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end">
       <div style="flex:1;min-width:160px"><label>จำนวน NEX ที่จะซื้อ</label><input id="psAmount" type="number" step="10" value="1000"></div>
-      <div style="min-width:110px"><label>จ่ายด้วย</label>
-        <select id="psPay" style="width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:9px" onchange="estimateOut()">
-          <option value="POL">POL</option>
-          <option value="USDT">USDT</option>
-        </select></div>
       <button onclick="presaleBuy()">🛒 Buy</button>
       <button class="ghost" onclick="renderPresale()">🔄</button>
     </div>
     <p class="muted" id="psEstimate" style="font-size:12px"></p>
-    <p class="muted" style="font-size:11px">⚠️ Testnet demo — เงินทดสอบเท่านั้น · ผู้ซื้อได้ token ทันที · เกินเงินคืนอัตโนมัติ · โอนเกิน cap = roll รอบถัดไป</p>
+    <p class="muted" style="font-size:11px">⚠️ Live: ซื้อด้วย POL บน Polygon Mainnet · เกินเงินคืนอัตโนมัติ · หลังครบ 500M NEX (5 รอบ) ปิด</p>
   </div>
 
   </section>
@@ -656,12 +689,15 @@ const NETWORKS = {
              presale:'0x8b6EC8d481A583d788B9C9d2c914E9bc0a220e24', usdt:'' },
   bsc:     { name:'BSC Testnet',   rpc:'https://data-seed-prebsc-1-s1.binance.org:8545', chainId:97,    sym:'tBNB',
              registry:'', splitter:'', nex:'', job:'', presale:'', usdt:'' },
-  mainnet: { name:'Polygon Mainnet', rpc:'https://polygon-bor-rpc.publicnode.com',       chainId:137,   sym:'POL',
-             registry:'', splitter:'', nex:'0x65A56978A60733B28cD1FD61C760AB5dC8FD3081',
-             presale:'0x97fb5CEada36C721a4b82BF6a6ddFa565AC79ecF', job:'',
-             usdt:'0xc2132D05D31c914a87C6611C10748AEb04B58e8F' },
+mainnet: { name:'Polygon Mainnet', rpc:'https://polygon-bor-rpc.publicnode.com',       chainId:137,   sym:'POL',
+             registry:'', splitter:'',
+             nex:'0x770AFC829e87d9A3467b20d6f3E5122BBa9BA0af',
+             presale:'0xB1293Ed631e4bDf568e91727F78fAd170cC58304',
+             mining:'0x9B3eDdd22210861D5b24aEBB392dcd47876Aa08C',
+             vesting:'0xf596558e93Ca6d1e9A873389b50D1ccfae8cA796',
+             job:'', usdt:'' },
 };
-let g_net = localStorage.getItem('nx_net') || 'amoy';
+let g_net = localStorage.getItem('nx_net') || 'mainnet';
 if(!NETWORKS[g_net]) g_net='amoy';
 function NET(){ return NETWORKS[g_net]; }
 const REGISTRY = () => NET().registry;
@@ -1064,7 +1100,7 @@ function renderStats(){
     <tr><td>✅ Solved (peer-reviewed)</td><td class="num pos">${solved}</td></tr>
     <tr><td>Twin ความจำ</td><td class="num">${window.Twin?window.Twin.mem.facts.length:0} บันทึก</td></tr>
     <tr><td>Twin XP</td><td class="num">${window.Twin?window.Twin.mem.xp:0}</td></tr>
-    <tr><td>Contracts live</td><td class="num pos">2 (Amoy)</td></tr>
+    <tr><td>Contracts live</td><td class="num pos">4 (Mainnet)</td></tr>
     <tr><td>Tests passing</td><td class="num pos">18 contracts · 21 brain · 7 memory</td></tr>`;
 }
 
@@ -1211,41 +1247,42 @@ function jobResolvePrompt(i,employer,worker){
 }
 async function jobResolve(i,winner){ _jobTx(c=>c.resolveDispute(i,winner),'⚖️ Resolve...'); }
 
-/* ═══════════ PRESALE DUAL (USDT/POL) — rounds ═══════════ */
+/* ═══════════ PRESALE — NEX32 PublicSale on Polygon Mainnet (POL only + Chainlink) ═══════════ */
 const PRESALE_ABI = [
-  "function buyWithUSDT(uint256)",
-  "function buyWithPOL(uint256) payable",
-  "function quote(uint256,bool) view returns (uint256,uint8)",
   "function currentRound() view returns (uint8)",
-  "function priceOfUSDT(uint8) view returns (uint256)",
-  "function priceOfPOL(uint8) view returns (uint256)",
-  "function perRoundCap() view returns (uint256)",
-  "function roundSold(uint8) view returns (uint256)",
-  "function startAt() view returns (uint256)",
   "function ROUNDS() view returns (uint256)",
+  "function PER_ROUND() view returns (uint256)",
+  "function TOTAL_FOR_SALE() view returns (uint256)",
+  "function roundSold() view returns (uint256)",
+  "function totalPolReceived() view returns (uint256)",
+  "function startAt() view returns (uint256)",
+  "function endAt() view returns (uint256)",
+  "function baseUsdtPrice() view returns (uint256)",
+  "function usdtPriceOfRound(uint8) view returns (uint256)",
+  "function polPerNex(uint8) view returns (uint256)",
+  "function latestPolUsd() view returns (uint256,uint80)",
+  "function buyWithPol() payable",
+  "function token() view returns (address)",
 ];
 const PS_SYM_BY_CHAIN = { 80002:'POL', 97:'tBNB', 137:'POL', 421614:'ETH' };
 const PRESALE_DEFAULT = NET().presale;
 function presaleAddr(){ return localStorage.getItem('nx_presale_'+g_net) || PRESALE_DEFAULT; }
-function payTokenAddr(){ return localStorage.getItem('nx_pay_token_'+g_net) || NET().usdt || ''; }
 function presaleReady(){ return !!(presaleAddr() && nexToken()); }
 async function psContract(withSigner){
   if(withSigner){ const bp=chainSigner(); if(!bp) return null; return new ethers.Contract(presaleAddr(),PRESALE_ABI,await bp.getSigner()); }
   return new ethers.Contract(presaleAddr(),PRESALE_ABI,chainProvider());
 }
 function presaleConfig(){
-  const p=prompt('Presale (dual) contract address:',localStorage.getItem('nx_presale_'+g_net)||PRESALE_DEFAULT);
+  const p=prompt('PublicSale contract address:',localStorage.getItem('nx_presale_'+g_net)||PRESALE_DEFAULT);
   if(p===null) return;
   localStorage.setItem('nx_presale_'+g_net,p.trim());
-  const pt=prompt('Payment token address (USDT on this network):',localStorage.getItem('nx_pay_token_'+g_net)||payTokenAddr());
-  if(pt!==null) localStorage.setItem('nx_pay_token_'+g_net,pt.trim());
   toast('⚙️ Presale config saved'); renderPresale();
 }
 
 async function renderPresale(){
   const addrTxt=document.getElementById('psAddrTxt');
   document.querySelectorAll('.psSym').forEach(el=>el.textContent=PS_SYM_BY_CHAIN[Number(NET().chainId)]||'POL');
-  addrTxt.textContent = presaleAddr()? presaleAddr().slice(0,10)+'… · pay:'+String(payTokenAddr()||'—').slice(0,10)+'…' : 'ยังไม่ตั้งค่า presale/pay-token';
+  addrTxt.textContent = presaleAddr()? presaleAddr().slice(0,10)+'… · token:'+String(nexToken()||'—').slice(0,10)+'…' : 'ยังไม่ตั้งค่า presale/token';
   const stats=document.getElementById('psStats'), bar=document.getElementById('psBar'),
         prog=document.getElementById('psProgress'), est=document.getElementById('psEstimate');
   if(!presaleReady()){ stats.innerHTML=''; bar.style.width='0%'; prog.textContent=''; est.textContent=''; return; }
@@ -1253,26 +1290,26 @@ async function renderPresale(){
     const c=await psContract(false);
     const rounds=Number(await c.ROUNDS());
     let cur=Number(await c.currentRound());
-    const cap=Number(await c.perRoundCap());
-    const pol=true;
-    const [qCost]=await c.quote(ethers.parseEther("1"),pol);
-    const pNow=Number(ethers.formatEther(qCost));
-    let soldNEX=0;
-    const rows=[`<tr><th>รอบ</th><th style="text-align:right">USDT/NEX</th><th style="text-align:right">${PS_SYM_BY_CHAIN[Number(NET().chainId)]||'POL'}/NEX</th><th>สถานะ</th></tr>`];
+    const total=Number(await c.TOTAL_FOR_SALE());
+    const sold=Number(await c.roundSold());
+    const start=Number(await c.startAt())*1000, end=Number(await c.endAt())*1000;
+    const now=Date.now();
+    const dates = start>now ? `เริ่ม ${new Date(start).toLocaleDateString('th-TH')}` : `สิ้นสุด ${new Date(end).toLocaleDateString('th-TH')}`;
+    let rows=[`<tr><th>รอบ</th><th style="text-align:right">USD/NEX</th><th style="text-align:right">POL/NEX</th><th>สถานะ</th></tr>`];
     for(let i=0;i<rounds;i++){
-      const pu=Number(ethers.formatUnits(await c.priceOfUSDT(i),6));
-      const pp=Number(ethers.formatEther(await c.priceOfPOL(i)));
-      const s=Number(await c.roundSold(i));
-      soldNEX+=s;
-      rows.push(`<tr><td>${i+1}</td><td class="num">${pu.toFixed(4)}</td><td class="num">${pp.toFixed(6)}</td><td class="num">${i<cur?'✅ เต็ม':i===cur?'🔥 กำลังขาย':'⏳ ถัดไป'}</td></tr>`);
+      const pu=Number(await c.usdtPriceOfRound(i))/1e6;
+      let pp='—';
+      try{ pp=Number(ethers.formatEther(await c.polPerNex(i))).toFixed(8); }catch(_e){}
+      const status = cur===i ? '🔥 กำลังขาย' : (i<cur ? '✅ เต็ม' : '⏳ ถัดไป');
+      rows.push(`<tr><td>${i+1}</td><td class="num">$${pu.toFixed(6)}</td><td class="num">${pp}</td><td class="num">${status}</td></tr>`);
     }
     stats.innerHTML=rows.join('');
-    bar.style.width=Math.min(100,(soldNEX/(cap*rounds))*100)+'%';
-    prog.textContent=`🔥 Round ${cur+1}/${rounds} · ขายแล้ว ${Math.floor(soldNEX/1e18).toLocaleString()} / ${(cap*rounds/1e18).toLocaleString()} NEX`;
+    bar.style.width=Math.min(100,(sold/total)*100)+'%';
+    prog.textContent=`🔥 Round ${Math.min(cur+1,rounds)}/${rounds} · ขายแล้ว ${Math.floor(sold/1e18).toLocaleString()} / ${Math.floor(total/1e18).toLocaleString()} NEX (${(sold/total*100).toFixed(2)}%) · ${dates}`;
     estimateOut();
   }catch(e){
     stats.innerHTML=`<tr><td class="neg">${esc(String(e.message||e).slice(0,80))}</td></tr>`;
-    if(String(e).includes('SoldOut')){ prog.textContent='🏁 Presale ปิดแล้ว — ขายหมดทุกรอบ!'; bar.style.width='100%'; }
+    if(String(e).includes('SoldOut')){ prog.textContent='🏁 Presale ปิดแล้ว — ขายหมด 500M NEX!'; bar.style.width='100%'; }
   }
 }
 function estimateOut(){
@@ -1281,45 +1318,113 @@ function estimateOut(){
   if(nex<=0||!presaleReady()){ est.textContent=''; return; }
   psContract(false).then(async c=>{
     try{
-      const pol=(document.getElementById('psPay').value==='POL');
-      const cost=BigInt((await c.quote(ethers.parseEther(String(nex)),pol))[0]);
-      const sym=pol?(PS_SYM_BY_CHAIN[Number(NET().chainId)]||'POL'):'USDT';
-      const dec=sym==='USDT'?6:18;
-      const fmt=Number(cost)/10**dec;
-      est.textContent=`≈ จ่าย ${fmt.toLocaleString(undefined,{maximumFractionDigits:dec===6?2:6})} ${sym} @ราคาปัจจุบัน (เกินรอบ → roll อัตโนมัติ)`;
+      const cur=Number(await c.currentRound());
+      const perNex=BigInt(await c.polPerNex(cur));           // wei POL ต่อ 1 NEX
+      const cost=BigInt(Math.round(nex*1e18))*perNex/1000000000000000000n; // wei POL
+      const p1=Number(ethers.formatEther(cost));
+      const usd=Number(await c.usdtPriceOfRound(cur))/1e6;
+      est.textContent=`≈ ${p1.toLocaleString(undefined,{maximumFractionDigits:6})} POL @ $${usd.toFixed(6)}/NEX (ราคา Chainlink ล่าสุด)`;
     }catch(e){ est.textContent='⚠️ '+String(e.message||e).slice(0,50); }
   }).catch(()=>est.textContent='');
 }
 document.getElementById('psAmount').addEventListener?.('input',estimateOut);
-document.getElementById('psPay').addEventListener?.('change',estimateOut);
 
 async function presaleBuy(){
   if(!presaleReady()){ toast('ตั้งค่า Presale + NEX ก่อน (⚙️)'); return; }
   const amt=parseFloat(document.getElementById('psAmount').value);
   if(!(amt>0)){ toast('ใส่จำนวน NEX ก่อน'); return; }
-  const amtWei=ethers.parseEther(String(amt));
-  const useUSDT=(document.getElementById('psPay').value==='USDT');
+  if(!window._myAddr){ toast('Connect Wallet ก่อน'); return; }
   try{
-    if(useUSDT && !payTokenAddr()){ toast('ต้องมี USDT address ก่อน (⚙️)'); return; }
-    if(!window._myAddr){ toast('Connect Wallet ก่อน'); return; }
     const rd=await psContract(false);
-    const [cost]=await rd.quote(amtWei,!useUSDT);
-    if(useUSDT){
-      toast('1/2 approve '+symOf()+'...');
-      const tk=await tokenContract(true); if(!tk) return;
-      await (await tk.approve(presaleAddr(),cost)).wait();
-      toast('2/2 ซื้อ NEX ด้วย USDT...');
-      const c=await psContract(true); if(!c) return;
-      await (await c.buyWithUSDT(amtWei)).wait();
-    }else{
-      toast('🛒 ซื้อด้วย POL...');
-      const c=await psContract(true); if(!c) return;
-      await (await c.buyWithPOL(amtWei,{value:cost,gasLimit:600000})).wait();
-    }
+    const cur=Number(await rd.currentRound());
+    const perNex=BigInt(await rd.polPerNex(cur));              // wei POL/1 NEX
+    const cost=BigInt(Math.round(amt*1e18))*perNex/1000000000000000000n;
+    if(cost<=0n){ toast('ราคายังไม่ออก (Stale) — ลองใหม่ใน 1 นาที'); return; }
+    toast(`🛒 ซื้อด้วย POL ≈ ${Number(ethers.formatEther(cost)).toFixed(6)} POL...`);
+    const c=await psContract(true); if(!c) return;
+    const tx=await c.buyWithPol({value:cost,gasLimit:600000});
+    toast('ส่งแล้ว รอ confirm...');
+    await tx.wait();
     toast('🎉 ซื้อสำเร็จ! NEX เข้า wallet แล้ว'); renderPresale(); jobRefresh();
-  }catch(e){ toast('❌ '+String(e.message||e).slice(0,90)); }
+}catch(e){ const m=String(e.message||e); toast(m.includes('SoldOut')?'🏁 ขายหมดแล้ว!':('❌ '+m.slice(0,90))); }
 }
-function symOf(){ return document.getElementById('psPay').value==='USDT'?'USDT':(PS_SYM_BY_CHAIN[Number(NET().chainId)]||'POL'); }
+
+/* ═══════════ AI-PIPE — ขุดความรู้ + เหรียญ NEX32 (ท่อเชื่อมเว็บ↔แอป) ═══════════ */
+function pipeBrainChange(v){
+  AIPipe.saveCfg({brain:v});
+  const el=document.getElementById('pipeKeyRow');
+  el.style.display = (v==='local'||v==='ollama') ? 'none' : 'flex';
+}
+function brainKeyField(brain){ return {gemini:'geminiKeyEnc',openai:'openaiKeyEnc',openrouter:'openrouterKeyEnc',claude:'claudeKeyEnc',custom:'customKeyEnc'}[brain]||''; }
+async function pipeSaveKey(){
+  const b=AIPipe.cfg.brain;
+  const r=await AIPipe.saveBrainKey(brainKeyField(b));
+  toast(r.msg);
+}
+function renderPipe(){
+  const sel=document.getElementById('pipeBrain');
+  if(!sel) return;
+  if(!sel.options.length){
+    sel.innerHTML=AIPipe.brainList().map(b=>`<option value="${b.id}" ${b.id===AIPipe.cfg.brain?'selected':''}>${b.name}</option>`).join('');
+  }
+  pipeBrainChange(sel.value);
+  const gate=AIPipe.lv3Status();
+  const el=document.getElementById('pipeGate');
+  if(el) el.innerHTML = gate.ok
+    ? `<span class="pos" style="color:var(--good)">✅ ${gate.msg}</span>`
+    : `<span class="neg">${gate.msg}</span>`;
+  renderMinedList();
+}
+async function renderCoin(){
+  const el=document.getElementById('coinLive');
+  if(!el) return;
+  el.innerHTML='กำลังอ่านจาก Chainlink...';
+  try{
+    const l=await AIPipe.nex32Live();
+    el.innerHTML=
+      `<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px">
+        <span>💰 ราคา <b>${l.labelUsd}</b></span>
+        <span>🔁 POL/NEX <b>${l.polPerNex}</b></span>
+      </div>
+      <div style="margin-top:6px">🔥 Round <b>${l.round}/5</b> · ขายแล้ว <b>${Math.floor(l.sold/1e18).toLocaleString()}</b> / ${Math.floor(l.total/1e18).toLocaleString()} NEX (${(l.sold/l.total*100).toFixed(1)}%)</div>
+      <div style="margin-top:6px">💼 NEX ในกระเป๋า <b>${l.bal.toLocaleString(undefined,{maximumFractionDigits:2})}</b> NEX</div>`;
+    const a=document.getElementById('coinAddr');
+    if(a) a.textContent='PublicSale: '+l.addr+' · '+(AIPipe.BRAINS[AIPipe.cfg.brain].name||'');
+  }catch(e){ el.textContent='อ่านฟรีเซลไม่สำเร็จ: '+String(e.message||e).slice(0,70); }
+}
+function renderMinedList(){
+  const el=document.getElementById('minedBody');
+  if(!el) return;
+  const arr=AIPipe.mined();
+  const total=AIPipe.totalReward();
+  const elC=document.getElementById('minedList');
+  if(elC) elC.querySelector('h3').innerHTML=`🗂 คลังความรู้ที่ขุดแล้ว <span class="muted" style="font-weight:400;font-size:11px">${arr.length} การ์ด · +${total} NEX</span>`;
+  el.innerHTML=arr.length? arr.slice(-6).reverse().map(c=>
+    `<div style="border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin-bottom:6px;background:var(--panel2)">
+       <div style="font-weight:700;font-size:13px">⛏ ${esc(c.title)} <span class="num" style="color:var(--acc);float:right">+${c.reward_nex} NEX</span></div>
+       <div style="font-size:12px;color:var(--dim);margin-top:3px">${esc(String(c.summary).slice(0,130))}</div>
+       <div class="muted" style="font-size:10px;margin-top:3px">${esc(String(c.keywords||[]).slice(0,80))} · ${esc(c.brain||'')} · ${new Date(c.at).toLocaleDateString('th-TH')}</div>
+     </div>`).join('') : 'ยังไม่มีการ์ด — ขุดงานแรกได้เลย (+NEX จาก Mining Pool 300M)';
+}
+async function doMine(offline){
+  const text=document.getElementById('mineText').value.trim();
+  const title=document.getElementById('mineTitle').value.trim();
+  const btn=document.getElementById('mineBtn');
+  const res=document.getElementById('mineResult');
+  if(offline){
+    const card=AIPipe.offlineMine({title,text});
+    AIPipe._pushMined(card);
+    res.innerHTML=`<span style="color:var(--good)">🛠 การ์ดออฟไลน์ +${card.reward_nex} NEX</span>`;
+    renderMinedList(); renderPipe(); return;
+  }
+  if(btn) btn.disabled=true;
+  res.innerHTML='⛏️ ขุดด้วย '+AIPipe.BRAINS[AIPipe.cfg.brain].name+'...';
+  const r=await AIPipe.mine({title,text,el:btn});
+  res.innerHTML = r.ok
+    ? `<span style="color:var(--good)">${esc(r.msg)}</span>`
+    : `<span style="color:var(--bad)">${esc(r.msg)}</span>`;
+  renderMinedList(); renderPipe();
+}
 
 /* AI หางาน: จับคู่งานกับความจำ/ทักษะของเจ้าของ Twin */
 async function aiFindJob(){
@@ -1375,6 +1480,7 @@ async function loadNeuralBrain(){
 
 document.getElementById('netSel').value=g_net;
 renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats(); renderIdentitySummary(); jobRefresh(); renderPresale();
+if(window.AIPipe){ renderPipe(); renderCoin(); }
 if(_voiceOn) document.getElementById('voiceBtn').style.borderColor='var(--good)';
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');
@@ -1403,7 +1509,7 @@ function go(pg){
   _setPg(pg);
   if(pg==='jobs') try{jobRefresh()}catch(e){}
   if(pg==='presale') try{renderPresale()}catch(e){}
-  if(pg==='more') try{renderHome()}catch(e){}
+  if(pg==='more') try{renderHome(); renderPipe(); renderCoin();}catch(e){}
 }
 function renderHome(){
   const g=document.getElementById('homeGreet'); if(!g) return;

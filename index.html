@@ -1,748 +1,489 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nexus Architect — AI บนอุปกรณ์ของคุณ × Polygon Blockchain</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🏔</text></svg>">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src *; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
-<meta name="description" content="Nexus Architect — AI Twin ที่ทำงานบนอุปกรณ์ของคุณเอง ไม่ต้องพึ่ง Cloud พร้อม Blockchain Problem Economy บน Polygon">
-<meta property="og:title" content="Nexus Architect — AI × Blockchain">
-<meta property="og:description" content="AI บนอุปกรณ์ของคุณ · ปัญหาชุมชนบน链 · งาน Escrow · ทุกอย่างบน Polygon">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://nexusarchitect.online">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; connect-src *; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; object-src 'none'; base-uri 'self'">
+<meta name="theme-color" content="#ffffff">
+<title>Yuri — AI คู่ชีวิตของคุณ</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🐉</text></svg>">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;600;700;800;900&display=swap');
-*{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#06090f;--bg2:#0c1220;--panel:#111827;--panel2:#172035;--panel3:#1e2a45;
-  --acc:#7c3aed;--acc2:#a78bfa;--acc3:#6d28d9;--acc4:#4c1d95;
-  --good:#10b981;--warn:#f59e0b;--err:#ef4444;
-  --txt:#f1f5f9;--txt2:#94a3b8;--txt3:#64748b;
-  --line:#1e293b;--line2:#334155;
-  --grad:linear-gradient(135deg,#7c3aed 0%,#a78bfa 30%,#c084fc 60%,#e879f9 100%);
-  --grad2:linear-gradient(135deg,#3b82f6 0%,#7c3aed 50%,#ec4899 100%);
-  --glass:rgba(17,24,39,0.7);
+  --bg:#ffffff; --panel:#ffffff; --panel2:#eef2f7; --line:#e2e8f0;
+  --txt:#0f172a; --dim:#64748b; --acc:#f59e0b; --acc2:#0369a1;
+  --good:#059669; --bad:#dc2626; --violet:#8b5cf6;
 }
-html{scroll-behavior:smooth}
-body{font-family:'Noto Sans Thai','Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);line-height:1.8;-webkit-font-smoothing:antialiased}
-a{color:var(--acc2);text-decoration:none}a:hover{text-decoration:underline}
-.container{max-width:1100px;margin:0 auto;padding:0 2rem}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Noto Sans Thai','Segoe UI',Tahoma,sans-serif}
+body{background:var(--bg);color:var(--txt);min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--acc2);text-decoration:none}
+a:hover{text-decoration:underline}
+button{cursor:pointer;border:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;background:var(--acc);color:#111;transition:filter .15s,transform .08s}
+button:hover{filter:brightness(1.12)}
+button:active{transform:scale(.97)}
+button.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+button:disabled{opacity:.5;cursor:not-allowed}
 
-/* ═══ NAV ═══ */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,9,15,0.85);backdrop-filter:blur(24px);border-bottom:1px solid rgba(30,41,59,0.5)}
-nav .inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;padding:0 2rem}
-nav .logo{font-size:1.15rem;font-weight:800;display:flex;align-items:center;gap:.5rem}
-nav .logo .icon{font-size:1.4rem}
-nav .logo span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-nav .links{display:flex;gap:2rem}
-nav .links a{color:var(--txt2);font-size:.88rem;font-weight:500;transition:color .2s}
-nav .links a:hover{color:var(--txt);text-decoration:none}
-.nav-right{display:flex;align-items:center;gap:1rem}
-.nav-social{display:flex;gap:.5rem}
-.nav-social a{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:var(--panel2);color:var(--txt2);font-size:.85rem;transition:all .2s}
-.nav-social a:hover{background:var(--acc);color:#fff;text-decoration:none}
-.btn-nav{background:var(--grad);color:#fff;padding:.5rem 1.2rem;border-radius:10px;font-weight:700;font-size:.85rem;border:none;cursor:pointer}
-.btn-nav:hover{opacity:.9;text-decoration:none;color:#fff}
+/* ── HEADER ── */
+header{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.92);backdrop-filter:blur(12px);position:sticky;top:0;z-index:50;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:800;letter-spacing:.5px}
+.logo .ava{width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;background:linear-gradient(135deg,var(--violet),var(--acc));box-shadow:0 5px 16px -5px rgba(245,158,11,.55)}
+.logo b{color:var(--acc)}
+.tag{color:var(--dim);font-size:12px}
+.spacer{flex:1}
+.badge{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--dim);white-space:nowrap}
+.badge.ok{border-color:var(--good);color:var(--good)}
+.badge.warn{border-color:var(--acc);color:var(--acc)}
+.pill{display:inline-flex;align-items:center;gap:5px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--dim)}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--bad);animation:pulse 1.8s infinite}
+.pill.ok .dot{background:var(--good);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
-/* ═══ HERO ═══ */
-.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:100px 2rem 80px;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;top:-40%;left:-20%;width:140%;height:140%;background:radial-gradient(ellipse at 50% 30%,rgba(124,58,237,0.12) 0%,transparent 55%);pointer-events:none}
-.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(to top,var(--bg),transparent);pointer-events:none}
-.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:var(--panel2);border:1px solid var(--line);padding:.4rem 1.2rem;border-radius:24px;font-size:.82rem;color:var(--acc2);margin-bottom:2rem;font-weight:500}
-.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--good);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.hero h1{font-size:clamp(2.5rem,6vw,4.2rem);font-weight:900;line-height:1.15;margin-bottom:1.5rem;letter-spacing:-.02em}
-.hero h1 .g{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero-desc{font-size:1.1rem;color:var(--txt2);max-width:620px;margin:0 auto 2.5rem;line-height:1.9}
-.hero-desc strong{color:var(--txt);font-weight:600}
-.hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:.6rem;padding:.85rem 2rem;border-radius:14px;font-weight:700;font-size:1rem;border:none;cursor:pointer;transition:all .2s;font-family:inherit}
-.btn:hover{transform:translateY(-2px);text-decoration:none}
-.btn-p{background:var(--grad);color:#fff;box-shadow:0 4px 25px rgba(124,58,237,0.35)}
-.btn-p:hover{box-shadow:0 8px 40px rgba(124,58,237,0.5);color:#fff}
-.btn-s{background:var(--panel2);color:var(--txt);border:1px solid var(--line2)}
-.btn-s:hover{border-color:var(--acc);color:var(--txt)}
-.hero-stats{display:flex;gap:3rem;justify-content:center;margin-top:3rem;flex-wrap:wrap}
-.hero-stat{text-align:center}
-.hero-stat .num{font-size:1.6rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero-stat .lbl{color:var(--txt3);font-size:.75rem;margin-top:.1rem}
+/* ── LAYOUT ── */
+.app{flex:1;display:flex;max-width:1200px;margin:0 auto;width:100%;gap:16px;padding:16px}
+.main{flex:1;display:flex;flex-direction:column;gap:12px;min-width:0}
+.side{width:290px;display:flex;flex-direction:column;gap:12px;flex-shrink:0}
+@media(max-width:880px){.side{display:none}}
 
-/* ═══ SECTION ═══ */
-section{padding:6rem 0;position:relative}
-.sec-badge{display:inline-flex;align-items:center;gap:.4rem;background:var(--panel2);border:1px solid var(--line);padding:.3rem .9rem;border-radius:20px;font-size:.72rem;color:var(--acc2);margin-bottom:1rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-.sec-title{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:900;margin-bottom:.5rem;line-height:1.2}
-.sec-title .g{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sec-sub{color:var(--txt2);font-size:1rem;margin-bottom:3rem;max-width:580px;line-height:1.8}
+/* ── CHAT ── */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+#chatBox{flex:1;overflow-y:auto;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px;min-height:320px;max-height:calc(100vh - 260px)}
+.msg{margin:8px 0;display:flex;flex-direction:column}
+.msg .who{font-size:11px;color:var(--dim);margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.msg .who .via{font-size:10px;background:var(--panel);border:1px solid var(--line);padding:1px 7px;border-radius:999px;color:var(--acc2)}
+.msg .bub{display:inline-block;max-width:85%;padding:9px 14px;border-radius:14px;font-size:14px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.msg.user{align-items:flex-end}
+.msg.user .bub{background:var(--acc);color:#111;font-weight:500}
+.msg.ai{align-items:flex-start}
+.msg.ai .bub{background:#eef2f7;color:var(--txt)}
+.msg .acts{margin-top:4px;display:flex;gap:6px;font-size:11px}
+.msg .acts button{font-size:11px;padding:3px 10px;border-radius:999px}
+.typing{color:var(--dim);font-size:13px;padding:6px 2px}
 
-/* ═══ ABOUT ═══ */
-.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
-.about-left p{color:var(--txt2);margin-bottom:1.2rem;font-size:.95rem;line-height:1.9}
-.about-left strong{color:var(--txt)}
-.about-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:2rem;position:relative;overflow:hidden}
-.about-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad)}
-.about-card h4{font-weight:700;margin-bottom:1rem;font-size:1rem;display:flex;align-items:center;gap:.5rem}
-.about-card ul{list-style:none;padding:0}
-.about-card li{color:var(--txt2);font-size:.88rem;padding:.4rem 0;padding-left:1.3rem;position:relative;line-height:1.7}
-.about-card li::before{content:'✦';position:absolute;left:0;color:var(--acc);font-size:.7rem;top:.55rem}
-.about-card li strong{color:var(--txt)}
+/* composer */
+.composer{display:flex;gap:10px;align-items:flex-start;margin-top:12px}
+#chatInput{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:12px 14px;font-size:14px;resize:none;min-height:50px;font-family:inherit}
+#chatInput:focus{outline:none;border-color:var(--acc)}
+.composer .g{display:flex;gap:7px;flex-shrink:0}
+#sendBtn{align-self:flex-end;padding:11px 18px;font-size:14px}
 
-/* ═══ FEATURES ═══ */
-.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
-.feat{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:2rem;transition:all .3s}
-.feat:hover{border-color:var(--acc);transform:translateY(-4px)}
-.feat .icon{font-size:2rem;margin-bottom:1rem}
-.feat h4{font-weight:700;margin-bottom:.5rem;font-size:1rem}
-.feat p{color:var(--txt2);font-size:.85rem;line-height:1.7}
+/* ── SIDE PANELS ── */
+.side .card h3{font-size:13px;margin-bottom:10px;display:flex;align-items:center;gap:8px;color:var(--txt)}
+.side .card h3 .m{gap:0;margin-left:auto;color:var(--dim);font-weight:400;font-size:11px}
+.memory-list{max-height:180px;overflow-y:auto}
+.mem-item{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:7px;background:var(--panel2)}
+.mem-item .q{font-size:12px;font-weight:600;color:var(--txt)}
+.mem-item .a{font-size:11px;color:var(--dim);margin-top:2px;line-height:1.5}
+.mem-item .sub{font-size:10px;color:var(--acc2);margin-top:3px}
+.subject-list{max-height:200px;overflow-y:auto}
+.subject-chip{display:inline-flex;align-items:center;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:11px;color:var(--dim);margin:0 4px 6px 0;cursor:pointer;transition:.12s}
+.subject-chip:hover{border-color:var(--acc);color:var(--txt)}
+.subject-chip.on{background:var(--acc);color:#111;border-color:var(--acc);font-weight:600}
+#subjectSearch{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--txt);padding:7px 10px;font-size:12px;margin-bottom:8px}
+#subjectSearch:focus{outline:none;border-color:var(--acc)}
+.cat-row{font-size:11px;color:var(--dim);margin:8px 0 4px;font-weight:700;letter-spacing:.5px}
 
-/* ═══ TOKENOMICS ═══ */
-.toko-wrap{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
-.toko-bar{display:flex;height:18px;border-radius:12px;overflow:hidden;margin-bottom:2rem}
-.toko-bar div{transition:width .5s}
-.toko-cards{display:flex;flex-direction:column;gap:1rem}
-.toko-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.3rem 1.5rem;display:flex;align-items:center;gap:1rem}
-.toko-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
-.toko-info{flex:1}
-.toko-info .pct{font-size:1.3rem;font-weight:800}
-.toko-info .lbl{font-size:.82rem;color:var(--txt2)}
-.toko-info .det{font-size:.75rem;color:var(--txt3);margin-top:.2rem}
+/* signin */
+.signin-tail{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.signin-tail .r{display:flex;gap:8px;margin-top:8px;align-items:center;flex-wrap:wrap}
+#memUserName{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--txt);padding:9px 11px;font-size:13px;min-width:130px}
+#memUserName:focus{outline:none;border-color:var(--acc)}
 
-/* ═══ ROADMAP ═══ */
-.road{position:relative;padding-left:2.5rem}
-.road::before{content:'';position:absolute;left:10px;top:8px;bottom:8px;width:2px;background:linear-gradient(to bottom,var(--acc),var(--acc2),var(--line))}
-.road-item{position:relative;margin-bottom:3rem}
-.road-dot{position:absolute;left:-2.5rem;top:.3rem;width:22px;height:22px;border-radius:50%;border:2px solid var(--acc);background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:.6rem}
-.road-item.done .road-dot{background:var(--good);border-color:var(--good);color:#fff}
-.road-when{font-size:.72rem;color:var(--txt3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:.3rem;font-weight:600}
-.road-item h4{font-weight:700;margin-bottom:.5rem;font-size:1.05rem}
-.road-item ul{list-style:none;padding:0}
-.road-item li{color:var(--txt2);font-size:.88rem;padding:.3rem 0;padding-left:1.2rem;position:relative;line-height:1.7}
-.road-item li::before{content:'→';position:absolute;left:0;color:var(--acc);font-size:.8rem}
+/* footer */
+footer{text-align:center;color:var(--dim);font-size:12px;padding:18px;border-top:1px solid var(--line)}
+footer a{color:var(--acc2)}
+.muted{color:var(--dim);font-size:12px;line-height:1.6}
 
-/* ═══ PRESALE ═══ */
-.presale-box{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:3rem;text-align:center;position:relative;overflow:hidden}
-.presale-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
-.presale-box::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle at 50% 30%,rgba(124,58,237,0.06) 0%,transparent 50%);pointer-events:none}
-.presale-box h3{font-size:1.6rem;font-weight:900;margin-bottom:.5rem}
-.presale-price{font-size:3rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:.8rem 0}
-.presale-details{color:var(--txt2);font-size:.92rem;margin-bottom:1.5rem;line-height:2}
-.presale-details strong{color:var(--txt)}
-.contract-box{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:1.2rem;margin:1.5rem 0;text-align:left}
-.contract-row{display:flex;align-items:center;gap:.6rem;padding:.4rem 0;font-size:.82rem}
-.contract-row .tag{color:var(--txt2);min-width:90px}
-.contract-addr{font-family:'SF Mono',Consolas,monospace;color:var(--acc2);word-break:break-all;font-size:.78rem}
-.contract-addr a{color:var(--acc2)}
-.presale-warn{color:var(--txt3);font-size:.75rem;margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--line)}
-
-/* ═══ FAQ ═══ */
-.faq-list{max-width:720px}
-.faq-item{border-bottom:1px solid var(--line);padding:1.3rem 0;cursor:pointer}
-.faq-item h4{font-weight:700;font-size:.95rem;display:flex;justify-content:space-between;align-items:center}
-.faq-item h4 .arrow{color:var(--acc);transition:transform .3s;font-size:.8rem}
-.faq-item.open h4 .arrow{transform:rotate(180deg)}
-.faq-item p{color:var(--txt2);font-size:.88rem;margin-top:.7rem;display:none;line-height:1.8}
-.faq-item.open p{display:block}
-
-/* ═══ CTA ═══ */
-.cta-section{text-align:center;padding:5rem 0}
-.cta-section h2{font-size:2rem;font-weight:900;margin-bottom:1rem}
-.cta-section p{color:var(--txt2);margin-bottom:2rem;max-width:500px;margin-left:auto;margin-right:auto}
-
-/* ═══ FOOTER ═══ */
-footer{text-align:center;padding:3rem 0;border-top:1px solid var(--line)}
-footer .socials{display:flex;gap:.8rem;justify-content:center;margin-bottom:1.2rem;flex-wrap:wrap}
-footer .socials a{display:flex;align-items:center;gap:.4rem;background:var(--panel2);padding:.55rem 1.2rem;border-radius:12px;color:var(--txt2);font-size:.85rem;transition:all .2s}
-footer .socials a:hover{background:var(--acc);color:#fff;text-decoration:none}
-footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
-
-/* ═══ RESPONSIVE ═══ */
-@media(max-width:900px){
-  .about-grid,.toko-wrap{grid-template-columns:1fr}
-  .feat-grid{grid-template-columns:1fr}
-  nav .links{display:none}
-  .hero-stats{gap:1.5rem}
-}
-@media(max-width:600px){
-  .hero h1{font-size:2rem}
-  .container{padding:0 1.2rem}
-  section{padding:4rem 0}
-  .presale-box{padding:2rem 1.2rem}
-}
-
-/* ═══ SCROLL ANIM ═══ */
-.reveal{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
-.reveal.visible{opacity:1;transform:translateY(0)}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--acc);color:var(--txt);padding:11px 18px;border-radius:12px;font-size:13px;opacity:0;transition:.3s;pointer-events:none;z-index:99;max-width:90%}
+#toast.show{opacity:1}
 </style>
 </head>
 <body>
 
-<!-- ═══════ NAV ═══════ -->
-<nav>
-  <div class="inner">
-    <div class="logo"><span class="icon">🏔</span> <span>Nexus</span> Architect</div>
-    <div class="links">
-      <a href="#about">Whitepaper</a>
-      <a href="#features">คุณสมบัติ</a>
-      <a href="#tokenomics">Tokenomics</a>
-      <a href="#roadmap">Roadmap</a>
-      <a href="#presale">Presale</a>
-      <a href="#faq">FAQ</a>
-    </div>
-    <div class="nav-right">
-      <div class="nav-social">
-        <a href="https://t.me/+lWc7bfRVbUBlZTY1" target="_blank" title="Telegram">✈️</a>
-        <a href="https://x.com/nexusarchitect2" target="_blank" title="X">𝕏</a>
-        <a href="https://www.facebook.com/groups/28128540746755286/" target="_blank" title="Facebook">📘</a>
+<header>
+  <div class="logo"><span class="ava">🐉</span><div><div><b>Yuri</b> — AI คู่ชีวิตของคุณ</div><div class="tag">Gemma 4 · 12,788 วิชา · ความทรงจำในเครื่อง</div></div></div>
+  <div class="spacer"></div>
+  <div class="pill" id="coinPill" style="cursor:pointer" onclick="location.href='app/index.html#presale'" title="NEX32 ฟรีเซลบน Polygon Mainnet">🪙 NEX32 <span id="coinTxt">…</span></div>
+  <div class="pill" id="brainPill"><span class="dot"></span><span id="brainLabel">กำลังเช็คสมอง...</span></div>
+  <a href="app/index.html"><button class="ghost">🪙 ฟรีเซล NEX32</button></a>
+  <a href="landing.html"><button class="ghost">ℹ️ เกี่ยวกับโปรเจกต์</button></a>
+</header>
+
+<div class="app">
+  <div class="main">
+    <div class="card" id="pipeCard" style="margin-bottom:0">
+      <h3 style="display:flex;align-items:center;gap:8px">⛏️ ขุดความรู้ → +NEX32 <span class="muted" style="font-weight:400;font-size:11px">ท่อเชื่อม: KYC Lv.3 → AI หลายค่าย → คลังความรู้ (เข้าแอปอัตโนมัติ)</span></h3>
+      <p class="muted" id="pipeGateHome" style="font-size:12px"></p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+        <div style="flex:1;min-width:170px"><label>สมอง (รองรับทุกค่าย + GGUF)</label>
+          <select id="pipeBrainHome" style="width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--txt);padding:8px"></select></div>
+        <div style="flex:1;min-width:170px"><label>ชื่องาน/ความรู้</label>
+          <input id="mineTitleHome" placeholder="เช่น วิธีลดฝุ่น PM2.5 ในคอนโด" style="width:100%"></div>
       </div>
-      <div id="navWallet">
-        <button id="navWalletBtn" onclick="connectWallet()" style="
-          background:var(--panel2);color:var(--txt2);padding:.45rem 1rem;border-radius:10px;
-          font-weight:600;font-size:.82rem;border:1px solid var(--line);cursor:pointer;
-          font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:.4rem;
-        ">🦊 เชื่อมกระเป๋า</button>
-        <div id="navWalletInfo" style="display:none;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:.5rem .8rem;display:none;align-items:center;gap:.8rem">
-          <span id="navWalletNet" style="font-size:.65rem;padding:.15rem .5rem;border-radius:6px;background:var(--good);color:#fff;font-weight:600;white-space:nowrap"></span>
-          <span id="navWalletAddr" style="font-family:monospace;font-size:.78rem;color:var(--acc2)"></span>
-          <span style="color:var(--txt3);font-size:.7rem">·</span>
-          <span style="font-size:.78rem"><span style="color:var(--txt3)">POL</span> <b id="navPol" style="color:var(--txt)">—</b></span>
-          <span style="color:var(--txt3);font-size:.7rem">·</span>
-          <span style="font-size:.78rem"><span style="color:var(--txt3)">USDT</span> <b id="navUsdt" style="color:var(--good)">—</b></span>
-          <span style="color:var(--txt3);font-size:.7rem">·</span>
-          <span style="font-size:.78rem"><span style="color:var(--txt3)">NEX</span> <b id="navNex" style="color:var(--acc2)">—</b></span>
-          <button onclick="disconnectWallet()" style="background:none;border:none;color:var(--txt3);cursor:pointer;font-size:.75rem;padding:.2rem" title="ยกเลิก">✕</button>
+      <label style="margin-top:8px">ความรู้ที่ขุด (ขั้นตอน/ผลลัพธ์จริง)</label>
+      <textarea id="mineTextHome" style="min-height:70px" placeholder="เช่น ผมลองใช้เครื่องฟอกอากาศ + แผ่นกรอง HEPA..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="mineBtnHome" onclick="doMineHome()">⛏️ ขุดความรู้</button>
+        <button class="ghost" onclick="doMineHome(true)">🛠 ออฟไลน์</button>
+        <span class="muted" id="mineResultHome" style="display:flex;align-items:center"></span>
+      </div>
+      <div id="minedListHome" class="memory-list" style="max-height:180px;margin-top:10px"></div>
+    </div>
+    <div class="card" style="flex:1;display:flex;flex-direction:column">
+      <div id="chatBox"><div class="typing">กำลังเริ่มต้น...</div></div>
+      <div class="composer">
+        <textarea id="chatInput" rows="1" placeholder="พิมพ์ข้อความ... (Enter = ส่ง)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"></textarea>
+        <div class="g">
+          <button class="ghost" id="micBtn" onclick="toggleMic()" title="พูดแทนพิมพ์">🎤</button>
+          <button class="ghost" id="voiceBtn" onclick="toggleVoice()" title="ให้ AI พูดตอบ">🔊</button>
+          <button id="sendBtn" onclick="send()">ส่ง ➤</button>
         </div>
       </div>
     </div>
   </div>
-</nav>
 
-<!-- ═══════ HERO ═══════ -->
-<section class="hero">
-  <div>
-    <div class="hero-badge"><span class="dot"></span> Polygon Mainnet แล้ว · พร้อมใช้งาน</div>
-    <h1>สร้าง <span class="g">AI คู่ชีวิต</span><br>บนอุปกรณ์ของคุณเอง</h1>
-    <p class="hero-desc">
-      Nexus Architect คือระบบนิเวศที่รวม <strong>AI ที่ทำงานบนเบราว์เซอร์ของคุณ</strong> เข้ากับ <strong>Polygon Blockchain</strong> — ไม่ต้องพึ่ง Cloud ไม่ต้องเสียค่า API ไม่ต้องกลัวข้อมูลรั่ว
-    </p>
-    <div class="hero-btns">
-      <a class="btn btn-p" href="#presale">🚀 เข้าร่วม Presale</a>
-      <a class="btn btn-s" href="#about">📄 อ่าน Whitepaper</a>
-      <a class="btn btn-s" href="#roadmap">🗺️ ดู Roadmap</a>
+  <div class="side">
+    <div class="card">
+      <h3>🧠 สมอง AI <span class="m" id="memCount"></span></h3>
+      <div id="subjectSearchWrap"><input id="subjectSearch" placeholder="ค้นหาวิชา เช่น ภาษา, การเทรด..."></div>
+      <div class="subject-list" id="subjectList"></div>
+      <p class="muted" style="margin-top:8px">Yuri รู้จัก <b id="subjectTotal">12788</b> วิชา — พิมพ์ถามได้เลย มี Gemma เรียบเรียงคำตอบให้</p>
     </div>
-    <div class="hero-stats">
-      <div class="hero-stat"><div class="num">35 Tests</div><div class="lbl">Smart Contract ผ่านหมด</div></div>
-      <div class="hero-stat"><div class="num">28 Contracts</div><div class="lbl">部署บน Polygon</div></div>
-      <div class="hero-stat"><div class="num">24/24</div><div class="lbl">Brain Classify ถูกต้อง</div></div>
-      <div class="hero-stat"><div class="num">Mainnet</div><div class="lbl">Polygon พร้อมใช้จริง</div></div>
-    </div>
-  </div>
-</section>
 
-<!-- ═══════ WHITEPAPER ═══════ -->
-<section id="about">
-  <div class="container">
-    <div class="sec-badge">📄 Whitepaper</div>
-    <div class="sec-title">Nexus Architect <span class="g">คืออะไร</span></div>
-    <p class="sec-sub">ทำความเข้าใจโปรเจกต์ทั้งหมดใน 3 นาที</p>
-    <div class="about-grid">
-      <div class="about-left">
-        <p><strong>Nexus Architect</strong> คือระบบนิเวศที่สร้าง "AI คู่ชีวิต" ที่ทำงานบนอุปกรณ์ของคุณเอง — ไม่ต้องพึ่ง Cloud ไม่ต้องเสียค่า API ไม่ต้องกลัวข้อมูลรั่ว</p>
-        <p>ทุกคนมี <strong>Digital Twin</strong> — AI ที่เรียนรู้จากข้อความสนทนาของคุณ จดจำความชอบ ความสนใจ และช่วยคิด ช่วยทำในแบบที่คุณต้องการ ทั้งหมดทำงานบนเบราว์เซอร์ของคุณเอง</p>
-        <p>บน <strong>Polygon Blockchain</strong> ปัญหาของชุมชนถูกเสนอ โหวต และคัดออกทุกวัน ผ่านระบบ <strong>The Mountain</strong> งาน freelancing ใช้ <strong>Smart Contract Escrow</strong> ที่ปลอดภัย และ Token <strong>NEX</strong> เป็นรางวัลสำหรับผู้มีส่วนร่วม</p>
-        <p><strong>เป้าหมายของเรา:</strong> สร้างระบบนิเวศที่ AI + Blockchain ทำงานร่วมกันเพื่อแก้ปัญหาจริงของผู้คน — เริ่มจากชุมชนเล็กๆ สู่การเปลี่ยนแปลงระดับโลก</p>
-        <p>ทุกอย่างเป็น <strong>Open Source</strong> ภายใต้ MIT License — ใครก็สามารถตรวจสอบ แก้ไข และสร้างต่อได้</p>
-      </div>
-      <div class="about-card">
-        <h4>💡 คุณสมบัติหลัก</h4>
-        <ul>
-          <li><strong>AI Twin</strong> — AI ที่ทำงานบนเบราว์เซอร์ ไม่ต้องติดตั้ง ไม่ต้องมี API key</li>
-          <li><strong>The Mountain</strong> — เสนอและโหวตปัญหาชุมชนบน Blockchain</li>
-          <li><strong>Escrow Jobs</strong> — จ้างงานด้วย Smart Contract ปลอดภัย 100%</li>
-          <li><strong>NEX Token</strong> — รางวัลสำหรับการมีส่วนร่วมในระบบนิเวศ</li>
-          <li><strong>KYC On-Device</strong> — ยืนยันตัวตนบนอุปกรณ์ของคุณ ข้อมูลไม่ไปไหน</li>
-          <li><strong>Dual Presale</strong> — ซื้อ NEX ด้วย USDT หรือ POL</li>
-          <li><strong>Open Source</strong> — MIT License ตรวจสอบได้ทุกอย่าง</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ FEATURES ═══════ -->
-<section id="features">
-  <div class="container">
-    <div class="sec-badge">⚙️ คุณสมบัติ</div>
-    <div class="sec-title">ระบบนิเวศ <span class="g">ทั้งหมด</span></div>
-    <p class="sec-sub">ทุกฟีเจอร์ถูกออกแบบมาเพื่อทำงานร่วมกัน</p>
-    <div class="feat-grid">
-      <div class="feat reveal">
-        <div class="icon">🧠</div>
-        <h4>AI Twin บนอุปกรณ์ของคุณ</h4>
-        <p>ใช้ WebGPU/WASM รันโมเดล AI บนเบราว์เซอร์ของคุณเอง — ไม่ต้องส่งข้อมูลไป Cloud ใดๆ เรียนรู้จากบทสนทนาและปรับตัวตามคุณ</p>
-      </div>
-      <div class="feat reveal">
-        <div class="icon">🏔</div>
-        <h4>The Mountain — เสนอปัญหา</h4>
-        <p>ทุกคนเสนอบน Blockchain โหวตได้ ปัญหาที่มีคะแนนสูงสุดจะอยู่รอด ปัญหาที่ไม่ผ่านจะถูกคัดออกทุกวัน — ระบบ governing ที่โปร่งใส</p>
-      </div>
-      <div class="feat reveal">
-        <div class="icon">💼</div>
-        <h4>งาน Escrow ปลอดภัย</h4>
-        <p>จ้างงานผ่าน Smart Contract — เงินถูกlock ไว้จนกว่างานจะเสร็จ ค่าธรรมเนียม 10% กระจายให้ชุมชนอัตโนมัติ</p>
-      </div>
-      <div class="feat reveal">
-        <div class="icon">🪙</div>
-        <h4>NEX Token — รางวัลชุมชน</h4>
-        <p>1,000,000,000 NEX บน Polygon Mainnet — 50% Presale, 30% Mining, 20% Founder Vesting</p>
-      </div>
-      <div class="feat reveal">
-        <div class="icon">🔐</div>
-        <h4>ยืนยันตัวตนแบบปลอดภัย</h4>
-        <p>KYC ทั้งหมดทำงานบนอุปกรณ์ของคุณ — ตรวจบัตรประชาชน หนังสือเดินทาง ตรวจจับการกะพริบตา ไม่มีข้อมูลไหนถูกส่งไป server ภายนอก</p>
-      </div>
-      <div class="feat reveal">
-        <div class="icon">📱</div>
-        <h4>แอปบนมือถือ (เร็วๆ นี้)</h4>
-        <p>AI Twin จะมาในรูปแบบ APK สำหรับ Android ก่อน — ติดตั้งตรง ไม่ต้องผ่าน Play Store เมื่อมีงบประมาณจะลง Play Store ต่อไป</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ TOKENOMICS ═══════ -->
-<section id="tokenomics">
-  <div class="container">
-    <div class="sec-badge">🪙 Tokenomics</div>
-    <div class="sec-title">การจัดสรร <span class="g">NEX Token</span></div>
-    <p class="sec-sub">Total Supply: 1,000,000,000 NEX · Polygon Mainnet · Contract ตรวจสอบได้</p>
-    <div class="toko-wrap">
-      <div>
-        <div class="toko-bar">
-          <div style="width:50%;background:var(--acc)" title="Public Sale 50%"></div>
-          <div style="width:30%;background:var(--good)" title="Mining 30%"></div>
-          <div style="width:20%;background:var(--warn)" title="Founder 20%"></div>
+    <div class="card">
+      <h3>📓 สมุดบันทึกความทรงจำ <span class="m" id="nbook"></span></h3>
+      <div class="memory-list" id="memoryList"><div class="muted">ยังไม่มีบันทึก...</div></div>
+      <div class="signin-tail">
+        <label class="muted" for="memUserName">ชื่อเจ้าของบันทึก (เก็บในเครื่องคุณเท่านั้น)</label>
+        <div class="r">
+          <input id="memUserName" placeholder="เช่น น้อง Tanay" value="">
+          <button class="ghost" onclick="saveName()">บันทึก</button>
         </div>
-        <div class="contract-box">
-          <div class="contract-row"><span class="tag">🪙 NEX</span><span class="contract-addr"><a href="https://polygonscan.com/token/0xC30Fe7CCad56fE8470093798BB02ff5E3b2693fe" target="_blank">0xC30Fe7CCad56fE8470093798BB02ff5E3b2693fe</a></span></div>
-          <div class="contract-row"><span class="tag">🚀 Presale</span><span class="contract-addr"><a href="https://polygonscan.com/address/0xB0169b1654bd41Fb34d0bf7c0cE11673040772df" target="_blank">0xB0169b1654bd41Fb34d0bf7c0cE11673040772df</a></span></div>
-          <div class="contract-row"><span class="tag">💰 จ่ายด้วย</span><span class="contract-addr">USDT (Polygon PoS) หรือ POL</span></div>
-        </div>
-      </div>
-      <div class="toko-cards">
-        <div class="toko-card">
-          <div class="toko-dot" style="background:var(--acc)"></div>
-          <div class="toko-info">
-            <div class="pct" style="color:var(--acc)">50%</div>
-            <div class="lbl">Public Sale — 500,000,000 NEX</div>
-            <div class="det">5 รอบ · 200k NEX ต่อรอบ · ราคา x1.5 ทุกรอบ</div>
-          </div>
-        </div>
-        <div class="toko-card">
-          <div class="toko-dot" style="background:var(--good)"></div>
-          <div class="toko-info">
-            <div class="pct" style="color:var(--good)">30%</div>
-            <div class="lbl">Mining Rewards — 300,000,000 NEX</div>
-            <div class="det">แจกจ่าย 48 เดือน · สำหรับผู้มีส่วนร่วม</div>
-          </div>
-        </div>
-        <div class="toko-card">
-          <div class="toko-dot" style="background:var(--warn)"></div>
-          <div class="toko-info">
-            <div class="pct" style="color:var(--warn)">20%</div>
-            <div class="lbl">Founder — 200,000,000 NEX</div>
-            <div class="det">Vesting 12 เดือน · Cliff 3 เดือน</div>
-          </div>
+        <div class="r">
+          <button class="ghost" onclick="exportMem()">💾 เอ็กซ์พอร์ต</button>
+          <label class="ghost" style="cursor:pointer;border:1px solid var(--line);border-radius:10px;padding:9px 14px;display:inline-flex;align-items:center;gap:6px">📂 นำเข้า<input id="importMem" type="file" accept=".json" style="display:none" onchange="importMem(this)"></label>
         </div>
       </div>
     </div>
   </div>
-</section>
+</div>
 
-<!-- ═══════ ROADMAP ═══════ -->
-<section id="roadmap">
-  <div class="container">
-    <div class="sec-badge">🗺️ Roadmap</div>
-    <div class="sec-title">แผนงาน <span class="g">2025 – 2026</span></div>
-    <p class="sec-sub">จาก Prototype สู่ Production สู่ Decentralization</p>
-    <div class="road">
-      <div class="road-item done">
-        <div class="road-dot">✓</div>
-        <div class="road-when">Phase 1 · Q3 2025</div>
-        <h4>✅ สร้างรากฐาน — Genesis</h4>
-        <ul>
-          <li>AI Twin v6 Quantum Hybrid ทำงานบน WebGPU/WASM</li>
-          <li>Smart Contracts 28 ตัว · 35 Tests ผ่านหมด</li>
-          <li>Presale บน Polygon Mainnet (USDT + POL)</li>
-          <li>NEX Token 1B supply deployed</li>
-          <li>เว็บ Landing Page + Whitepaper</li>
-          <li>Android Studio project พร้อม</li>
-        </ul>
-      </div>
-      <div class="road-item">
-        <div class="road-dot">2</div>
-        <div class="road-when">Phase 2 · Q4 2025</div>
-        <h4>🌐 ขยายชุมชน — Growth</h4>
-        <ul>
-          <li>External smart contract audit</li>
-          <li>Genesis 100 early adopters</li>
-          <li>AI Twin APK สำหรับ Android</li>
-          <li>Grant applications (Questbook, Gitcoin)</li>
-          <li>สร้างชุมชน Telegram + X</li>
-        </ul>
-      </div>
-      <div class="road-item">
-        <div class="road-dot">3</div>
-        <div class="road-when">Phase 3 · Q1 2026</div>
-        <h4>📈 ขยายระบบ — Scale</h4>
-        <ul>
-          <li>DEX liquidity pool (POL/NEX)</li>
-          <li>Job Board mainnet — งาน Escrow จริง</li>
-          <li>Verified Human on-chain registry</li>
-          <li>Cross-chain (BSC ↔ Polygon)</li>
-          <li>ลง Play Store เมื่อมีงบประมาณ</li>
-        </ul>
-      </div>
-      <div class="road-item">
-        <div class="road-dot">4</div>
-        <div class="road-when">Phase 4 · Q2 2026</div>
-        <h4>🏛️ DAO Governance — Decentralize</h4>
-        <ul>
-          <li>DAO governance activation</li>
-          <li>AI model marketplace</li>
-          <li>Community treasury management</li>
-          <li>Full tokenomics activation</li>
-          <li>การปกครองโดยชุมชนอย่างสมบูรณ์</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
+<footer><a href="landing.html">Nexus Architect</a> · Yuri — สมอง Gemma 4 รันบนเครื่องคุณ · <span id="ts"></span></footer>
 
-<!-- ═══════ PRESALE ═══════ -->
-<section id="presale">
-  <div class="container">
-    <div class="presale-box reveal">
-      <h3>🚀 NEX Presale</h3>
-      <div class="presale-price" id="psPrice">Presale — ปิดชั่วคราว ⏸️</div>
-      <div class="presale-details" id="psDetails">
-        ข้อมูลเดิม: 1 NEX = $0.0001 · 5 รอบ × 100M NEX = 500M NEX · ขณะนี้หยุดขายเพื่อยื่น Grants
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem;margin:1.5rem 0;opacity:.4;pointer-events:none" id="psRounds"></div>
-      <div style="background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:1.5rem;margin:1.5rem 0;text-align:center">
-        <div style="font-size:2rem;margin-bottom:.5rem">⏸️</div>
-        <div style="font-weight:700;font-size:1.1rem;margin-bottom:.5rem">Presale ปิดชั่วคราว</div>
-        <div style="color:var(--txt3);font-size:.9rem;line-height:1.6">เราปิดระบบซื้อเหรียญชั่วคราวเพื่อปรับโครงสร้างให้ถูกต้องตามกฎหมาย<br>และเตรียมยื่นขอทุน Grants แบบโปร่งใส — ไม่มี private sale ในช่วงนี้</div>
-        <div style="margin-top:1rem;display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
-          <a href="grant.html" style="background:var(--grad);color:#fff;padding:.6rem 1.2rem;border-radius:10px;text-decoration:none;font-weight:600;font-size:.9rem">ดูหน้า Grants</a>
-          <a href="https://polygonscan.com/address/0xC30Fe7CCad56fE8470093798BB02ff5E3b2693fe" target="_blank" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);padding:.6rem 1.2rem;border-radius:10px;text-decoration:none;font-weight:600;font-size:.9rem">ดู NEX บน Polygonscan</a>
-        </div>
-      </div>
-      <p class="presale-warn">ℹ️ Token: 0xC30Fe7...93fe · Presale: 0xB0169...72df (paused) · ตรวจสอบได้บน Polygon Mainnet</p>
-    </div>
-  </div>
-</section>
+<div id="toast"></div>
 
-<!-- ═══════ FAQ ═══════ -->
-<section id="faq">
-  <div class="container">
-    <div class="sec-badge">❓ คำถามที่พบบ่อย</div>
-    <div class="sec-title">FAQ</div>
-    <p class="sec-sub">คำตอบสำหรับคำถามที่คนมักถามบ่อย</p>
-    <div class="faq-list">
-      <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>Nexus Architect คืออะไร? <span class="arrow">▾</span></h4>
-        <p>ระบบ AI + Blockchain ที่รวม AI ที่ทำงานบนอุปกรณ์ของคุณเอง (ไม่พึ่ง Cloud) เข้ากับ Polygon Blockchain เพื่อแก้ปัญหาจริงของชุมชน — ทั้งการโหวตปัญหา จ้างงาน และให้รางวัลผ่าน Token</p>
-      </div>
-      <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>AI Twin ทำงานยังไง? ต้องมี API key ไหม? <span class="arrow">▾</span></h4>
-        <p>AI ทำงานบนเบราว์เซอร์ของคุณเองผ่าน WebGPU/WASM ใช้โมเดล Qwen2.5-1.5B ที่รันบนเครื่องของคุณ ไม่ต้องมี API key ไม่ต้องเสียค่า Cloud ข้อมูลไม่ถูกส่งไปไหนเลย</p>
-      </div>
-      <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>ซื้อ NEX ยังไง? <span class="arrow">▾</span></h4>
-        <p>Presale ปิดชั่วคราวเพื่อยื่นขอทุน Grants และปรับให้ถูกต้องตามกฎหมาย — จะเปิดใหม่หลังผ่านการตรวจสอบและได้รับทุนสนับสนุน ติดตามได้ที่หน้า Grants และช่องทางโซเชียล</p>
-      </div>
-      <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>Smart contract ผ่าน audit 了吗? <span class="arrow">▾</span></h4>
-        <p>ตอนนี้มี 35 tests ผ่านหมด内部 — แต่ยังไม่ผ่าน external audit ภายนอก แผนคือทำ Q4 2025 หลังได้ grant funding</p>
-      </div>
-      <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>The Mountain คืออะไร? <span class="arrow">▾</span></h4>
-        <p>ระบบเสนอปัญหาของชุมชนบน Blockchain — ทุกคนเสนอบทปัญหา ผู้อื่นโหวตได้ ปัญหาที่มีคะแนนสูงสุด 10 อันดับจะอยู่รอด ปัญหาที่ไม่ผ่านจะถูกคัดออกทุกวันตอนเที่ยงคืน</p>
-      </div>
-      <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>AI Twin APK จะมีเมื่อไหร่? <span class="arrow">▾</span></h4>
-        <p>แผน Q4 2025 — สร้าง Android APK ก่อน (ติดตั้งตรง ไม่ผ่าน Play Store) เมื่อมีงบประมาณจาก grant จะลง Play Store ต่อไป</p>
-      </div>
-      <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>ข้อมูลของฉันปลอดภัยไหม? <span class="arrow">▾</span></h4>
-        <p>ทุกอย่างทำงานบนอุปกรณ์ของคุณ — AI ไม่ส่งข้อมูลไป Cloud, KYC ประมวลผลบนเครื่องของคุณ, ข้อมูลเก็บใน localStorage ไม่มี server กลาง</p>
-      </div>
-      <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>ติดต่อทีมงานได้ยังไง? <span class="arrow">▾</span></h4>
-        <p>เข้าร่วม Telegram group หรือติดตามบน X/Twitter — ทุกอย่างโปร่งใส因为我เป็น open source บน GitHub</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ CTA ═══════ -->
-<section class="cta-section">
-  <div class="container">
-    <div class="sec-title">พร้อมเริ่มต้น <span class="g">ไปด้วยกัน</span>?</div>
-    <p>เข้าร่วมชุมชน Nexus Architect — ทุกคนมีส่วนร่วมได้ ทุกอย่างโปร่งใส</p>
-    <div class="hero-btns" style="justify-content:center">
-      <a class="btn btn-p" href="#presale">🚀 เข้าร่วม Presale</a>
-      <a class="btn btn-s" href="https://github.com/pp0910619247-netizen/nexus-architect" target="_blank">🐙 ดู GitHub</a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ FOOTER ═══════ -->
-<footer>
-  <div class="container">
-    <div class="socials">
-      <a href="https://t.me/+lWc7bfRVbUBlZTY1" target="_blank">✈️ Telegram</a>
-      <a href="https://x.com/nexusarchitect2" target="_blank">𝕏 X (Twitter)</a>
-      <a href="https://www.facebook.com/groups/28128540746755286/" target="_blank">📘 Facebook</a>
-      <a href="https://github.com/pp0910619247-netizen/nexus-architect" target="_blank">🐙 GitHub</a>
-    </div>
-    <p>© 2025 Nexus Architect · สร้างบน Polygon · MIT License</p>
-    <p style="margin-top:.3rem">⚠️ ข้อมูลนี้ไม่ใช่คำแนะนำในการลงทุน · โปรดศึกษาข้อมูลก่อนตัดสินใจ · Smart contract ยังไม่ผ่าน external audit</p>
-  </div>
-</footer>
-
-<!-- ═══════ SCROLL REVEAL ═══════ -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+<script src="app/ai-pipe.js"></script>
+<script src="subjects.js"></script>
 <script>
-const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}}),{threshold:.15});
-document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+/* ═══════════ YURI CHAT v2 — Gemma 4 bridge + local brain + 12,788 วิชา + สมุดบันทึก ═══════════ */
+const BRIDGE='http://127.0.0.1:8765';
+let _bridge=false,_checking=true,_voiceOn=false,_rec=null,_selSubj=null;
+let _history=[];
+const NAME=()=>localStorage.getItem('yuri_user')||'คุณ';
 
-/* ═══════ METAMASK WALLET ═══════ */
-const NEX_ADDR='0xC30Fe7CCad56fE8470093798BB02ff5E3b2693fe';
-const POLYGON_CHAIN='0x89';
-const POLYGON_NAME='Polygon Mainnet';
+/* ── helper ── */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+let _toastT;
+function toast(m){const t=document.getElementById('toast');t.innerHTML=esc(m);t.classList.add('show');clearTimeout(_toastT);_toastT=setTimeout(()=>t.classList.remove('show'),3000);}
 
-function showWallet(addr,bal,nexBal,usdtBal,chainId){
-  document.getElementById('navWalletBtn').style.display='none';
-  const info=document.getElementById('navWalletInfo');
-  info.style.display='flex';
-  document.getElementById('navWalletAddr').textContent=addr.slice(0,6)+'…'+addr.slice(-4);
-  document.getElementById('navPol').textContent=bal;
-  document.getElementById('navNex').textContent=nexBal;
-  document.getElementById('navUsdt').textContent=usdtBal;
-  const net=document.getElementById('navWalletNet');
-  if(chainId===137){net.textContent='Polygon';net.style.background='var(--good)';}
-  else{net.textContent='Chain '+chainId;net.style.background='var(--warn)';}
-  // Enable buy button
-  const buyBtn=document.getElementById('psBuyBtn');
-  if(buyBtn){buyBtn.style.opacity='1';buyBtn.style.pointerEvents='';buyBtn.textContent='🛒 ซื้อ NEX';}
-  const st=document.getElementById('psStatus');
-  if(st) st.textContent='พร้อมซื้อ';
-}
-
-function disconnectWallet(){
-  window._myAddr=null;
-  localStorage.removeItem('nx_wallet');
-  document.getElementById('navWalletBtn').style.display='';
-  document.getElementById('navWalletInfo').style.display='none';
-}
-
-async function connectWallet(){
-  if(!window.ethereum){alert('กรุณาติดตั้ง MetaMask ก่อน');window.open('https://metamask.io/download/','_blank');return;}
-  try{
-    const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
-    const addr=accounts[0];
-    const chainId=await window.ethereum.request({method:'eth_chainId'});
-    const numChainId=parseInt(chainId,16);
-
-    // Switch to Polygon if needed
-    if(numChainId!==137){
-      try{
-        await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:POLYGON_CHAIN}]});
-      }catch(e){
-        if(e.code===4902){
-          await window.ethereum.request({method:'wallet_addEthereumChain',params:[{
-            chainId:POLYGON_CHAIN,chainName:'Polygon Mainnet',
-            nativeCurrency:{name:'POL',symbol:'POL',decimals:18},
-            rpcUrls:['https://polygon-bor-rpc.publicnode.com'],
-            blockExplorerUrls:['https://polygonscan.com/']
-          }]});
-        }
-      }
-    }
-
-    const provider=new ethers.JsonRpcProvider('https://polygon-bor-rpc.publicnode.com');
-    const bal=Number(ethers.formatEther(await provider.getBalance(addr))).toFixed(3);
-    let nexBal='0';
-    try{
-      const c=new ethers.Contract(NEX_ADDR,['function balanceOf(address) view returns (uint256)'],provider);
-      nexBal=Number(ethers.formatEther(await c.balanceOf(addr))).toLocaleString();
-    }catch(e){}
-
-    let usdtBal='0';
-    try{const u=new ethers.Contract(USDT_ADDR,USDT_ABI,provider);usdtBal=Number(ethers.formatUnits(await u.balanceOf(addr),6)).toLocaleString();}catch(e){}
-    localStorage.setItem('nx_wallet',addr);
-    window._myAddr=addr;
-    showWallet(addr,bal,nexBal,usdtBal,parseInt(chainId,16));
-  }catch(e){alert('เชื่อมต่อไม่สำเร็จ: '+e.message);}
-}
-
-// Auto-reconnect on load
-(async()=>{
-  const saved=localStorage.getItem('nx_wallet');
-  if(saved && window.ethereum){
-    try{
-      const accounts=await window.ethereum.request({method:'eth_accounts'});
-      if(accounts.length && accounts[0].toLowerCase()===saved.toLowerCase()){
-        window._myAddr=saved;
-        const chainId=await window.ethereum.request({method:'eth_chainId'});
-        const provider=new ethers.JsonRpcProvider('https://polygon-bor-rpc.publicnode.com');
-        const bal=Number(ethers.formatEther(await provider.getBalance(saved))).toFixed(3);
-        let nexBal='0';
-        try{
-          const c=new ethers.Contract(NEX_ADDR,['function balanceOf(address) view returns (uint256)'],provider);
-          nexBal=Number(ethers.formatEther(await c.balanceOf(saved))).toLocaleString();
-        }catch(e){}
-        let usdtBal='0';
-          try{const u=new ethers.Contract(USDT_ADDR,USDT_ABI,provider);usdtBal=Number(ethers.formatUnits(await u.balanceOf(saved),6)).toLocaleString();}catch(e){}
-          showWallet(saved,bal,nexBal,usdtBal,parseInt(chainId,16));
-      }
-    }catch(e){}
+/* ── subject router (same as subjects.py) ── */
+function subjectOf(text){
+  const t=String(text||'').toLowerCase();
+  let best=null,bestScore=0;
+  for(const sid in SUBJECTS){
+    let sc=0;
+    for(const kw of SUBJECTS[sid].kw) if(t.includes(String(kw).toLowerCase())) sc++;
+    if(sc>bestScore){bestScore=sc;best=sid;}
   }
-})();
+  return best;
+}
+const CAT_TH={life:'ชีวิต',stem:'วิทย์/เทค',dev:'พัฒนา',hack:'แฮ็ก/ป้องกัน',trading:'การเทรด/การเงิน',chain:'บล็อกเชน',ai:'AI',health:'สุขภาพ',money:'หาเงิน',gap:'นวัตกรรม/โอกาส',edu:'การศึกษา'};
 
-// Listen for account/chain changes
-if(window.ethereum){
-  window.ethereum.on('accountsChanged',()=>location.reload());
-  window.ethereum.on('chainChanged',()=>location.reload());
+/* ── local brain (fallback เมื่อ bridge ปิด) ── */
+function localBrain(msg){
+  const m=String(msg).toLowerCase();
+  const rm=msg.match(/^(จำว่า|จำไว้|remember)[:\s]+(.+)/i);
+  if(rm){ saveMemory('local',rm[2].trim(),'—'); return '🧠 จดจำแล้ว: "'+rm[2].trim()+'" (ลงสมุดบันทึกความทรงจำ)'; }
+  const subj=subjectOf(msg);
+  if(/สวัสดี|hello|hi|hey|ดี|ทัก/.test(m)){
+    const h=new Date().getHours();
+    return (h<12?'☀️ สวัสดีตอนเช้า':h<18?'🌤 สวัสดีตอนบ่าย':'🌙 สวัสดีตอนค่ำ')+'ครับ '+NAME()+' 🐉 ผม Yuri — รู้ 12,788 วิชา เรียกใช้สมอง Gemma 4 ได้ ถ้าเปิด bridge\n\nพิมพ์ "ทำอะไรได้" ดูความสามารถ หรือกด 👍 ท้ายคำตอบเพื่อจำไว้ถาวร';
+  }
+  if(/ทำอะไรได้|ช่วยอะไร|help|ability|ความสามารถ/.test(m))
+    return '🐉 สิ่งที่ผมทำได้:\n• ตอบตาม 12,788 วิชา (Gemma 4 เรียบเรียง ถ้าเปิด bridge)\n• จดจำ "จำว่า ..." ลงสมุดบันทึกความทรงจำ\n• จำคำตอบที่คุณกด 👍 ไว้ ตอบได้ถูกต้องครั้งหน้า\n• เลือกวิชาได้ที่แถบข้าง (คลิก chip)\n💡 เปิด bridge: python yuri_rag.py --serve --port 8765';
+  if(/วิชา|subject|syllabus/.test(m)){
+    const subj=subjectOf(m);
+    return 'ผมจัดความรู้เป็น '+Object.keys(SUBJECTS).length+' วิชา'+(subj?' — กำลังถามเรื่อง "'+SUBJECTS[subj].ts+'" (หมวด '+CAT_TH[SUBJECTS[subj].cat]+')':'')+'\nแถบข้างแสดงรายวิชาทั้งหมด เลือกได้เลย';
+  }
+  if(subj) return '🧭 เรื่องนี้อยู่ในวิชา "'+SUBJECTS[subj].ts+'" ('+CAT_TH[SUBJECTS[subj].cat]+')\nถ้าเปิด bridge (Gemma 4) ผมจะตอบละเอียดกว่าค่า API และจำคำตอบถูกไว้ — ถ้ายังต้องตอบเอง แนะนำเปิดเรียงลำดับวัตถุ/สาเหตุ/วิธีแก้ หรือกด 👍 ให้จำไว้นะครับ';
+  return '🤔 ผมยังต้องใช้สมอง Gemma 4 (bridge) ตอบเรื่องนี้แบบลึก\n• เปิด bridge: ที่โฟลเดอร์ nexus-twin/python รัน  python yuri_rag.py --serve --port 8765\nถ้าเปิดแล้วให้พิมพ์ใหม่ได้เลย — หรือพิมพ์ "ทำอะไรได้" ดูความสามารถอื่น';
 }
 
-/* ═══════ PRESALE ═══════ */
-const PS_ADDR='0xB0169b1654bd41Fb34d0bf7c0cE11673040772df';
-const USDT_ADDR='0xc2132D05D31c914a87C6611C10748AEb04B58e8F';
-const PS_ABI=[
-  'function ROUNDS() view returns (uint256)',
-  'function currentRound() view returns (uint8)',
-  'function perRoundCap() view returns (uint256)',
-  'function roundSold(uint8) view returns (uint256)',
-  'function priceOfUSDT(uint8) view returns (uint256)',
-  'function priceOfPOL(uint8) view returns (uint256)',
-  'function quote(uint256,bool) view returns (uint256,uint8)',
-  'function buyWithUSDT(uint256)',
-  'function buyWithPOL(uint256) payable',
-];
-const USDT_ABI=[
-  'function balanceOf(address) view returns (uint256)',
-  'function approve(address,uint256) returns (bool)',
-  'function decimals() view returns (uint8)',
-];
-const SCALE=BigInt(10**18);
-let _psData={};
+/* ── local memory notebook (on-device) ── */
+function memKey(){return 'yuri_mem_'+encBase(subjectOfLast());}
+function memUser(){const u=localStorage.getItem('yuri_user')||'';return u;}
+let _memUserBare='';
+function encBase(s){return String(s||'general');}
+function loadAllMem(){
+  const out={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.startsWith('yuri_mem_')) out[k.slice(9)]=JSON.parse(localStorage.getItem(k)||'[]');
+  }
+  return out;
+}
+function saveMemory(subject,question,answer){
+  const k='yuri_mem_'+(subject||'general');
+  const arr=JSON.parse(localStorage.getItem(k)||'[]');
+  arr.push({q:question,a:answer,t:Date.now()});
+  localStorage.setItem(k,JSON.stringify(arr.slice(-100)));
+  renderMemoryList();
+}
+function renderMemoryList(){
+  const all=loadAllMem(); let n=0; const el=document.getElementById('memoryList'); let html='';
+  for(const subj in all){ const arr=all[subj]; n+=arr.length;
+    html += '<div class="sub" style="margin:6px 0 2px">'+esc(SUBJECTS[subj]?SUBJECTS[subj].ts:subj)+' ('+arr.length+')</div>';
+    const recent=arr.slice(-3).reverse();
+    for(const e of recent)
+      html += '<div class="mem-item"><div class="q">'+esc(e.q)+'</div>'+(e.a&&e.a!=='—'?'<div class="a">'+esc(String(e.a).slice(0,80))+'</div>':'')+'</div>';
+  }
+  el.innerHTML=html||'<div class="muted">ยังไม่มีบันทึก — ถามแล้วกด 👍 ให้ผมจำ</div>';
+  document.getElementById('nbook').textContent=n+' บันทึก';
+  document.getElementById('memCount').textContent=Object.keys(all).length+' วิชา';
+}
+function saveName(){const v=document.getElementById('memUserName').value.trim();if(v){localStorage.setItem('yuri_user',v);toast('✓ บันทึกชื่อ "'+v+'" แล้ว');}}
+function exportMem(){
+  const d={exported:new Date().toISOString(),user:localStorage.getItem('yuri_user')||'',mem:loadAllMem(),history:_history};
+  const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='yuri-memory-backup.json';a.click();
+  toast('💾 เอ็กซ์พอร์ตสมุดบันทึกแล้ว');
+}
+function importMem(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    if(d.user)localStorage.setItem('yuri_user',d.user);
+    if(d.mem)for(const k in d.mem)localStorage.setItem('yuri_mem_'+k,JSON.stringify(d.mem[k]));
+    if(d.history)_history=d.history;
+    document.getElementById('memUserName').value=localStorage.getItem('yuri_user')||'';
+    renderMemoryList();toast('📂 นำเข้าสำเร็จ');renderChat();
+  }catch(e){toast('ไฟล์ไม่ถูกต้อง');}};
+  r.readAsText(f);inp.value='';
+}
 
-async function psLoad(){
-  try{
-    const p=new ethers.JsonRpcProvider('https://polygon-bor-rpc.publicnode.com');
-    const c=new ethers.Contract(PS_ADDR,PS_ABI,p);
-    const rounds=Number(await c.ROUNDS());
-    const cur=Number(await c.currentRound());
-    const cap=Number(ethers.formatEther(await c.perRoundCap()));
-    const priceUSDT=Number(ethers.formatUnits(await c.priceOfUSDT(cur),6));
-    const pricePOL=Number(ethers.formatEther(await c.priceOfPOL(cur)));
-    let sold=0;
-    try{ sold=Number(ethers.formatEther(await c.roundSold(cur))); }catch(e){}
-    const left=Math.max(0,cap-sold);
-    _psData={rounds,cur,cap,priceUSDT,pricePOL,sold,left};
-
-    document.getElementById('psPrice').textContent='1 NEX = $'+priceUSDT.toFixed(4);
-    document.getElementById('psDetails').innerHTML=
-      '<strong>'+rounds+'</strong> รอบ · <strong>'+cap.toLocaleString()+'</strong> NEX ต่อรอบ · ราคา USDT = <strong>$'+priceUSDT.toFixed(4)+'</strong> · POL = <strong>'+pricePOL.toFixed(6)+' POL</strong>';
-
-    let rh='';
-    for(let i=0;i<rounds;i++){
-      const s=Number(ethers.formatEther(await c.roundSold(i).catch(()=>0n)));
-      const pct=Math.min(100,Math.round(s/cap*100));
-      const isCur=i===cur;
-      rh+='<div style="background:'+(isCur?'var(--acc)':'var(--panel2)')+';border-radius:10px;padding:.6rem;text-align:center;border:1px solid '+(isCur?'var(--acc)':'var(--line)')+'"><div style="font-size:.7rem;color:'+(isCur?'#fff':'var(--txt3)')+'">Round '+i+'</div><div style="font-weight:700;font-size:.85rem;color:'+(isCur?'#fff':'var(--txt)')+'">'+pct+'%</div><div style="height:4px;background:var(--line);border-radius:2px;margin-top:.3rem"><div style="height:100%;width:'+pct+'%;background:'+(isCur?'#fff':'var(--acc)')+';border-radius:2px"></div></div></div>';
+/* ── subjects panel ── */
+function renderSubjects(filter){
+  const el=document.getElementById('subjectList');let html='';const q=(filter||'').toLowerCase();
+  const cats={};
+  for(const sid in SUBJECTS){
+    const s=SUBJECTS[sid];
+    const hit=!q||s.ts.toLowerCase().includes(q)||s.en.toLowerCase().includes(q)||String(s.kw).toLowerCase().includes(q);
+    if(hit)(cats[s.cat]=cats[s.cat]||[]).push(sid);
+  }
+  for(const c in cats){
+    html+='<div class="cat-row">'+CAT_TH[c]+'</div>';
+    for(const sid of cats[c]){
+      const s=SUBJECTS[sid];
+      html+='<span class="subject-chip'+(sid===_selSubj?' on':'')+'" onclick="selectSubj(\''+sid+'\')">'+(s.sNo||'')+esc(s.ts)+'</span>';
     }
-    document.getElementById('psRounds').innerHTML=rh;
-    document.getElementById('psRound').textContent='Round '+cur+'/'+rounds;
-    document.getElementById('psLeft').textContent=left.toLocaleString()+' NEX';
-    document.getElementById('psDetails').innerHTML+=' · เหลือรอบนี้: <strong>'+left.toLocaleString()+'</strong> NEX';
+  }
+  el.innerHTML=html||'<div class="muted">ไม่มีวิชาที่ตรง</div>';
+  document.getElementById('subjectTotal').textContent=Object.keys(SUBJECTS).length;
+}
+function selectSubj(sid){
+  _selSubj=_selSubj===sid?null:sid;
+  renderSubjects(document.getElementById('subjectSearch').value);
+  const s=_selSubj?SUBJECTS[_selSubj]:null;
+  toast(s?'🎯 เลือกวิชา "'+s.ts+'" แล้ว — ถามได้เลย':'เลือกวิชาแล้ว');
+  if(s)addMsg('ai','🎯 มาเริ่มหัวข้อ "'+s.ts+'" ('+CAT_TH[s.cat]+') กันครับ — ถามอะไรก็ได้เลย', 'subject');
+}
+let _subjTimer;
+document.getElementById('subjectSearch').addEventListener('input',e=>{clearTimeout(_subjTimer);_subjTimer=setTimeout(()=>renderSubjects(e.target.value),120);});
 
-    psEstimate();
+/* ── bridge (Gemma 4) ── */
+async function checkBridge(){
+  _checking=true;
+  setBrain('กำลังเช็คสมอง...',false);
+  try{
+    const c=new AbortController();const to=setTimeout(()=>c.abort(),3500);
+    const r=await fetch(BRIDGE+'/status',{signal:c.signal});
+    clearTimeout(to);
+    const d=await r.json();
+    _bridge=!!d.loaded;
+    setBrain(_bridge?'Gemma 4 พร้อม':(d.loaded? 'Gemma 4 พร้อม':'สมองในเครื่อง (เปิด bridge เพื่อ Gemma)'),_bridge);
   }catch(e){
-    document.getElementById('psDetails').textContent='ไม่สามารถเชื่อมต่อ contract ได้';
+    _bridge=false;
+    setBrain('สมองในเครื่อง (offline)','offline');
   }
+  _checking=false;
 }
-
-function psEstimate(){
-  const n=Number(document.getElementById('psAmount').value)||0;
-  const pay=document.getElementById('psPay').value;
-  if(n<100||!_psData.cur){document.getElementById('psCost').textContent='—';return;}
-  const cost=pay==='USDT'? n*_psData.priceUSDT : n*_psData.pricePOL;
-  document.getElementById('psCost').textContent=cost.toFixed(pay==='USDT'?4:6)+' '+pay;
+function setBrain(txt,cls){
+  document.getElementById('brainLabel').textContent=txt;
+  document.getElementById('brainPill').className='pill'+((cls===true)?' ok':(cls==='offline'?'':''));
 }
-
-let _buying=false;
-async function psBuy(){
-  if(!window.ethereum||!window._myAddr){alert('เชื่อม MetaMask ก่อน');return;}
-  const n=Number(document.getElementById('psAmount').value)||0;
-  if(!Number.isFinite(n)||n<100){alert('ขั้นต่ำ 100 NEX');return;}
-  if(n>1000000000){alert('สูงสุด 1,000,000,000 NEX');return;}
-  if(_buying){return;}
-  _buying=true;
-  const pay=document.getElementById('psPay').value;
-  const btn=document.getElementById('psBuyBtn');
-  const status=document.getElementById('psStatus');
-
+async function askBridge(msg){
   try{
-    const provider=new ethers.BrowserProvider(window.ethereum);
-    const signer=await provider.getSigner();
-    const c=new ethers.Contract(PS_ADDR,PS_ABI,signer);
-    const amt=ethers.parseEther(String(n));
-
-    if(pay==='USDT'){
-      status.textContent='⏳ กำลังอนุมัติ USDT...';
-      btn.textContent='⏳ กำลังอนุมัติ...';
-      btn.style.opacity='.5';btn.style.pointerEvents='none';
-      const tk=new ethers.Contract(USDT_ADDR,USDT_ABI,signer);
-      const costResult=await c.quote(amt,false);
-      const cost=costResult[0];
-      const tx1=await tk.approve(PS_ADDR,cost);
-      await tx1.wait();
-      status.textContent='⏳ กำลังซื้อ NEX...';
-      btn.textContent='⏳ กำลังซื้อ...';
-      const tx2=await c.buyWithUSDT(amt);
-      await tx2.wait();
-    }else{
-      status.textContent='⏳ กำลังซื้อด้วย POL...';
-      btn.textContent='⏳ กำลังซื้อ...';
-      btn.style.opacity='.5';btn.style.pointerEvents='none';
-      const costResult=await c.quote(amt,true);
-      const cost=costResult[0];
-      const tx=await c.buyWithPOL(amt,{value:cost,gasLimit:600000n});
-      await tx.wait();
-    }
-
-    status.textContent='✅ ซื้อสำเร็จ!';
-    btn.textContent='✅ สำเร็จ';
-    btn.style.background='var(--good)';
-    psLoad();
-    _buying=false;
-    setTimeout(()=>{btn.textContent='🛒 ซื้อ NEX';btn.style.background='';btn.style.opacity='1';btn.style.pointerEvents='';},3000);
-  }catch(e){
-    const msg=String(e.message||e);
-    if(msg.includes('user rejected')||msg.includes('User denied')){status.textContent='❌ ผู้ใช้ยกเลิก';}
-    else if(msg.includes('insufficient funds')){status.textContent='❌ เงินไม่พอ';}
-    else{status.textContent='❌ ล้มเหลว: '+msg.slice(0,50);}
-    btn.textContent='🛒 ซื้อ NEX';btn.style.opacity='1';btn.style.pointerEvents='';
-    _buying=false;
+    const c=new AbortController();const to=setTimeout(()=>c.abort(),180000);
+    const r=await fetch(BRIDGE+'/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg}),signal:c.signal});
+    clearTimeout(to);
+    const d=await r.json();
+    if(d&&d.reply)return {text:d.reply,subject:d.subject,via:'gemma'+(d.has_memory?'·ความจำ':'·vault')};
+  }catch(e){}
+  return null;
+}
+function feedback(subject,question,answer,good){
+  if(_bridge){
+    fetch(BRIDGE+'/api/feedback',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject,question,answer,good:true})}).catch(()=>{});
   }
+  const subj=subject||subjectOf(question)||'general';
+  const k='yuri_mem_'+subj;
+  const arr=JSON.parse(localStorage.getItem(k)||'[]');
+  arr.push({q:question,a:answer,t:Date.now()});
+  localStorage.setItem(k,JSON.stringify(arr.slice(-100)));
+  toast(good?'👍 จดลงสมุดบันทึกแล้ว — ครั้งหน้าจะตอบตามนี้':'👎 พลาด — ลองถามใหม่อีกครั้ง');renderMemoryList();
 }
 
-// Auto-load presale on page load
-psLoad();
+/* ── chat render ── */
+function addMsg(role,text,via,subject,question){
+  const msg={role,text,via,subject,question};
+  _history.push(msg);if(_history.length>200)_history.shift();
+  const idx=_history.length-1;
+  const box=document.getElementById('chatBox');
+  const v=via?'<span class="via">'+esc(via)+'</span>':'';
+  const acts=role==='ai'?`<span class="acts"><button onclick="fbIdx(${idx},true)">👍 จำไว้</button><button class="ghost" onclick="fbIdx(${idx},false)">👎</button></span>`:'';
+  const who=role==='user'?esc(NAME()):'🐉 Yuri';
+  document.getElementById('typingEl')?.remove();
+  box.insertAdjacentHTML('beforeend','<div class="msg '+role+'"><span class="who">'+who+v+'</span><span class="bub">'+esc(text)+'</span>'+acts+'</div>');
+  box.scrollTop=box.scrollHeight;
+}
+function renderChat(){ // rebuild full from history
+  const box=document.getElementById('chatBox');let html='';
+  _history.forEach((m,i)=>{
+    const v=m.via?'<span class="via">'+esc(m.via)+'</span>':'';
+    const who=m.role==='user'?esc(NAME()):'🐉 Yuri';
+    const acts=m.role==='ai'?`<span class="acts"><button onclick="fbIdx(${i},true)">👍 จำไว้</button></span>`:'';
+    html+='<div class="msg '+m.role+'"><span class="who">'+who+v+'</span><span class="bub">'+esc(m.text)+'</span>'+acts+'</div>';
+  });
+  box.innerHTML=html||'<div class="typing">สวัสดีครับ '+esc(NAME())+' พิมพ์ข้อความได้เลย 🐉</div>';
+  box.scrollTop=box.scrollHeight;
+}
+function fbIdx(i,good){const m=_history[i];if(!m||m.role!=='ai')return;feedback(m.subject,m.question,m.text,good);}
+
+/* ── send ── */
+let _sending=false;
+async function send(){
+  if(_sending)return;
+  const inp=document.getElementById('chatInput');
+  const msg=inp.value.trim().slice(0,2000);
+  if(!msg)return;
+  inp.value='';inp.style.height='auto';
+  addMsg('user',msg,null,_selSubj,msg);
+  const subj=subjectOf(msg);
+  addTyping();
+  let via='local';
+  let reply=null;
+  if(_bridge){const r=await askBridge(msg);if(r){reply=r.text;via='gemma'+(r.has_memory?'·ความจำ':'')+(r.subject&&SUBJECTS[r.subject]?'·'+SUBJECTS[r.subject].ts:'');}}
+  if(!reply)reply=localBrain(msg);
+  document.getElementById('typingEl')?.remove();
+  addMsg('ai',reply,via,subj||_selSubj,msg);
+  if(_voiceOn)speak(reply);
+}
+function addTyping(){
+  const box=document.getElementById('chatBox');
+  if(!document.getElementById('typingEl'))box.insertAdjacentHTML('beforeend','<div class="typing" id="typingEl">🐉 กำลังคิด...</div>');
+  box.scrollTop=box.scrollHeight;
+}
+
+/* ── voice ── */
+function speak(text){
+  if(!_voiceOn||!('speechSynthesis'in window))return;
+  const clean=text.replace(/[🐉🧠⛰🏔📚🔬🧮📋🕒🤔⚠️✅❌💡🎯🧭🙌👍👎➤🤖🪪🔐🏠👩💻😄😊🌤☀️🌙⚙️💾📂]/gu,'').slice(0,300);
+  const u=new SpeechSynthesisUtterance(clean);u.lang='th-TH';u.rate=1.05;
+  speechSynthesis.cancel();speechSynthesis.speak(u);
+}
+function toggleVoice(){_voiceOn=!_voiceOn;document.getElementById('voiceBtn').style.borderColor=_voiceOn?'var(--good)':'';toast(_voiceOn?'🔊 เปิดเสียงตอบ':'🔇 ปิดเสียง');}
+function toggleMic(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast('เบราว์เซอร์นี้ไม่รองรับไมค์ (ใช้ Chrome/Edge)');return;}
+  if(_rec){_rec.stop();_rec=null;document.getElementById('micBtn').style.borderColor='';return;}
+  _rec=new SR();_rec.lang='th-TH';_rec.interimResults=false;
+  _rec.onresult=e=>{const t=e.results[0][0].transcript;document.getElementById('chatInput').value=t;send();};
+  _rec.onend=()=>{_rec=null;document.getElementById('micBtn').style.borderColor='';};
+  _rec.onerror=()=>{toast('ไม่ได้ยิน — ลองใหม่');_rec=null;};
+  _rec.start();document.getElementById('micBtn').style.borderColor='var(--bad)';
+  toast('🎤 กำลังฟัง... พูดได้เลย');
+}
+
+/* ── init ── */
+function subjectOfLast(){return _selSubj||'general';}
+
+/* ── NEX32 live coin pill (อ่านนิดหน่อยจาก chain ไม่ต้องพึ่ง ethers) ── */
+const NEX_SALE='0xB1293Ed631e4bDf568e91727F78fAd170cC58304';
+const NEX_RPC='https://polygon-bor-rpc.publicnode.com';
+async function rpcRead(to,data){
+  const r=await fetch(NEX_RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_call',params:[{to,data},'latest']})});
+  const j=await r.json();
+  if(j.error) throw new Error(j.error.message||'rpc');
+  return BigInt(j.result);
+}
+async function refreshCoinPill(){
+  const el=document.getElementById('coinTxt'); if(!el) return;
+  try{
+    const sale='0xB1293Ed631e4bDf568e91727F78fAd170cC58304';
+    const enc=(sel,hexArg)=>'0x'+sel+(hexArg?hexArg.replace(/^0x/,'').padStart(64,'0'):'');
+    const usdPrice=Number(await rpcRead(sale,enc('c8603fce','00')))/1e6;
+    const sold=Number(await rpcRead(sale,enc('6e7e6558')))/1e18;
+    const total=Number(await rpcRead(sale,enc('1eec71fb')))/1e18;
+    el.textContent='$'+usdPrice.toFixed(6)+' · '+Math.floor(sold).toLocaleString()+'/'+Math.floor(total).toLocaleString();
+  }catch(e){ el.textContent='LIVE'; }
+}
+/* ── ขุดความรู้บนหน้าแรก (ai-pipe) ── */
+function escHome(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function renderPipeHome(){
+  const sel=document.getElementById('pipeBrainHome'); if(!sel) return;
+  if(!sel.options.length){
+    sel.innerHTML=AIPipe.brainList().map(b=>`<option value="${b.id}" ${b.id===AIPipe.cfg.brain?'selected':''}>${b.name}</option>`).join('');
+  }
+  const keyRow=document.getElementById('pipeKeyRow');
+  if(keyRow) keyRow.style.display=(AIPipe.cfg.brain==='local'||AIPipe.cfg.brain==='ollama')?'none':'flex';
+  const g=document.getElementById('pipeGateHome');
+  if(g) g.innerHTML=AIPipe.lv3Status().ok?`<span style="color:var(--good)">✅ ${escHome(AIPipe.lv3Status().msg)}</span>`:`<span style="color:var(--bad)">${escHome(AIPipe.lv3Status().msg)} <a href="app/index.html" style="color:var(--acc2)">ปลดล็อกที่นี่ →</a></span>`;
+  renderMinedHome();
+}
+function renderMinedHome(){
+  const el=document.getElementById('minedListHome'); if(!el) return;
+  const arr=AIPipe.mined();
+  el.innerHTML=arr.length? arr.slice(-5).reverse().map(c=>
+    `<div class="mem-item"><div class="q">⛏ ${escHome(c.title)} <span class="sub" style="color:var(--acc)">+${c.reward_nex} NEX</span></div>
+     <div class="a">${escHome(String(c.summary).slice(0,110))}</div>
+     <div class="sub">${escHome(String(c.keywords||[]).slice(0,70))}</div></div>`).join('')
+    : '<div class="muted">ยังไม่มี — ขุดงานแรกเลย (+NEX จาก Mining Pool 300M)</div>';
+}
+async function doMineHome(offline){
+  const text=document.getElementById('mineTextHome').value.trim();
+  const title=document.getElementById('mineTitleHome').value.trim();
+  const btn=document.getElementById('mineBtnHome');
+  const res=document.getElementById('mineResultHome');
+  if(offline){
+    const card=AIPipe.offlineMine({title,text});
+    AIPipe._pushMined(card);
+    res.textContent='🛠 การ์ดออฟไลน์ +'+card.reward_nex+' NEX'; renderMinedHome(); renderPipeHome(); return;
+  }
+  if(btn) btn.disabled=true;
+  res.textContent='⛏️ ขุดด้วย '+AIPipe.BRAINS[AIPipe.cfg.brain].name+'...';
+  const r=await AIPipe.mine({title,text,el:btn});
+  res.textContent=r.ok?('🎉 +'+r.card.reward_nex+' NEX ✅'):r.msg;
+  res.style.color=r.ok?'var(--good)':'var(--bad)';
+  renderMinedHome(); renderPipeHome();
+}
+renderPipeHome(); refreshCoinPill();
+document.getElementById('memUserName').value=localStorage.getItem('yuri_user')||'';
+renderSubjects('');
+renderMemoryList();
+checkBridge();
+document.getElementById('ts').textContent=new Date().toLocaleString('th-TH');
+setTimeout(()=>{if(!_history.length)addMsg('ai','สวัสดีครับ '+NAME()+' 🐉 ผม Yuri — AI คู่ชีวิตของคุณ (สมอง Gemma 4 + 12,788 วิชา + สมุดบันทึกความทรงจำ)\n\nลองพิมพ์ "ทำอะไรได้" ดู หรือถามเรื่องที่อยากรู้ มุมขวามีรายวิชาให้เลือกได้เลยครับ','yuri');},400);
 </script>
-
 </body>
 </html>
