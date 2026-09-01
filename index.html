@@ -147,7 +147,7 @@ footer a{color:var(--acc2)}
       <h3>🧠 สมอง AI <span class="m" id="memCount"></span></h3>
       <div id="subjectSearchWrap"><input id="subjectSearch" placeholder="ค้นหาวิชา เช่น ภาษา, การเทรด..."></div>
       <div class="subject-list" id="subjectList"></div>
-      <p class="muted" style="margin-top:8px">Yuri รู้จัก <b id="subjectTotal">12788</b> วิชา — พิมพ์ถามได้เลย มี Gemma เรียบเรียงคำตอบให้</p>
+      <p class="muted" style="margin-top:8px">Yuri รู้จัก <b id="subjectTotal">12795</b> วิชา — พิมพ์ถามได้เลย มี Gemma เรียบเรียงคำตอบให้</p>
     </div>
 
     <div class="card">
@@ -175,7 +175,7 @@ footer a{color:var(--acc2)}
 <script src="app/ai-pipe.js"></script>
 <script src="subjects.js"></script>
 <script>
-/* ═══════════ YURI CHAT v2 — Gemma 4 bridge + local brain + 12,788 วิชา + สมุดบันทึก ═══════════ */
+/* ═══════════ YURI CHAT v2 — Gemma 4 bridge + local brain + 12,795 วิชา + สมุดบันทึก ═══════════ */
 const BRIDGE='http://127.0.0.1:8765';
 let _bridge=false,_checking=true,_voiceOn=false,_rec=null,_selSubj=null;
 let _history=[];
@@ -207,10 +207,10 @@ function localBrain(msg){
   const subj=subjectOf(msg);
   if(/สวัสดี|hello|hi|hey|ดี|ทัก/.test(m)){
     const h=new Date().getHours();
-    return (h<12?'☀️ สวัสดีตอนเช้า':h<18?'🌤 สวัสดีตอนบ่าย':'🌙 สวัสดีตอนค่ำ')+'ครับ '+NAME()+' 🐉 ผม Yuri — รู้ 12,788 วิชา เรียกใช้สมอง Gemma 4 ได้ ถ้าเปิด bridge\n\nพิมพ์ "ทำอะไรได้" ดูความสามารถ หรือกด 👍 ท้ายคำตอบเพื่อจำไว้ถาวร';
+    return (h<12?'☀️ สวัสดีตอนเช้า':h<18?'🌤 สวัสดีตอนบ่าย':'🌙 สวัสดีตอนค่ำ')+'ครับ '+NAME()+' 🐉 ผม Yuri — รู้ 12,795 วิชา เรียกใช้สมอง Gemma 4 ได้ ถ้าเปิด bridge\n\nพิมพ์ "ทำอะไรได้" ดูความสามารถ หรือกด 👍 ท้ายคำตอบเพื่อจำไว้ถาวร';
   }
   if(/ทำอะไรได้|ช่วยอะไร|help|ability|ความสามารถ/.test(m))
-    return '🐉 สิ่งที่ผมทำได้:\n• ตอบตาม 12,788 วิชา (Gemma 4 เรียบเรียง ถ้าเปิด bridge)\n• จดจำ "จำว่า ..." ลงสมุดบันทึกความทรงจำ\n• จำคำตอบที่คุณกด 👍 ไว้ ตอบได้ถูกต้องครั้งหน้า\n• เลือกวิชาได้ที่แถบข้าง (คลิก chip)\n💡 เปิด bridge: python yuri_rag.py --serve --port 8765';
+    return '🐉 สิ่งที่ผมทำได้:\n• ตอบตาม 12,795 วิชา (Gemma 4 เรียบเรียง ถ้าเปิด bridge)\n• จดจำ "จำว่า ..." ลงสมุดบันทึกความทรงจำ\n• จำคำตอบที่คุณกด 👍 ไว้ ตอบได้ถูกต้องครั้งหน้า\n• เลือกวิชาได้ที่แถบข้าง (คลิก chip)\n💡 เปิด bridge: python yuri_rag.py --serve --port 8765';
   if(/วิชา|subject|syllabus/.test(m)){
     const subj=subjectOf(m);
     return 'ผมจัดความรู้เป็น '+Object.keys(SUBJECTS).length+' วิชา'+(subj?' — กำลังถามเรื่อง "'+SUBJECTS[subj].ts+'" (หมวด '+CAT_TH[SUBJECTS[subj].cat]+')':'')+'\nแถบข้างแสดงรายวิชาทั้งหมด เลือกได้เลย';
