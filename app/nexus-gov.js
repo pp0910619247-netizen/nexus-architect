@@ -87,7 +87,7 @@ const NexusGov = {
   /* ═══ AI LIFECYCLE (ไข่ → ลูกนก → นกบิน → มังกร) ═══ */
   lifecycle() {
     const user = JSON.parse(localStorage.getItem('nx_user') || '{"level":0}');
-    const twin = JSON.parse(localStorage.getItem('twin_mem') || '{"xp":0,"born":Date.now()}');
+    const twin = JSON.parse(localStorage.getItem('twin_mem') || '{"xp":0,"born":0}');
     const days = (Date.now() - (twin.born || Date.now())) / 86400000;
     if (user.level >= 3) return { stage: 'dragon', icon: '🐉', name: 'มังกร', can: ['เขียนโค้ด', 'วิจัย', 'เสนอปัญหา', 'ทุกอย่าง'] };
     if (user.level >= 2) return { stage: 'bird', icon: '🦅', name: 'นกบิน', can: ['รับงานบน Mountain', 'สร้างรายได้'] };

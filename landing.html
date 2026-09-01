@@ -425,7 +425,7 @@ document.querySelectorAll(".reveal").forEach(el=>obs.observe(el));
       if(j2.result){
         const pol=Number(j2.result)/1e18*nex;
         const e1=document.getElementById('lMinNex'); if(e1)e1.textContent=pol.toFixed(3);
-        const e2=document.getElementById('lMinUsd'); if(e2)e2.textContent='$'+(pol*usd).toFixed(2);
+        const e2=document.getElementById('lMinUsd'); if(e2)e2.textContent='$'+(usd*nex).toFixed(2);
       }
     }
   }catch(e){}

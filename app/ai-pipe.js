@@ -22,7 +22,7 @@ const AIPipe = {
 
   /* ── ผู้ใช้/ระดับ ── */
   user() { return JSON.parse(localStorage.getItem('nx_user') || '{"level":0}'); },
-  LEVEL_NAMES = ['เงา Shadow', 'มนุษย์ Human', 'พลเมือง Citizen', 'อธิปไตย Sovereign'],
+  LEVEL_NAMES: ['เงา Shadow', 'มนุษย์ Human', 'พลเมือง Citizen', 'อธิปไตย Sovereign'],
 
   /* ── KYC Lv.3 (Bank-Grade) — ต้องผ่าน KYC จริง (nx_identity.kycScore) + wallet จริง ── */
   lv3Status() {
