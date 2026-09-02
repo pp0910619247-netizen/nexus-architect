@@ -135,6 +135,7 @@
   <a href="waitlist.html" style="text-decoration:none"><button class="ghost">✨ Waitlist</button></a>
   <button class="ghost" id="walletBtn">🔗 Connect Wallet</button>
 </header>
+<div id="walletHint" style="display:none;max-width:720px;margin:8px auto 0;padding:0 12px"></div>
 
 <main>
 <section class="pg" data-p="more">
@@ -173,6 +174,18 @@
       <button style="width:100%;margin-top:8px" onclick="startKYC()">🪪 ยืนยันบัตรประชาชน + แสกนหน้า (Lv.2 REAL)</button>
       <p class="muted" id="identitySummary" style="margin-top:8px"></p>
       <button class="ghost" style="width:100%;margin-top:6px" onclick="upgradeLevel()">⬆️ ยืนยันระดับถัดไป (simulated)</button>
+      <!-- ══ SOVEREIGN UNLOCK (Phase B) — เกท Lv.1→2→3 + progress ══ -->
+      <div style="margin-top:12px;border-top:1px dashed var(--line);padding-top:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px">
+          <b style="font-size:12px">🛡 Sovereign Unlock (Lv.3)</b>
+          <span id="sovPct" class="num" style="font-size:12px;color:var(--acc)">0%</span>
+        </div>
+        <div style="background:var(--panel2);border-radius:7px;height:12px;margin-top:6px;border:1px solid var(--line)">
+          <div id="sovBar" style="height:100%;background:linear-gradient(90deg,var(--acc),#34d399);border-radius:6px;width:0%;transition:.4s"></div>
+        </div>
+        <div id="sovSteps" style="margin-top:8px;font-size:12px"></div>
+        <div id="sovAction" style="margin-top:6px"></div>
+      </div>
     </div>
 
     <div class="card">
@@ -201,23 +214,42 @@
     </div>
 
     <div class="card">
-      <h3>⛏️ ขุดความรู้ (Mine) <span class="muted" style="font-weight:400;font-size:11px">ต้อง Lv.3 อธิปไตย</span></h3>
+      <h3>⛏️ ขุดความรู้ v2 <span class="muted" style="font-weight:400;font-size:11px">2 โหมด · ต้อง Lv.3 อธิปไตย</span></h3>
       <p class="muted" id="pipeGate" style="font-size:12px"></p>
-      <label>สมอง (ค่ายไหนก็ได้ / GGUF ทั้งหมด)</label>
+      <!-- Mode toggle: 3 ผู้ตัดสิน (AI) / ผู้ใช้ขุดเอง (คน) -->
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <button id="modeAi" class="ghost" style="flex:1" onclick="setMineMode('ai')">🤖 AI ตรวจ 3 เสียง</button>
+        <button id="modeHum" class="ghost" style="flex:1" onclick="setMineMode('human')">✋ ขุดเอง (คน)</button>
+      </div>
+      <div id="gemKeys" style="margin-top:8px;display:none;border:1px dashed var(--line);border-radius:9px;padding:8px">
+        <div class="muted" style="font-size:11px;margin-bottom:4px">🔑 Gemini 3 API (เข้ารหัส AES-GCM บนเครื่อง) — ตรวจความถูกต้อง 3 เสียง</div>
+        <input id="gemK1" placeholder="Gemini API key #1" style="width:100%;margin-bottom:4px" type="password" autocomplete="off">
+        <input id="gemK2" placeholder="Gemini API key #2 (ไม่บังคับ → ข้ามโหวต)" style="width:100%;margin-bottom:4px" type="password" autocomplete="off">
+        <input id="gemK3" placeholder="Gemini API key #3 (ไม่บังคับ → ข้ามโหวต)" style="width:100%;margin-bottom:4px" type="password" autocomplete="off">
+        <button class="ghost" style="width:100%" onclick="saveGemKn()">🔐 บันทึก Gemini keys</button>
+        <span class="muted" id="gemKSet" style="font-size:11px"></span>
+      </div>
+      <div id="humanCfg" style="display:none;margin-top:8px;border:1px dashed var(--line);border-radius:9px;padding:8px">
+        <label>ระดับความยาก (ประเมินด้วยตัวเอง)</label>
+        <input id="mineDiff" type="range" min="1" max="10" value="4" style="width:100%" oninput="document.getElementById('mineDiffLbl').textContent=AIPipe.diffLabel(this.value)">
+        <div class="muted" style="font-size:11px" id="mineDiffLbl">ปานกลาง</div>
+      </div>
+      <label style="margin-top:8px;display:block">สมอง (ช่วย polish / ค่ายอื่น นอกเหนือ Gemini)</label>
       <select id="pipeBrain" style="width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:9px;padding:8px" onchange="pipeBrainChange(this.value)"></select>
       <div id="pipeKeyRow" style="display:none;margin-top:8px">
         <input id="pipeKey" placeholder="API key ของค่ายนี้" style="width:100%" type="password" autocomplete="off">
         <button class="ghost" style="width:100%;margin-top:4px" onclick="pipeSaveKey()">🔐 บันทึก key (เข้ารหัสบนเครื่อง)</button>
       </div>
-      <label style="margin-top:8px">ชื่องาน / ความรู้ของคุณ</label>
+      <label style="margin-top:8px;display:block">ชื่องาน / ความรู้ของคุณ</label>
       <input id="mineTitle" placeholder="เช่น วิธีเทรดหุ้นไทยให้กำไรในตลาดผันผวน" style="width:100%">
-      <label>ความรู้ที่อยาก "ขุด" เป็นการ์ด (ขั้นตอน/ผลลัพธ์ จริงๆ ที่ผ่านมา)</label>
+      <label style="margin-top:4px;display:block">ความรู้ที่อยาก "ขุด" เป็นการ์ด (ขั้นตอน/ผลลัพธ์ จริงๆ ที่ผ่านมา)</label>
       <textarea id="mineText" style="min-height:84px" placeholder="เช่น ผมเจอว่าการใช้ RSI + EMA200 + การตั้ง stop-loss แบบ ATR ช่วยให้..."></textarea>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button style="flex:1" id="mineBtn" onclick="doMine()">⛏️ ขุดความรู้</button>
         <button class="ghost" onclick="doMine(true)">🛠 ออฟไลน์</button>
       </div>
       <p class="muted" id="mineResult" style="font-size:12px;margin-top:8px"></p>
+      <div id="mineAudit" style="margin-top:6px;font-size:11px"></div>
     </div>
   </div>
   <div class="card" id="minedList" style="margin-top:12px">
@@ -361,6 +393,7 @@
       <span class="muted" id="psAddrTxt" style="font-size:11px;font-family:Consolas"></span>
     </div>
     <table id="psStats" style="margin-top:8px"></table>
+    <div id="psNet" class="muted" style="font-size:12px;margin-top:4px"></div>
     <div style="background:var(--panel2);border-radius:8px;height:14px;margin-top:6px;border:1px solid var(--line)">
       <div id="psBar" style="height:100%;background:linear-gradient(90deg,var(--acc),#fbbf24);border-radius:7px;width:0%;transition:.4s"></div>
     </div>
@@ -372,6 +405,32 @@
     </div>
     <p class="muted" id="psEstimate" style="font-size:12px"></p>
     <p class="muted" style="font-size:11px">⚠️ Live: ซื้อด้วย POL บน Polygon Mainnet · เกินเงินคืนอัตโนมัติ · หลังครบ 500M NEX (5 รอบ) ปิด</p>
+  </div>
+
+  <!-- ══ PHASE D: TRUST TIERS (Guest/Verified/Sovereign) ══ -->
+  <div class="card" style="margin-top:12px">
+    <h3>🛡 Trust Tier — คะแนนความน่าเชื่อถือก่อนซื้อ <span class="muted" style="font-weight:400;font-size:11px">มาตรฐานสากล · ข้อมูลบนเครื่องเท่านั้น</span></h3>
+    <div id="trustTiers" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+    <div id="trustBadge" style="margin-top:10px"></div>
+    <p class="muted" style="font-size:11px;margin-top:6px">Buy ปลดล็อกตาม tier: <b>Guest</b> ดูได้อย่างเดียว · <b>Verified</b> (Passkey/Google) ซื้อได้ · <b>Sovereign</b> (KYC+wallet, Lv.3) ซื้อเต็มที่ + แต้มความน่าเชื่อถือสูงสุด</p>
+  </div>
+
+  <!-- ══ PHASE D: OWNERSHIP PROOF ══ -->
+  <div class="card" style="margin-top:12px">
+    <h3>📜 Ownership Proof — หลักฐานเจ้าของ NEX ตรวจเองได้ <span class="muted" style="font-weight:400;font-size:11px">ออน-เชน + เซ็นในเครื่อง</span></h3>
+    <p class="muted" id="proofStatus" style="font-size:12px"></p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button class="ghost" onclick="genOwnershipProof()">🖊 สร้างหลักฐานเป็นเจ้าของ</button>
+      <button class="ghost" onclick="renderOwnershipProof()">🔄</button>
+    </div>
+    <div id="proofOut" style="margin-top:8px;font-size:12px"></div>
+  </div>
+
+  <!-- ══ PHASE D: LOCAL AUDIT LOG ══ -->
+  <div class="card" style="margin-top:12px">
+    <h3>🧾 Audit Log — บันทึกการกระทำในเครื่อง <span class="muted" style="font-weight:400;font-size:11px">localStorage nx_audit_log · ไม่ส่งออก</span></h3>
+    <button class="ghost" onclick="renderAuditLog()">🔄</button>
+    <div id="auditOut" class="muted" style="font-size:12px;margin-top:6px"></div>
   </div>
 
   </section>
@@ -468,7 +527,7 @@ function upgradeLevel(){
 /* ── Identity จริง: Passkey (WebAuthn) + Wallet Signature ── */
 async function realPasskey(){
   const r=await NexusIdentity.registerPasskey();
-  toast(r.msg); if(r.ok){ user.level=Math.max(user.level,1); persist(); renderLevels(); renderIdentitySummary(); }
+  toast(r.msg); if(r.ok){ user.level=Math.max(user.level,1); persist(); renderLevels(); renderIdentitySummary(); renderSovereignProgress(); txLog('passkey',{ok:1}); }
 }
 
 async function googleFlow(){
@@ -478,7 +537,7 @@ async function googleFlow(){
     const init=await NexusIdentity.googleFlow(async(credential)=>{
       const r=await NexusIdentity.verifyGoogleCredential(credential);
       toast(r.msg);
-      if(r.ok){ user.level=Math.max(user.level,1); persist(); renderLevels(); renderIdentitySummary(); }
+      if(r.ok){ user.level=Math.max(user.level,1); persist(); renderLevels(); renderIdentitySummary(); renderSovereignProgress(); }
     });
     if(!init.ok){ toast('⛔ '+init.msg); return; }
     google.accounts.id.prompt(); // One Tap
@@ -486,12 +545,61 @@ async function googleFlow(){
 }
 async function realWallet(){
   const r=await NexusIdentity.walletProof();
-  if(r.ok){ user.level=Math.max(user.level,2); persist(); renderLevels(); }
-  toast(r.msg); renderIdentitySummary();
+  if(r.ok){ user.level=Math.max(user.level,2); persist(); renderLevels(); txLog('wallet_sign',{addr:r.ok&&JSON.parse(localStorage.getItem('nx_identity')||'{}').walletAddress}); }
+  toast(r.msg); renderIdentitySummary(); renderSovereignProgress();
 }
 function renderIdentitySummary(){
   document.getElementById('identitySummary').innerHTML=NexusIdentity.summary();
 }
+
+/* ═══════════ SOVEREIGN UNLOCK (Phase B) — progress 3 ขั้น + เกทปุ่ม ═══════════ */
+function sovState(){
+  const id=JSON.parse(localStorage.getItem('nx_identity')||'{}');
+  const getU=()=>DB.get('user',{level:0})||{level:0};
+  return {
+    human: !!(id.passkeyId||id.google),       // Lv.1: Passkey จริง (เผื่อ Google)
+    wallet: !!(id.walletAddress&&id.walletSig), // Lv.2: เซ็น wallet
+    kyc: Number(id.kycScore||0)>=70,           // Lv.2.5 → Lv.3 gate: KYC score
+    lv3: getU().level>=3,
+  };
+}
+function renderSovereignProgress(){
+  const s=sovState();
+  const done=[s.human,s.wallet,s.kyc].filter(Boolean).length; // 3 ขั้น
+  const pct=Math.round(done/3*100);
+  const barEl=document.getElementById('sovBar'), pctEl=document.getElementById('sovPct');
+  if(barEl) barEl.style.width=pct+'%';
+  if(pctEl) pctEl.textContent=(s.lv3?100:pct)+'%';
+  const stepsEl=document.getElementById('sovSteps');
+  const actionEl=document.getElementById('sovAction');
+  if(!stepsEl) return;
+  const step=(n,label,ok,action)=>({
+    html:`<div style="margin-bottom:4px">${ok?'✅':'○'} <b>${n}. ${label}</b>${ok?` <span class="pos" style="font-size:11px">done</span>`:''}</div>`,
+    need:!ok?action:null
+  });
+  const rows=[
+    step(1,'Passkey จริง (Human Lv.1)',s.human,'<button class="ghost" style="width:100%" onclick="realPasskey()">🔐 ตั้ง Passkey (จม/lม FIDO2)</button>'),
+    step(2,'เซ็น Wallet (Citizen Lv.2)',s.wallet,'<button class="ghost" style="width:100%" onclick="realWallet()">✍️ เซ็น Wallet</button>'),
+    step(3,'KYC บัตร+ใบหน้า (score≥70)',s.kyc,'<button class="ghost" style="width:100%" onclick="startKYC()">🪪 ทำ KYC</button>'),
+  ];
+  stepsEl.innerHTML=rows.map(r=>r.html).join('');
+  let actionHtml='';
+  if(s.lv3) actionHtml='<div style="color:var(--good);font-weight:700">🛡 Sovereign ACTIVE — ปลดล็อกขุดความรู้ / บริหาร/ ซื้อแบบเต็มพิกัด</div>';
+  else{
+    const next=rows.find(r=>r.need);
+    if(next){ actionHtml=next.need; actionHtml+='<div class="muted" style="font-size:11px;margin-top:2px">ทำครบ 3 ขั้น = ยกดับ Lv.3 Sovereign</div>'; }
+    else actionHtml='<button style="width:100%" onclick="unlockSovereign()">⚡ ยืนยันครบขั้น → UNLOCK Lv.3</button>';
+  }
+  actionEl.innerHTML=actionHtml;
+}
+function unlockSovereign(){
+  const s=sovState();
+  if(!(s.human&&s.wallet&&s.kyc)){ toast('ยังทำครบ 3 ขั้นไม่ครบ'); renderSovereignProgress(); return; }
+  const u=DB.get('user',{level:0}); u.level=3; DB.set('user',u); user=u;
+  persist(); renderLevels(); renderSovereignProgress(); renderIdentitySummary();
+  toast('🛡 ขอแสดงความยินดี — คุณคือ Sovereign Level 3 แล้ว!'); renderPipe();
+}
+document.addEventListener('DOMContentLoaded',()=>{ try{renderSovereignProgress()}catch(e){} });
 
 /* ═══════════ TWIN ═══════════ */
 function saveTwin(){
@@ -523,8 +631,8 @@ function vote(id){
   const p=probs.find(x=>x.id===id);
   if(user.level<1){ toast('⛔ ต้อง Level 1 (Human) ถึงจะโหวตได้'); return; }
   if(p.voted){ toast('คุณโหวตปัญหานี้แล้ว (1 vote/คน/ปัญหา)'); return; }
-  p.votes++; p.voted=true;
-  persist(); renderProblems(); checkPeak(); renderHRW(); toast('🗳 +1 vote');
+p.votes++; p.voted=true;
+  persist(); renderProblems(); checkPeak(); renderHRW(); toast('🗳 +1 vote'); txLog('vote',{id});
 }
 
 /* ── Daily Culling: เกินเที่ยงคืนแล้วโหวตไม่ผ่าน 10+ → หายจากภูเขา ── */
@@ -667,18 +775,120 @@ function runSplit(){
     rows.map(x=>`<tr><td>${x[0]}</td><td class="num">${x[1].toLocaleString()}</td><td class="num">${Math.round(x[2]).toLocaleString()}</td></tr>`).join('');
 })();
 
-/* ═══════════ WALLET (ethers CDN stub) ═══════════ */
-document.getElementById('walletBtn').onclick=async()=>{
-  if(typeof window.ethereum==='undefined'){ toast('ยังไม่มี MetaMask — Local Mode ทำงานได้ปกติ'); return; }
+/* ═══════════ WALLET v2 — MetaMask + Network Guard (Phase A) ═══════════ */
+const REQUIRED_CHAIN = 137; // Polygon Mainnet (บังคับสำหรับ presale/market)
+const META_FALLBACK_URL = 'https://metamask.io/download/';
+function hasWalletProvider(){ return typeof window.ethereum!=='undefined'; }
+function fmtAddr(a){ return a?a.slice(0,6)+'…'+a.slice(-4):''; }
+
+async function walletConnect(){
+  if(!hasWalletProvider()){ showWalletFallback(); return; }
   try{
-    const acc=(await window.ethereum.request({method:'eth_requestAccounts'}))[0];
-    window._myAddr=acc;
-    document.getElementById('netBadge').textContent='Wallet: '+acc.slice(0,6)+'…'+acc.slice(-4);
-    document.getElementById('netBadge').style.color='var(--good)';
-    toast('✅ เชื่อม wallet แล้ว — พร้อมใช้ตลาดงาน + on-chain');
-    jobRefresh();
-  }catch(e){ toast('ยกเลิกการเชื่อมต่อ'); }
+    // 1) ขอ access account
+    const accs=await window.ethereum.request({method:'eth_requestAccounts'});
+    if(!accs||!accs[0]){ toast('ไม่มี account — สร้างใน MetaMask ก่อน'); return; }
+    window._myAddr=accs[0];
+    localStorage.setItem('nx_wallet_addr',accs[0]);
+    // 2) ตรวจ network + เช็คชื่อ chain
+    const cid=await window.ethereum.request({method:'eth_chainId'});
+    const net=cid==='0x89'?137:(parseInt(cid,16)||0);
+    if(net!==REQUIRED_CHAIN){ await forceMainnet(); } // ปัดไป Mainnet ถ้าผิด chain
+await renderWalletBadge();
+    txLog('wallet_connect',{addr:accs[0].slice(0,10),net});
+    toast('✅ เชื่อม wallet แล้ว — '+fmtAddr(window._myAddr));
+    renderHome(); jobRefresh();
+  }catch(e){
+    if(String(e&&e.code)==='4001'||/rejected/i.test(String(e.message||e))) toast('ยกเลิกการเชื่อมต่อ');
+    else toast('Wallet error: '+String(e.message||e).slice(0,60));
+  }
+}
+/* ตรวจจับ chain ปัจจุบัน — ถ้าไม่ใช่ Mainnet เตือน + มีปุ่มสลับ */
+async function detectChain(){
+  if(!hasWalletProvider()||!window._myAddr) return null;
+  try{
+    const cid=await window.ethereum.request({method:'eth_chainId'});
+    return parseInt(cid,16)||0;
+  }catch(e){ return null; }
+}
+async function forceMainnet(){
+  try{
+    await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x89'}]});
+    return true;
+  }catch(e){
+    if(String(e&&e.code)==='4902'){ // chain ยังไม่เพิ่ม
+      try{
+        await window.ethereum.request({method:'wallet_addEthereumChain',params:[{
+          chainId:'0x89', chainName:'Polygon Mainnet',
+          nativeCurrency:{name:'POL',symbol:'POL',decimals:18},
+          rpcUrls:['https://polygon-bor-rpc.publicnode.com'], blockExplorerUrls:['https://polygonscan.com']}]});
+        await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x89'}]});
+        return true;
+      }catch(e2){ return false; }
+    }
+    return false;
+  }
+}
+async function renderWalletBadge(){
+  const badge=document.getElementById('netBadge');
+  const btn=document.getElementById('walletBtn');
+  if(btn) btn.textContent = window._myAddr ? '🔗 '+fmtAddr(window._myAddr) : '🔗 Connect Wallet';
+  if(!badge) return;
+  if(!window._myAddr){ badge.textContent='Local Mode'; badge.style.color='var(--dim)'; return; }
+  const cid=await detectChain();
+  if(cid===REQUIRED_CHAIN){ badge.textContent='🟣 Mainnet · '+fmtAddr(window._myAddr); badge.style.color='var(--good)'; }
+  else{ badge.textContent='⚠️ Chain '+cid+' — ต้อง Mainnet'; badge.style.color='var(--bad)'; }
+  return cid;
+}
+/* Guard: ก่อนซื้อ/ส่ง tx — ต้องการ wallet + อยู่ Mainnet */
+async function walletGuard(){
+  if(!hasWalletProvider()){ showWalletFallback(); return {ok:false,msg:'ยังไม่มี MetaMask'}; }
+  if(!window._myAddr){ toast('Connect Wallet ก่อน'); return {ok:false,msg:'ยังไม่ได้ connect'}; }
+  const cid=await detectChain();
+  if(cid!==REQUIRED_CHAIN){
+    toast('⚠️ ต้องอยู่ Polygon Mainnet ก่อน');
+    const switched=await forceMainnet();
+    if(!switched) return {ok:false,msg:'สลับ chain ไม่สำเร็จ — ไป Mainnet (0x89) ใน MetaMask ก่อน'};
+    if((await detectChain())!==REQUIRED_CHAIN) return {ok:false,msg:'ยังไม่ Mainnet — ยกเลิก'};
+  }
+  return {ok:true,msg:''};
+}
+/* Fallback: ยังไม่มี MetaMask → ป้ายแนะนำ + QR/download */
+function showWalletFallback(){
+  const bar=document.getElementById('walletHint');
+  let html='<div style="margin:8px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)">'+
+    '🧰 ยังตรวจไม่พบ MetaMask/กระเป๋า Web3<br>'+
+    '<div style="margin-top:6px;font-size:12px">ติดตั้ง MetaMask (เบราว์เซอร์/มือถือ) เพื่อซื้อ NEX & ใช้ on-chain — ข้อมูลไม่กระทบโหมด Local</div>'+
+    '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">'+
+    '<a href="'+META_FALLBACK_URL+'" target="_blank" rel="noopener" style="text-decoration:none"><button>⬇️ ติดตั้ง MetaMask</button></a>'+
+    '<button class="ghost" onclick="walletQR()">📱 QR / มือถือ</button></div></div>';
+  const el=document.getElementById('walletHint');
+  if(el){ el.innerHTML=html; el.style.display='block'; }
+  toast('ยังไม่มี MetaMask — โหมด Local ยังใช้ได้ปกติ');
+}
+function walletQR(){
+  const el=document.getElementById('walletHint');
+  if(!el) return;
+  const qr='https://metamask.io/download/';
+  el.innerHTML='<div style="margin:8px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2)">'+
+    '📱 สแกนด้วย MetaMask (มือถือ): <code style="color:var(--acc)">'+qr+'</code><br>'+
+    '<a href="'+qr+'" target="_blank" rel="noopener" style="font-size:12px;color:var(--acc)">หรือเปิดลิงก์</a>'+
+    '<button class="ghost" style="margin-left:8px" onclick="walletHintReset()">ปิด</button></div>';
+}
+function walletHintReset(){ const el=document.getElementById('walletHint'); if(el) el.style.display='none'; }
+document.getElementById('walletBtn').onclick=async()=>{
+  if(window._myAddr){ 
+    const goNet=confirm('ออกจาก wallet?');
+    if(goNet){ window._myAddr=null; localStorage.removeItem('nx_wallet_addr'); await renderWalletBadge(); renderHome(); toast('👋 ออกจาก wallet แล้ว'); }
+    return;
+  }
+  await walletConnect();
 };
+document.addEventListener('DOMContentLoaded', async ()=>{
+  // คืนค่า wallet ที่เคยเชื่อม + ตรวจ chain อัตโนมัติ
+  if(localStorage.getItem('nx_wallet_addr')){ window._myAddr=localStorage.getItem('nx_wallet_addr'); }
+  await renderWalletBadge();
+  try{ renderHome(); }catch(e){}
+});
 
 /* ═══════════ ON-CHAIN (Polygon Amoy) ═══════════ */
 /* ═══════════ MULTI-NETWORK (Amoy ⇄ BSC ⇄ Mainnet) ═══════════ */
@@ -707,6 +917,7 @@ const AMOY_RPC  = () => NET().rpc;
 async function switchNet(v){
   if(!NETWORKS[v]) return;
   localStorage.setItem('nx_net',v);
+  try{ txLog('net_switch',{to:NETWORKS[v].chainId}); }catch(e){}
   if(window.ethereum){
     try{
       await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x'+NETWORKS[v].chainId.toString(16)}]});
@@ -1045,8 +1256,8 @@ function startKYC(){
 window.addEventListener('message',e=>{
   if(e.data&&e.data.type==='nexus_kyc_ok'){
     user.level=Math.max(user.level,2); persist(); renderLevels();
-    const s=NexusIdentity.state; s.kycScore=e.data.score; NexusIdentity.save(s);
-    renderIdentitySummary(); toast('🪪 KYC ผ่าน! Lv.2 CITIZEN (REAL) — score '+e.data.score+'%');
+const s=NexusIdentity.state; s.kycScore=e.data.score; NexusIdentity.save(s);
+    renderIdentitySummary(); renderSovereignProgress(); txLog('kyc_pass',{score:e.data.score}); toast('🪪 KYC ผ่าน! Lv.2 CITIZEN (REAL) — score '+e.data.score+'%');
   }
 });
 /* ── เทรน AI จาก feedback: 👍 = ยืนยัน intent / 👎 = ถอนออก (online learning) ── */
@@ -1283,6 +1494,18 @@ async function renderPresale(){
   const addrTxt=document.getElementById('psAddrTxt');
   document.querySelectorAll('.psSym').forEach(el=>el.textContent=PS_SYM_BY_CHAIN[Number(NET().chainId)]||'POL');
   addrTxt.textContent = presaleAddr()? presaleAddr().slice(0,10)+'… · token:'+String(nexToken()||'—').slice(0,10)+'…' : 'ยังไม่ตั้งค่า presale/token';
+  // ⛔ Network Guard indicator
+  const netEl=document.getElementById('psNet');
+  if(netEl){
+    if(!hasWalletProvider()) netEl.innerHTML='<span style="color:var(--bad)">🧰 ยังไม่มี MetaMask</span> — กด Connect Wallet ด้านบน (โหมด Local ยังใช้ได้)';
+    else if(!window._myAddr) netEl.innerHTML='<span style="color:var(--bad)">⚠️ ยังไม่ Connect Wallet</span> — ต้องใช้เพื่อซื้อ NEX';
+    else{
+      const cid=await detectChain();
+      netEl.innerHTML = cid===REQUIRED_CHAIN
+        ? '<span style="color:var(--good)">🟣 Polygon Mainnet · '+fmtAddr(window._myAddr)+' — พร้อมซื้อ (กด Buy ได้เลย)</span>'
+        : '<span style="color:var(--bad)">⚠️ ผิด Network (chain '+cid+') — ต้อง Polygon Mainnet</span> <button class="ghost" style="margin-left:4px" onclick="forceMainnet()">🔁 สลับไป Mainnet</button>';
+    }
+  }
   const stats=document.getElementById('psStats'), bar=document.getElementById('psBar'),
         prog=document.getElementById('psProgress'), est=document.getElementById('psEstimate');
   if(!presaleReady()){ stats.innerHTML=''; bar.style.width='0%'; prog.textContent=''; est.textContent=''; return; }
@@ -1333,7 +1556,12 @@ async function presaleBuy(){
   if(!presaleReady()){ toast('ตั้งค่า Presale + NEX ก่อน (⚙️)'); return; }
   const amt=parseFloat(document.getElementById('psAmount').value);
   if(!(amt>0)){ toast('ใส่จำนวน NEX ก่อน'); return; }
-  if(!window._myAddr){ toast('Connect Wallet ก่อน'); return; }
+  // 🛡 Phase D: เกท trust tier — Guest ซื้อไม่ได้
+  const tier=trustTier();
+  if(!tier.buy){ toast('⛔ Tier ปัจจุบันคือ '+tier.name+' — ทำ Passkey/Google (Verified) ก่อนซื้อ'); return; }
+  // ⛔ Network Guard (Phase A): ต้อง wallet + Mainnet
+  const g=await walletGuard();
+  if(!g.ok){ toast(g.msg); return; }
   try{
     const rd=await psContract(false);
     const cur=Number(await rd.currentRound());
@@ -1345,9 +1573,107 @@ async function presaleBuy(){
     const tx=await c.buyWithPol({value:cost,gasLimit:600000});
     toast('ส่งแล้ว รอ confirm...');
     await tx.wait();
-    toast('🎉 ซื้อสำเร็จ! NEX เข้า wallet แล้ว'); renderPresale(); jobRefresh();
+    toast('🎉 ซื้อสำเร็จ! NEX เข้า wallet แล้ว'); txLog('presale_buy',{nex:amt,tx:tx.hash});
+    renderPresale(); jobRefresh();
 }catch(e){ const m=String(e.message||e); toast(m.includes('SoldOut')?'🏁 ขายหมดแล้ว!':('❌ '+m.slice(0,90))); }
 }
+
+/* ═══════════ PHASE D — TRUST TIER / OWNERSHIP PROOF / AUDIT LOG ═══════════ */
+function trustTier(){
+  const id=JSON.parse(localStorage.getItem('nx_identity')||'{}');
+  const u=DB.get('user',{level:0});
+  const human=!!(id.passkeyId||id.google);
+  const wallet=!!(id.walletAddress&&id.walletSig);
+  const kyc=Number(id.kycScore||0)>=70;
+  if(u.level>=3&&human&&wallet&&kyc) return {tier:'sovereign', lv:3, name:'🛡 Sovereign', desc:'ยืนยันครบ Lv.3 — ซื้อเต็มที่ + แต้มสูงสุด', buy:true};
+  if(human)      return {tier:'verified',  lv:1, name:'✅ Verified',    desc:(wallet||kyc)?'บางส่วนผ่าน KYC — ซื้อได้':'ยืนยันตัวตนแล้ว (Lv.1) — ซื้อได้', buy:true};
+  return {tier:'guest', lv:0, name:'👤 Guest', desc:'ยังไม่ยืนยันตัวตน — ดู Presale ได้ แต่ซื้อไม่ได้', buy:false};
+}
+function renderTrustTiers(){
+  const cur=trustTier();
+  const list=[
+    {t:'guest',    name:'👤 Guest',    need:'ไม่ต้องยืนยัน', ok:cur.tier==='guest'},
+    {t:'verified', name:'✅ Verified', need:'Passkey/Google (Lv.1)', ok:cur.tier==='verified'||cur.tier==='sovereign'},
+    {t:'sovereign',name:'🛡 Sovereign',need:'Passkey+Wallet+KYC (Lv.3)', ok:cur.tier==='sovereign'},
+  ];
+  const tiersEl=document.getElementById('trustTiers');
+  if(tiersEl) tiersEl.innerHTML=list.map(t=>`<div style="flex:1;min-width:150px;border:1px solid ${t.ok?'var(--good)':'var(--line)'};background:${t.ok?'rgba(52,211,153,.07)':'var(--panel2)'};border-radius:10px;padding:8px 10px">
+      <div style="font-weight:700;font-size:13px">${t.name}</div>
+      <div class="muted" style="font-size:11px;margin-top:2px">${t.need}</div>
+      <div style="font-size:12px;margin-top:4px;color:${t.ok?'var(--good)':'var(--dim)'}">${t.ok?'ACTIVE':'🔒 locked'}</div></div>`).join('');
+  const badgeEl=document.getElementById('trustBadge');
+  if(badgeEl) badgeEl.innerHTML=`<span style="font-size:14px;font-weight:700">ระดับคุณตอนนี้: ${cur.name}</span> <span class="muted" style="font-size:12px">${cur.desc}</span>`;
+}
+
+async function genOwnershipProof(){
+  if(!window._myAddr){ toast('Connect Wallet ก่อน'); return; }
+  const proofStatus=document.getElementById('proofStatus');
+  proofStatus.innerHTML='กำลังอ่านยอดจาก chain...';
+  try{
+    const prov=new ethers.JsonRpcProvider(NET().rpc);
+    const bal=await new ethers.Contract(nexToken(),['function balanceOf(address) view returns (uint256)'],prov).balanceOf(window._myAddr);
+    const balNex=Number(ethers.formatEther(bal));
+    // ปลายทาง: พิสูจน์ว่า wallet นี้ถือ NEX อยู่เท่าไหร่ ณ เวลานี้
+    let msg=`NEXUS OWNERSHIP PROOF\nAddress: ${window._myAddr}\nNetwork: ${NET().chainId}\nNEX Balance: ${balNex.toLocaleString()}\nTime: ${new Date().toISOString()}`;
+    let sig='';
+    if(window.ethereum){
+      try{
+        const provider=new ethers.BrowserProvider(window.ethereum);
+        const signer=await provider.getSigner();
+        sig=await signer.signMessage(msg);
+      }catch(e){ sig='(not signed)'; }
+    }
+    const proof={
+      address:window._myAddr, chain:Number(NET().chainId), nex:balNex,
+      time:Date.now(), sig:sig?sig.slice(0,20)+'…'+sig.slice(-8):'',
+      sigFull:sig, verifiable: !!(sig && balNex>0),
+    };
+    localStorage.setItem('nx_ownership_proof',JSON.stringify(proof));
+    renderOwnershipProof();
+    txLog('proof_gen',{address:window._myAddr.slice(0,8),nex:balNex});
+  }catch(e){ proofStatus.innerHTML='<span class="neg">อ่าน chain ไม่สำเร็จ: '+esc(String(e.message||e).slice(0,70))+'</span>'; }
+}
+function renderOwnershipProof(){
+  const out=document.getElementById('proofOut');
+  const proofStatus=document.getElementById('proofStatus');
+  const p=JSON.parse(localStorage.getItem('nx_ownership_proof')||'null');
+  if(!p){ if(out) out.innerHTML=''; if(proofStatus) proofStatus.innerHTML='<span class="muted">ยังไม่มีหลักฐาน — กด "สร้างหลักฐานเป็นเจ้าของ"</span>'; return; }
+  const checked = (p.chain===Number(NET().chainId));
+  if(out) out.innerHTML=`
+    <div style="border:1px solid ${p.verifiable&&checked?'var(--good)':'var(--line)'};border-radius:9px;padding:10px;background:var(--panel2)">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px">
+        <b>💼 ${esc(p.address)}</b>
+        <span style="color:${p.verifiable&&checked?'var(--good)':'var(--dim)'}">${p.verifiable&&checked?'✅ VERIFIED':'⚠️ ยังไม่ครบ'}</span>
+      </div>
+      <div style="margin-top:4px;font-size:12px">⚡ NEX: <b>${Number(p.nex).toLocaleString(undefined,{maximumFractionDigits:2})}</b> · Chain ${p.chain} · ${new Date(p.time).toLocaleString('th-TH')}</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:4px;word-break:break-all">✍️ sig: ${esc(p.sig||'—')}</div>
+      <div class="muted" style="font-size:10px;margin-top:4px">ตรวจย้อนกลับได้จาก polygonscan.com/token/${esc(nexToken())}?a=${esc(p.address)} (ไม่ได้เก็บข้อมูลส่วนตัว)</div>
+    </div>`;
+  if(proofStatus) proofStatus.innerHTML='';
+}
+
+/* ── Audit log: ทุกการกระทำสำคัญในเครื่อง (nx_audit_log) ── */
+function auditLog(){ try{ return JSON.parse(localStorage.getItem('nx_audit_log')||'[]'); }catch(e){ return []; } }
+function txLog(type, detail){
+  const a=auditLog(); a.push({type,detail:detail||{},at:Date.now()});
+  if(a.length>150) a.shift();
+  localStorage.setItem('nx_audit_log',JSON.stringify(a));
+  if(window.location.host) try{renderAuditLog()}catch(e){}
+  return a;
+}
+const AUDIT_TYPES={wallet_connect:'🔗 เชื่อม wallet',net_switch:'🌐 สลับ network',presale_buy:'🛒 ซื้อ NEX',kyc_pass:'🪪 KYC ผ่าน',passkey:'🔐 Passkey',wallet_sign:'✍️ เซ็น wallet',vote:'🗳 โหวต',mine:'⛏️ ขุดความรู้',proof_gen:'📜 สร้างหลักฐาน'};
+function renderAuditLog(){
+  const out=document.getElementById('auditOut');
+  if(!out) return;
+  const a=auditLog();
+  if(!a.length){ out.innerHTML='<span class="muted">ยังไม่มีบันทึก — done ด้านบนจะบันทึกอัตโนมัติ</span>'; return; }
+  out.innerHTML=a.slice(-15).reverse().map(e=>{
+    const nm=AUDIT_TYPES[e.type]||e.type;
+    const det=Object.entries(e.detail||{}).map(([k,v])=>`${k}=${String(v).slice(0,30)}`).join(' · ');
+    return `<div style="padding:3px 0;border-bottom:1px dashed var(--line)">${nm} <span class="muted" style="font-size:11px">${det?det+' · ':''}${new Date(e.at).toLocaleString('th-TH')}</span></div>`;
+  }).join('');
+}
+function auditNow(type,detail){ return txLog(type,detail); }
 
 /* ═══════════ AI-PIPE — ขุดความรู้ + เหรียญ NEX32 (ท่อเชื่อมเว็บ↔แอป) ═══════════ */
 function pipeBrainChange(v){
@@ -1373,6 +1699,9 @@ function renderPipe(){
   if(el) el.innerHTML = gate.ok
     ? `<span class="pos" style="color:var(--good)">✅ ${gate.msg}</span>`
     : `<span class="neg">${gate.msg}</span>`;
+  // sync mining v2 mode UI
+  setMineMode(AIPipe.mineMode());
+  renderGemKeySet();
   renderMinedList();
 }
 async function renderCoin(){
@@ -1399,31 +1728,78 @@ function renderMinedList(){
   const total=AIPipe.totalReward();
   const elC=document.getElementById('minedList');
   if(elC) elC.querySelector('h3').innerHTML=`🗂 คลังความรู้ที่ขุดแล้ว <span class="muted" style="font-weight:400;font-size:11px">${arr.length} การ์ด · +${total} NEX</span>`;
-  el.innerHTML=arr.length? arr.slice(-6).reverse().map(c=>
-    `<div style="border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin-bottom:6px;background:var(--panel2)">
-       <div style="font-weight:700;font-size:13px">⛏ ${esc(c.title)} <span class="num" style="color:var(--acc);float:right">+${c.reward_nex} NEX</span></div>
+  el.innerHTML=arr.length? arr.slice(-6).reverse().map(c=>{
+    const badge=c.verified==='ai'
+      ? '<span class="cat" style="background:#1e1b4b;color:#a5b4fc">🤖 AI<sup>×3</sup></span>'
+      : c.verified==='human'
+        ? '<span class="cat" style="background:#12331f;color:var(--good)">✋ Human</span>'
+        : '<span class="cat" style="background:#1f2937;color:#9ca3af">🛠 Offline</span>';
+    return `<div style="border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin-bottom:6px;background:var(--panel2)">
+       <div style="font-weight:700;font-size:13px">⛏ ${esc(c.title)} ${badge} <span class="num" style="color:var(--acc);float:right">+${c.reward_nex} NEX</span></div>
        <div style="font-size:12px;color:var(--dim);margin-top:3px">${esc(String(c.summary).slice(0,130))}</div>
-       <div class="muted" style="font-size:10px;margin-top:3px">${esc(String(c.keywords||[]).slice(0,80))} · ${esc(c.brain||'')} · ${new Date(c.at).toLocaleDateString('th-TH')}</div>
-     </div>`).join('') : 'ยังไม่มีการ์ด — ขุดงานแรกได้เลย (+NEX จาก Mining Pool 300M)';
+       <div class="muted" style="font-size:10px;margin-top:3px">${esc(String(c.keywords||[]).slice(0,80))} · ${esc(c.brain||'')} · ${c.avgScore?('Avg score '+c.avgScore+'% · '):''}${new Date(c.at).toLocaleDateString('th-TH')}</div>
+     </div>`;
+  }).join('') : 'ยังไม่มีการ์ด — ขุดงานแรกได้เลย (+NEX จาก Mining Pool 300M)';
 }
 async function doMine(offline){
+  // ⛔ Phase B gate: ต้อง Lv.3 Sovereign ถึงจะขุดความรู้ได้
+  const lvl=(DB.get('user',{level:0})||{level:0}).level;
+  if(lvl<3){ toast('⛔ ต้องเป็น Lv.3 Sovereign (ทำ Sovereign Unlock ให้ครบ 3 ขั้น) ถึงจะขุดความรู้'); return; }
   const text=document.getElementById('mineText').value.trim();
   const title=document.getElementById('mineTitle').value.trim();
   const btn=document.getElementById('mineBtn');
   const res=document.getElementById('mineResult');
+  const auditEl=document.getElementById('mineAudit');
+  const mode=window.AIPipe?AIPipe.mineMode():'ai';
   if(offline){
     const card=AIPipe.offlineMine({title,text});
     AIPipe._pushMined(card);
     res.innerHTML=`<span style="color:var(--good)">🛠 การ์ดออฟไลน์ +${card.reward_nex} NEX</span>`;
+    txLog('mine',{mode:'offline',nex:card.reward_nex});
     renderMinedList(); renderPipe(); return;
   }
   if(btn) btn.disabled=true;
-  res.innerHTML='⛏️ ขุดด้วย '+AIPipe.BRAINS[AIPipe.cfg.brain].name+'...';
-  const r=await AIPipe.mine({title,text,el:btn});
+  res.innerHTML='⛏️ ขุด '+(mode==='ai'?'ด้วย AI 3 เสียง (Gemini x3)...':'ด้วยตัวคุณเอง (Human mode)...');
+  let r;
+  if(mode==='ai') r=await AIPipe.mineAI({title,text});
+  else r=await AIPipe.mineHuman({title,text});
+  if(r.audit) txLog('mine',{mode,accept:r.audit.accept,reject:r.audit.reject,ok:r.ok?1:0});
   res.innerHTML = r.ok
     ? `<span style="color:var(--good)">${esc(r.msg)}</span>`
-    : `<span style="color:var(--bad)">${esc(r.msg)}</span>`;
+    : (r.flagged?`<span style="color:#fbbf24">${esc(r.msg)}</span>`:`<span style="color:var(--bad)">${esc(r.msg)}</span>`);
+  if(r.audit&&auditEl){
+    const v=r.audit.votes||[];
+    auditEl.innerHTML='ครั้งนี้: '+v.map(x=>`#${x.key} ${x.accept===true?'✅':'x'}${x.accept===false?'❌':''}${x.err?' ⚠️':'  '+x.score+'%'}`).join(' · ');
+  }else if(auditEl){ auditEl.innerHTML=''; }
   renderMinedList(); renderPipe();
+}
+
+/* ── Mining v2 helpers ── */
+function setMineMode(m){
+  if(!window.AIPipe) return;
+  AIPipe.setMineMode(m);
+  const aiBtn=document.getElementById('modeAi'), humBtn=document.getElementById('modeHum');
+  aiBtn.style.borderColor=m==='ai'?'var(--acc)':''; humBtn.style.borderColor=m==='human'?'var(--acc)':'';
+  document.getElementById('gemKeys').style.display = m==='ai' ? 'block':'none';
+  document.getElementById('humanCfg').style.display = m==='human' ? 'block':'none';
+  toast(m==='ai'?'🤖 โหมด AI — 3 Gemini keys ตรวจความถูกต้อง':'✋ โหมดคน — คุณเป็นผู้ขุดเอง');
+}
+async function saveGemKn(){
+  // เซฟทีละ key ที่กรอก (AES-GCM)
+  const K=[['gemK1',1],['gemK2',2],['gemK3',3]];
+  let saved=0;
+  for(const [id,n] of K){
+    const v=document.getElementById(id).value.trim();
+    if(!v) continue;
+    await AIPipe.saveGemKey(n,v);
+    document.getElementById(id).value=''; saved++;
+  }
+  if(saved){ toast('🔐 บันทึก Gemini key แล้ว ('+saved+' ตัว) — พร้อมตรวจ 3 เสียง'); renderGemKeySet(); }
+  else toast('ใส่ API key อย่างน้อย 1 ตัวก่อน');
+}
+function renderGemKeySet(){
+  const el=document.getElementById('gemKSet');
+  if(el&&window.AIPipe) el.textContent='ตั้งไว้แล้ว: '+AIPipe.gemKeySet()+'/3 keys (เข้ารหัส AES-GCM)';
 }
 
 /* AI หางาน: จับคู่งานกับความจำ/ทักษะของเจ้าของ Twin */
@@ -1479,7 +1855,8 @@ async function loadNeuralBrain(){
 }
 
 document.getElementById('netSel').value=g_net;
-renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats(); renderIdentitySummary(); jobRefresh(); renderPresale();
+renderChat(); renderProposals(); renderRewardEngine(); renderLifecycle(); renderHRW(); renderStats(); renderIdentitySummary(); renderSovereignProgress(); jobRefresh(); renderPresale();
+renderTrustTiers(); renderOwnershipProof(); renderAuditLog();
 if(window.AIPipe){ renderPipe(); renderCoin(); }
 if(_voiceOn) document.getElementById('voiceBtn').style.borderColor='var(--good)';
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
@@ -1508,7 +1885,7 @@ function _setPg(pg){
 function go(pg){
   _setPg(pg);
   if(pg==='jobs') try{jobRefresh()}catch(e){}
-  if(pg==='presale') try{renderPresale()}catch(e){}
+  if(pg==='presale') try{renderPresale(); renderTrustTiers(); renderOwnershipProof(); renderAuditLog();}catch(e){}
   if(pg==='more') try{renderHome(); renderPipe(); renderCoin();}catch(e){}
 }
 function renderHome(){

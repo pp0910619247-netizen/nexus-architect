@@ -1,8 +1,8 @@
 /* Nexus Service Worker v1.3 — offline-first app shell */
-const CACHE = 'nexus-v4';
+const CACHE = 'nexus-v5';
 const ASSETS = [
   './', './index.html', './twin.js', './nexus-core.js', './nexus-gov.js',
-  './nexus-memory.js', './identity.js', './kyc.js',
+  './nexus-memory.js', './identity.js', './kyc.js', './ai-pipe.js',
   './twin-persona.md', './kb-nexus.json',
   './privacy.html', './waitlist.html',
   './manifest.json', './icons/icon-192.png', './icons/icon-512.png',

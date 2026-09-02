@@ -207,6 +207,127 @@ const AIPipe = {
   },
   totalReward() { return this.mined().reduce((s, c) => s + (Number(c.reward_nex) || 0), 0); },
 
+  /* ═══ MINING v2 (Phase C) — 2 โหมด: สร้างเอง (คน) / AI ตรวจ 3 คำตัดสิน ═══ */
+  diffLabel(d){ const t={1:'ง่ายมาก',2:'ง่าย',3:'ง่ายกว่า',4:'ปานกลาง',5:'ปานกลาง',6:'ปานกลาง',7:'ยาก',8:'ยากมาก',9:'สุดยอด',10:'นวัตกรรม'}; return t[Math.min(10,Math.max(1,d))]||'ปานกลาง'; },
+
+  /* ── VOTE PROMPT: ให้ตัวตัดสิน 3 ตัว (Gemini 3 API) ตรวจเดียวกัน ── */
+  VOTE_PROMPT:
+    'You are an independent Verifier for the Nexus Architect knowledge pool.\n' +
+    'A user submitted "mined knowledge". Judge whether it is REAL and SPECIFIC ' +
+    '(a solved problem, proven technique, or original invention). Reject vague/trivial/AI-talking.\n' +
+    'Reply ONLY JSON, no markdown:\n' +
+    '{"accept":true|false,"score":0-100,"difficulty":1-10,"title":"short","keywords":["a","b","c"],' +
+    '"summary":"one refined paragraph (problem, why hard, how solved)",' +
+    '"reason":"1-line verdict"}',
+
+  /* ── Gemini vote #n (independent key #1-#3) — key เข้ารหัส AES-GCM ── */
+  async _gemVote(keyIdx, title, text) {
+    const c = this.cfg;
+    const encName = ['gemKey1Enc', 'gemKey2Enc', 'gemKey3Enc'][keyIdx];
+    const key = await this.brainKey(encName);
+    if (!key) throw new Error('ยังไม่ตั้ง Gemini key #' + (keyIdx + 1));
+    const model = c.gemVoteModel || 'gemini-1.5-flash';
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(key), {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: this.VOTE_PROMPT + '\n\nTITLE: ' + title + '\n\nKNOWLEDGE:\n' + text }] }],
+        generationConfig: { temperature: 0.2 } })
+    });
+    if (!r.ok) throw new Error('Gemini#' + (keyIdx + 1) + ' HTTP ' + r.status);
+    const j = await r.json();
+    const raw = j.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const m = String(raw).match(/\{[\s\S]*\}/);
+    let v; try { v = JSON.parse(m ? m[0] : raw); } catch (e) { v = null; }
+    return { key: keyIdx + 1, v, raw: String(raw).slice(0, 120), at: Date.now() };
+  },
+
+  /* ── AI MODE: 3 Gemini keys ตรวจความถูกต้อง → majority vote ── */
+  async mineAI({ title, text }) {
+    if (String(text || '').trim().length < 20) return { ok: false, msg: 'ความรู้สั้นเกินไป — เขียนวิธี/ผลลัพธ์/ขั้นตอนให้ครบอย่างน้อย 1 ประโยค' };
+    const gate = this.lv3Status();
+    if (!gate.ok) return { ok: false, msg: gate.msg };
+    // triple-vote: โหวตทีละตัว ไม่ใช่โจ๊ก
+    const votes = [];
+    for (let i = 0; i < 3; i++) {
+      try { votes.push(await this._gemVote(i, title || '', text)); }
+      catch (e) { votes.push({ key: i + 1, err: String(e.message || e).slice(0, 60) }); }
+    }
+    const ok = votes.filter(v => v.v && v.v.accept === true);
+    const rej = votes.filter(v => v.v && v.v.accept === false);
+    const err = votes.filter(v => v.err);
+    const score = (v) => Math.min(100, Math.max(0, Number(v.v.score) || 0));
+    const avg = ok.length ? Math.round(ok.reduce((s, v) => s + score(v), 0) / ok.length) : 0;
+    const audit = {
+      mode: 'ai', title: (title || '').slice(0, 60), at: Date.now(),
+      votes: votes.map(v => ({ key: v.key, accept: v.v ? v.v.accept : null, score: v.v ? score(v) : null, err: v.err || null })),
+      accept: ok.length, reject: rej.length, errors: err.length, avgScore: avg,
+    };
+    this._audit(audit);
+    if (ok.length >= 2) {
+      // MAJORITY = ACCEPT
+      const diffs = ok.map(v => Math.min(10, Math.max(1, Number(v.v.difficulty) || 3)));
+      const diff = diffs.sort((a, b) => a - b)[Math.floor(diffs.length / 2)]; // median
+      let reward = this.rewardFor(diff);
+      const complete = ok.every(v => Array.isArray(v.v.keywords) && v.v.keywords.length >= 3);
+      if (complete) reward = Math.round(reward * 1.2);
+      const kw = [...new Set(ok.flatMap(v => (Array.isArray(v.v.keywords) ? v.v.keywords : []).map(String)))].slice(0, 6);
+      const card = {
+        title: (ok[0].v.title || title || 'Untitled knowledge').trim(),
+        keywords: kw.length ? kw : ['experience'],
+        difficulty: diff, summary: String(ok[0].v.summary || '').trim() || text.trim(),
+        reward_nex: Math.min(1200, Math.max(5, reward)),
+        brain: 'gemini-x3', at: Date.now(), verified: 'ai', votes: audit.votes, avgScore: avg,
+      };
+      this._pushMined(card);
+      return { ok: true, card, audit, msg: `🎉 มติเสียงข้างมาก ${ok.length}/3 VERIFIED — +${card.reward_nex} NEX (Avg score ${avg})` };
+    }
+    if (ok.length === 1) {
+      // CONFLICT → Review Required (ไม่มี mint เต็มเงิน — รอคน)
+      return { ok: false, card: null, audit, flagged: true, msg: `🚩 ความเห็นไม่ตรง (${ok.length} ยอมรับ / ${rej.length} ปฏิเสธ / ${err.length} error) — flagged REVIEW REQUIRED รอตรวจของคน` };
+    }
+    if (err.length && !ok.length) return { ok: false, audit, msg: '⛔ Gemini ชุดนี้ตอบไม่ได้ครบ (มี error) — ตรวจ 3 API key ใน "โหมด AI"' };
+    return { ok: false, audit, msg: `⛔ มติ ${ok.length}/3 — ความรู้นี้ไม่ตรงเกณฑ์ ไม่ได้ขุด (${rej.map(v => '#' + v.key).join(', ')} ปฏิเสธ)` };
+  },
+
+  /* ── HUMAN MODE: ผู้ใช้เป็นผู้ขุดเอง (สมองช่วยเก็บ polish เท่าที่มี) ── */
+  async mineHuman({ title, text }) {
+    if (String(text || '').trim().length < 20) return { ok: false, msg: 'ความรู้สั้นเกินไป' };
+    const words = String(text).trim().split(/\s+/).filter(x => x).length;
+    const steps = /(step|first|then|finally|because|result|how|why|ขั้น|วิธี|แล้ว|เพราะ|ผลลัพธ์)/i.test(text);
+    let diff = Math.min(10, Math.max(1, 1 + Math.round(words / 30) + (steps ? 1 : 0)));
+    const kw = String(text).split(/[\s,;.()]+/).filter(w => w.length >= 5).slice(0, 4);
+    let reward = this.rewardFor(diff);
+    if (kw.length >= 3 && steps) reward = Math.round(reward * 1.2);
+    const card = {
+      title: (title && title.trim()) || (words > 3 ? text.trim().split(/\s+/).slice(0, 8).join(' ') + '…' : 'Untitled knowledge'),
+      keywords: kw.length ? kw : ['experience'],
+      difficulty: diff, summary: text.trim(),
+      reward_nex: Math.min(1200, Math.max(5, Math.round(reward))),
+      brain: 'human', at: Date.now(), verified: 'human', author: 'on-device-user',
+    };
+    this._pushMined(card);
+    this._audit({ mode: 'human', title: card.title, at: Date.now(), diff: card.difficulty, reward: card.reward_nex, words, steps });
+    return { ok: true, card, msg: `✋ Human Mint +${card.reward_nex} NEX — ลง "ความรู้ของคุณ" เองแล้ว (ค่ายคน ไม่พึ่ง AI)` };
+  },
+
+  /* ── Audit log: ทุกการขุดมีร่องรอยตรวจสอบในเครื่อง (nx_mine_audit) ── */
+  audit() { try { return JSON.parse(localStorage.getItem('nx_mine_audit') || '[]'); } catch (e) { return []; } },
+  _audit(ev) {
+    const a = this.audit(); a.push(ev);
+    if (a.length > 300) a.shift();
+    localStorage.setItem('nx_mine_audit', JSON.stringify(a));
+  },
+
+  /* ── ตั้งค่ามุมต่าง ๆ ของ Mining v2 ── */
+  mineMode() { return localStorage.getItem('nx_mine_mode') || 'ai'; },
+  setMineMode(m) { localStorage.setItem('nx_mine_mode', m); },
+  gemKeySet() { return ['gemKey1Enc', 'gemKey2Enc', 'gemKey3Enc'].filter(k => !!this.cfg[k]).length; },
+  async saveGemKey(n, val) {
+    const twin = await this._dek();
+    const patch = {};
+    patch['gemKey' + n + 'Enc'] = twin ? await twin.enc(val) : 'plain:' + val;
+    this.saveCfg(patch);
+  },
+
   /* ── ข้อมูล NEX32 (Chainlink) — เรนเดอร์เหรียญบนหน้าแรก ── */
   async nex32Live() {
     const sale = JSON.parse(localStorage.getItem('nx_presale_137') || 'null') || '0xB1293Ed631e4bDf568e91727F78fAd170cC58304';
