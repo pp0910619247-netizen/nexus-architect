@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Nexus Architect — AI ที่เป็นของคุณจริงๆ ไม่ใช่ AI ของบริษัท</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🏔</text></svg>">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src *; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src *; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
 <meta name="description" content="Nexus Architect — AI Twin ที่รันบนอุปกรณ์คุณจริงๆ (ไฟล์โมเดล 378MB อยู่ในเครื่อง) ไม่พึ่ง Cloud ไม่มีค่า API และขุดความรู้ของคุณมินต์เป็นเหรียญ NEX32 ได้จริงบน Polygon Mainnet">
 <meta property="og:title" content="Nexus Architect — AI ที่เป็นของคุณจริงๆ">
 <meta property="og:description" content="AI บนอุปกรณ์คุณจริงๆ (offline, ไม่มี key) · ขุดความรู้ → มินต์ NEX32 · presale LIVE บน Polygon Mainnet">
@@ -42,6 +42,36 @@ nav .links a:hover{color:var(--txt);text-decoration:none}
 .nav-social{display:flex;gap:.5rem}
 .nav-social a{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;background:var(--panel2);color:var(--txt2);font-size:.85rem;transition:all .2s}
 .nav-social a:hover{background:var(--acc);color:#fff;text-decoration:none}
+.nav-wallet{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}
+.nav-wallet .wbal{font-size:.72rem;font-family:'Consolas',monospace;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:.2rem .5rem;color:var(--txt2)}
+.nav-wallet #walletBtn{cursor:pointer;border:1px solid var(--acc);color:#fff;background:linear-gradient(135deg,#7c3aed,#6d28d9);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;font-weight:600;transition:all .2s}
+.nav-wallet #walletBtn:hover{filter:brightness(1.15)}
+.nav-wallet #walletBtn.connected{background:var(--good);border-color:var(--good)}
+/* wallet status hint */
+.wallet-hint{position:fixed;top:64px;right:1rem;z-index:101;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:1rem;max-width:340px;font-size:.85rem;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.wallet-hint a{color:var(--acc2)}
+/* buy widget on landing */
+.buy-widget{background:var(--panel);border:1px solid var(--line2);border-radius:16px;padding:1.4rem;margin-top:1.2rem;text-align:left}
+.buy-widget label{font-size:.8rem;color:var(--txt3)}
+.buy-widget .buy-row{display:flex;gap:.6rem;align-items:stretch;margin-top:.5rem;flex-wrap:wrap}
+.buy-widget input{flex:1;min-width:150px;background:var(--bg2);border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:.7rem .8rem;font-size:1rem;font-family:inherit}
+.buy-widget .buy-btn{cursor:pointer;background:linear-gradient(135deg,#10b981,#059669);border:none;color:#fff;font-weight:700;border-radius:9px;padding:.7rem 1.6rem;font-size:1rem;transition:all .2s;flex-shrink:0}
+.buy-widget .buy-btn:hover{filter:brightness(1.12)}
+.buy-widget .buy-cost{margin-top:.6rem;font-size:.85rem;color:var(--txt2)}
+.buy-widget .buy-msg{margin-top:.5rem;font-size:.85rem;min-height:1.2em}
+.buy-widget .buy-msg.ok{color:var(--good)}.buy-widget .buy-msg.err{color:var(--err)}
+/* mining widget */
+.mine-card{background:var(--panel);border:1px solid var(--line2);border-radius:16px;padding:1.5rem;margin-top:1.2rem;text-align:left}
+.mine-card label{font-size:.8rem;color:var(--txt3);display:block;margin-top:10px}
+.mine-card input,.mine-card textarea,.mine-card select{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--txt);border-radius:9px;padding:.7rem .8rem;font-size:.95rem;font-family:inherit;margin-top:.3rem}
+.mine-card textarea{resize:vertical}
+.mine-card button{cursor:pointer;background:linear-gradient(135deg,#7c3aed,#6d28d9);border:none;color:#fff;font-weight:600;border-radius:9px;padding:.65rem 1.2rem;font-size:.92rem;transition:all .2s}
+.mine-card button:hover{filter:brightness(1.12)}
+.mine-card button.ghost{background:var(--panel2);color:var(--txt);border:1px solid var(--line)}
+.mine-gate{border-radius:10px;padding:.6rem .9rem;font-size:.85rem;margin-bottom:.4rem}
+.mine-gate.ok{background:rgba(16,185,129,.12);color:var(--good);border:1px solid rgba(16,185,129,.4)}
+.mine-gate.bad{background:rgba(239,68,68,.12);color:var(--err);border:1px solid rgba(239,68,68,.4)}
+.mine-modes{display:flex;gap:6px;margin-top:6px}
 
 /* ═══ HERO ═══ */
 .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:100px 2rem 80px;position:relative;overflow:hidden}
@@ -202,7 +232,7 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
   <div class="inner">
     <div class="logo"><span class="icon">🏔</span> <span>Nexus</span> Architect</div>
     <div class="links">
-      <a href="app/index.html">💬 แชต Yuri — Dashboard</a>
+      <a href="#mine">⛏️ ขุดความรู้</a>
       <a href="#ondevice">On-Device</a>
       <a href="#vs">เหนือกว่า AI ยักษ์</a>
       <a href="#presale">NEX32 ฟรีเซล</a>
@@ -210,6 +240,11 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
       <a href="#faq">FAQ</a>
     </div>
     <div class="nav-right">
+      <div class="nav-wallet">
+        <span class="wbal" id="wPol">— POL</span>
+        <span class="wbal" id="wNex">— NEX</span>
+        <button id="walletBtn" onclick="landingConnect()">🔗 Connect MetaMask</button>
+      </div>
       <div class="nav-social">
         <a href="https://t.me/+lWc7bfRVbUBlZTY1" target="_blank" title="Telegram">✈️</a>
         <a href="https://x.com/nexusarchitect2" target="_blank" title="X">𝕏</a>
@@ -242,6 +277,40 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
       <div class="hero-stat"><div class="num">0 ฿/เดือน</div><div class="lbl">ไม่มีค่า API ตลอดชีพ</div></div>
       <div class="hero-stat"><div class="num">100%</div><div class="lbl">ข้อมูลของคุณ อยู่ในเครื่องคุณ</div></div>
       <div class="hero-stat"><div class="num">NEX32</div><div class="lbl">ขุดความรู้ → ได้เหรียญจริง</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ ขุดความรู้ v2 ═══════ -->
+<section id="mine">
+  <div class="container" style="max-width:820px">
+    <div class="sec-badge">⛏️ ขุดความรู้ v2</div>
+    <div class="sec-title">ขุดความรู้ของคุณ <span class="g">→ มินต์เป็น NEX32</span></div>
+    <p class="sec-sub">2 โหมด · ต้อง <b>Lv.3 อธิปไตย (Sovereign)</b> ถึงจะขุดได้</p>
+    <div class="mine-card">
+      <div class="mine-gate" id="mineGate">กำลังตรวจสถานะ…</div>
+      <div class="mine-modes">
+        <button id="lmAi" class="ghost" style="flex:1" onclick="landingMode('ai')">🤖 โหมด AI — 3 ผู้ตรวจ (Gemini ×3)</button>
+        <button id="lmHum" class="ghost" style="flex:1" onclick="landingMode('human')">✋ โหมดคน — เห็นด้วยอย่างเดียว</button>
+      </div>
+      <div id="lmGemKeys" style="display:none;margin-top:8px;border:1px dashed var(--line);border-radius:9px;padding:8px">
+        <div style="font-size:.75rem;color:var(--txt3);margin-bottom:4px">🔑 Gemini 3 API — ตรวจความถูกต้อง 3 เสียง (เสียงข้างมาก ≥2/3 = mint)</div>
+        <input id="lgK1" type="password" autocomplete="off" placeholder="Gemini API key #1" style="width:100%;margin-bottom:4px">
+        <input id="lgK2" type="password" autocomplete="off" placeholder="Gemini API key #2" style="width:100%;margin-bottom:4px">
+        <input id="lgK3" type="password" autocomplete="off" placeholder="Gemini API key #3" style="width:100%;margin-bottom:4px">
+        <button onclick="landingSaveGemKeys()">🔐 บันทึก Gemini keys</button>
+        <span id="lgKSet" style="font-size:.75rem;color:var(--txt3)"></span>
+      </div>
+      <label>ชื่องาน / ความรู้ของคุณ</label>
+      <input id="lmTitle" placeholder="เช่น วิธีเทรดหุ้นไทยให้กำไรในตลาดผันผวน">
+      <label>ความรู้ที่อยาก "ขุด" เป็นการ์ด (ขั้นตอน/ผลลัพธ์จริง)</label>
+      <textarea id="lmText" style="min-height:92px" placeholder="เช่น ผมเจอว่าการใช้ RSI + EMA200 + stop-loss แบบ ATR ช่วยให้..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button style="flex:1" id="lmBtn" onclick="landingMine()">⛏️ ขุดความรู้</button>
+        <button class="ghost" onclick="landingMine(true)">🛠 ออฟไลน์</button>
+      </div>
+      <p class="muted" id="lmResult" style="font-size:.85rem;margin-top:8px;min-height:1.2em"></p>
+      <div id="lmMined" class="muted" style="font-size:.8rem;margin-top:6px">🗂 คลังที่ขุดแล้ว (nx_mined_kb): ยังไม่มี — ขุดแรกได้เลย (+NEX จาก Mining Pool 300M)</div>
     </div>
   </div>
 </section>
@@ -365,7 +434,27 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
         <div class="price-cell"><div class="p" id="pPol">—</div><div class="l">POL / 1,000 NEX</div></div>
       </div>
 
-      <a class="btn btn-g" href="app/index.html#presale" style="font-size:1.05rem;padding:1rem 2.4rem">🚀 ไปซื้อ NEX32 เช็กราคาเรียลไทม์ในเว็บ</a>
+      <a class="btn btn-g" href="#buyNex" style="font-size:1.05rem;padding:1rem 2.4rem">🪙 ซื้อ NEX32 ได้เลยที่นี่ (POL)</a>
+
+      <!-- Inline buy widget — MetaMask + Polygon Mainnet -->
+      <div class="buy-widget" id="buyNex">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap">
+          <b style="color:var(--acc)">🪙 ซื้อ NEX32 &nbsp;·&nbsp; ราคา Chainlink สดอัตโนมัติ</b>
+          <span style="font-size:.78rem;color:var(--txt3)" id="buyPerNex">ราคา: — POL / NEX</span>
+        </div>
+        <div class="buy-row">
+          <div style="flex:1;display:flex;flex-direction:column">
+            <label>จำนวน NEX ที่อยากได้</label>
+            <input id="landBuyAmt" type="number" min="1" step="10" value="1000" placeholder="เช่น 1000">
+          </div>
+          <div style="flex:0;display:flex;align-items:flex-end">
+            <button class="buy-btn" onclick="landingBuy()">🛒 Buy NEX</button>
+          </div>
+        </div>
+        <div class="buy-cost">คุณจะจ่าย <b id="landBuyCost">—</b> POL &nbsp;<span style="color:var(--txt3)">(เช็คความคุ้มค่าจากราคาสดก่อนกดซื้อ)</span></div>
+        <div class="buy-msg" id="landBuyMsg"></div>
+        <div class="muted" style="font-size:.75rem;margin-top:.4rem">ต้องมี MetaMask + อยู่บน <b>Polygon Mainnet</b> · ถ้ายังไม่มี MetaMask กด "Connect MetaMask" ด้านขวาบน · POL เท่านั้น</div>
+      </div>
 
       <div class="addr">PublicSale: 0xB1293Ed631e4bDf568e91727F78fAd170cC58304</div>
     </div>
@@ -495,7 +584,7 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
     <div class="sec-title">เป็นเจ้าของ <span class="go">AI และเหรียญ</span>ของคุณจริงๆ</div>
     <p>AI Cloud ยักษ์ขอค่า API รายเดือนและเอาข้อมูลคุณไป. ตรงนี้ AI อยู่ในเครื่องคุณ และความรู้คุณกลายเป็น NEX32 — เริ่มได้แล้วตอนนี้</p>
     <div class="hero-btns" style="justify-content:center">
-      <a class="btn btn-p" href="app/index.html">💬 คุยกับ Yuri — Dashboard</a>
+      <a class="btn btn-p" href="#mine">⛏️ เริ่มขุดความรู้</a>
       <a class="btn btn-g" href="app/index.html#presale">🪙 ฟรีเซล NEX32</a>
       <a class="btn btn-s" href="https://github.com/pp0910619247-netizen/nexus-architect" target="_blank">🐙 ดู GitHub</a>
     </div>
@@ -515,6 +604,8 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
   </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+<script src="app/ai-pipe.js"></script>
 <script>
 const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("visible");obs.unobserve(e.target)}}),{threshold:.15});
 document.querySelectorAll(".reveal").forEach(el=>obs.observe(el));
@@ -542,8 +633,205 @@ document.querySelectorAll(".reveal").forEach(el=>obs.observe(el));
     const g=document.getElementById('gFill'); if(g)g.style.width=pct.toFixed(1)+'%';
     const gs=document.getElementById('gSold'); if(gs)gs.textContent=sold>=1e6?(sold/1e6).toFixed(2)+'M / '+(total/1e6).toFixed(0)+'M NEX':sold.toLocaleString()+' NEX';
     if(pct>0){const gsub=document.getElementById('gPct'); if(gsub)gsub.textContent=pct.toFixed(1)+'% ยอดขาย';}
+    /* keep buy widget's per-NEX cost in sync */
+    window._polPerNex = polPerNex;
+    const bpn=document.getElementById('buyPerNex');
+    if(bpn&&polPerNex) bpn.textContent='ราคา: '+(1000*polPerNex).toFixed(3)+' POL / 1,000 NEX';
+    if(polPerNex) refreshBuyCost();
   }catch(e){}
 })();
+
+/* ═══════════ WALLET + BUY — MetaMask on landing (Polygon Mainnet) ═══════════ */
+const L_SALE='0xB1293Ed631e4bDf568e91727F78fAd170cC58304';
+const L_NEX='0x770AFC829e87d9A3467b20d6f3E5122BBa9BA0af';
+const L_CHAIN=137;
+let Laddr=localStorage.getItem('nx_wallet_addr')||null;
+
+const PRESALE_ABI=[
+  'function currentRound() view returns (uint8)',
+  'function polPerNex(uint8) view returns (uint256)',
+  'function usdtPriceOfRound(uint8) view returns (uint256)',
+  'function buyNex(uint8 round,uint256 nexAmount) external payable',
+  'function buyNexFor(uint8 round,uint256 nexAmount,address buyer) external payable'
+];
+
+function Lprovider(){
+  if(!window.ethereum) return null;
+  return new ethers.BrowserProvider(window.ethereum);
+}
+function lMount(){
+  document.getElementById('walletBtn').onclick=()=>{ Laddr?landingDisconnect():landingConnect(); };
+  if(Laddr){ landingConnect(false); }
+}
+async function landingConnect(showToast=true){
+  const btn=document.getElementById('walletBtn');
+  const msg=document.getElementById('landBuyMsg');
+  if(typeof window.ethereum==='undefined'){
+    const hint=document.createElement('div');
+    hint.className='wallet-hint';
+    hint.innerHTML='🧰 ยังตรวจไม่พบ MetaMask <br>ติดตั้ง MetaMask แล้วกลับมาเพื่อเชื่อมต่อและซื้อ NEX32 · <a href="https://metamask.io/download/" target="_blank" rel="noopener">⬇️ ดาวน์โหลด MetaMask</a><br><br><button class="buy-btn" style="background:var(--acc2)" onclick="this.parentElement.remove()">ปิด</button>';
+    document.body.appendChild(hint);
+    if(msg) msg.innerHTML='ยังไม่มี MetaMask — โหมดอ่านราคาสดยังใช้ได้ แต่ต้องมี MetaMask ถึงจะซื้อ';
+    return;
+  }
+  try{
+    if(showToast && msg) msg.textContent='กำลังเชื่อมต่อ MetaMask…';
+    const accs=await window.ethereum.request({method:'eth_requestAccounts'});
+    Laddr=accs[0];
+    localStorage.setItem('nx_wallet_addr',Laddr);
+    const cid=await window.ethereum.request({method:'eth_chainId'});
+    const want='0x'+L_CHAIN.toString(16);
+    if(cid!==want){
+      try{ await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:want}]}); }
+      catch(e){
+        if(e.code===4902||e.code===-32603){
+          await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:want,chainName:'Polygon Mainnet',nativeCurrency:{name:'POL',symbol:'POL',decimals:18},rpcUrls:['https://polygon-bor-rpc.publicnode.com'],blockExplorerUrls:['https://polygonscan.com']}]});
+        }
+      }
+    }
+    await renderLandingBalances();
+    if(btn){ btn.textContent='🔗 '+Laddr.slice(0,6)+'…'+Laddr.slice(-4); btn.classList.add('connected'); }
+    if(msg){ msg.classList.remove('err'); msg.classList.add('ok'); msg.textContent='✅ เชื่อมแล้ว: '+Laddr.slice(0,10)+'… · '+await netName(); }
+  }catch(err){
+    if(msg){ msg.classList.add('err'); msg.textContent='❌ ยกเลิก/ไม่สำเร็จ: '+err.message; }
+  }
+}
+async function landingDisconnect(){
+  Laddr=null; localStorage.removeItem('nx_wallet_addr');
+  const btn=document.getElementById('walletBtn');
+  if(btn){ btn.textContent='🔗 Connect MetaMask'; btn.classList.remove('connected'); }
+  const p=document.getElementById('wPol'), n=document.getElementById('wNex');
+  if(p)p.textContent='— POL'; if(n)n.textContent='— NEX';
+}
+async function netName(){ try{ const cid=await window.ethereum.request({method:'eth_chainId'}); return cid==='0x89'?'Polygon Mainnet':'chain '+cid; }catch(e){ return ''; } }
+async function renderLandingBalances(){
+  if(!Laddr) return;
+  const p=document.getElementById('wPol'), n=document.getElementById('wNex');
+  try{
+    const prov=Lprovider(); if(!prov) return;
+    const pol=Number(ethers.formatEther(await prov.getBalance(Laddr)));
+    if(p) p.textContent=pol.toFixed(3)+' POL';
+    const nexC=new ethers.Contract(L_NEX,['function balanceOf(address) view returns (uint256)'],prov);
+    const nex=Number(ethers.formatEther(await nexC.balanceOf(Laddr)));
+    if(n) n.textContent=(nex>=1e6? (nex/1e6).toFixed(2)+'M' : (nex>=1e3? (nex/1e3).toFixed(2)+'K' : nex.toFixed(0))) +' NEX';
+  }catch(e){}
+}
+function refreshBuyCost(){ polPerNexForWidget(); }
+async function polPerNexForWidget(){
+  try{
+    const prov=new ethers.JsonRpcProvider('https://polygon-bor-rpc.publicnode.com');
+    const c=new ethers.Contract(L_SALE,PRESALE_ABI,prov);
+    let cur=0; try{ cur=Number(await c.currentRound()); }catch(e){ cur=0; }
+    let ppn=window._polPerNex; 
+    if(!ppn){ ppn=Number(ethers.formatEther(await c.polPerNex(cur))); }
+    const amt=parseFloat(document.getElementById('landBuyAmt').value)||0;
+    const cost=amt*ppn;
+    const el=document.getElementById('landBuyCost'); if(el) el.textContent=cost.toFixed(4)+' POL';
+  }catch(e){}
+}
+async function landingBuy(){
+  const msg=document.getElementById('landBuyMsg');
+  msg.classList.remove('ok','err');
+  const amt=parseFloat(document.getElementById('landBuyAmt').value);
+  if(!amt||amt<=0){ msg.classList.add('err'); msg.textContent='❌ ใส่จำนวน NEX ให้ถูกต้องก่อน'; return; }
+  if(!Laddr){ msg.classList.add('err'); msg.textContent='🔗 กด Connect MetaMask ก่อน (ด้านขวาบน)'; return; }
+  if(typeof window.ethereum==='undefined'){ msg.classList.add('err'); msg.textContent='❌ ไม่พบ MetaMask'; return; }
+  try{
+    const prov=Lprovider(); const signer=await prov.getSigner();
+    const cid=await window.ethereum.request({method:'eth_chainId'});
+    if(cid!=='0x89'){ msg.classList.add('err'); msg.textContent='⚠️ ต้องสลับไป Polygon Mainnet ก่อน (ใน MetaMask)'; return; }
+    const c=new ethers.Contract(L_SALE,PRESALE_ABI,signer);
+    let cur=0; try{ cur=Number(await c.currentRound()); }catch(e){ cur=0; }
+    let ppn=window._polPerNex;
+    if(!ppn) ppn=Number(ethers.formatEther(await c.polPerNex(cur)));
+    const costWei=ethers.parseUnits((amt*ppn).toFixed(18),'ether');
+    msg.textContent='กำลังยืนยันการซื้อ '+amt.toLocaleString()+' NEX = '+costWei.toString()+' wei POL…';
+    const tx=await c.buyNex(cur,ethers.parseUnits(String(amt),'ether'),{value:costWei});
+    msg.textContent='⏳ รอแต้ม tx: '+tx.hash.slice(0,10)+'…';
+    await tx.wait();
+    msg.classList.add('ok'); msg.textContent='🎉 ซื้อสำเร็จ '+amt.toLocaleString()+' NEX! (tx '+tx.hash.slice(0,10)+'…)— เปิด MetaMask/โอนลากเข้าหน้าอื่นเพื่อสะท้อนยอด';
+    await renderLandingBalances();
+  }catch(err){
+    msg.classList.add('err');
+    msg.textContent='❌ '+((err&&err.message)||'การซื้อล้มเหลว');
+  }
+}
+document.getElementById('landBuyAmt').addEventListener('input',polPerNexForWidget);
+window.addEventListener('DOMContentLoaded',()=>{ lMount(); if(Laddr) renderLandingBalances(); });
+/* refresh balances when account switches */
+if(window.ethereum){ window.ethereum.on&&window.ethereum.on('accountsChanged',async()=>{ Laddr=null; const a=(await window.ethereum.request({method:'eth_accounts'}))||[]; if(a[0]){ Laddr=a[0]; localStorage.setItem('nx_wallet_addr',Laddr); await renderLandingBalances(); } const btn=document.getElementById('walletBtn'); if(btn){ btn.textContent = Laddr?('🔗 '+Laddr.slice(0,6)+'…'+Laddr.slice(-4)):'🔗 Connect MetaMask'; btn.classList.toggle('connected',!!Laddr); } }); }
+
+/* ═══════════ ขุดความรู้ v2 on Landing — reuse AIPipe (ai-pipe.js) ═══════════ */
+let LMode=AIPipe.mineMode()||'ai';
+function renderMineGate(){
+  const g=document.getElementById('lmGate')||document.getElementById('mineGate');
+  if(!g) return;
+  const s=AIPipe.lv3Status();
+  g.textContent=s.msg;
+  g.className='mine-gate '+(s.ok?'ok':'bad');
+}
+function landingMode(m){
+  LMode=m; AIPipe.setMineMode(m);
+  document.getElementById('lmGemKeys').style.display=(m==='ai')?'block':'none';
+  const ai=document.getElementById('lmAi'), hu=document.getElementById('lmHum');
+  if(ai)ai.style.background=(m==='ai')?'var(--acc)':'var(--panel2)';
+  if(hu)hu.style.background=(m==='human')?'var(--acc)':'var(--panel2)';
+}
+async function landingSaveGemKeys(){
+  const r=document.getElementById('lmResult');
+  try{
+    const k1=document.getElementById('lgK1').value.trim();
+    const k2=document.getElementById('lgK2').value.trim();
+    const k3=document.getElementById('lgK3').value.trim();
+    if(k1) await AIPipe.saveGemKey(1,k1);
+    if(k2) await AIPipe.saveGemKey(2,k2);
+    if(k3) await AIPipe.saveGemKey(3,k3);
+    renderGemSet(); if(r){ r.textContent='🔐 บันทึก Gemini keys แล้ว (เข้ารหัสบนเครื่อง)'; }
+  }catch(e){ if(r)r.textContent='❌ '+(e.message||e); }
+}
+function renderGemSet(){
+  const n=AIPipe.gemKeySet();
+  const el=document.getElementById('lgKSet'); if(el) el.textContent=' · ตั้งค่าแล้ว '+n+'/3 key';
+}
+function renderLandingMined(){
+  const el=document.getElementById('lmMined'); if(!el) return;
+  const arr=AIPipe.mined();
+  const total=AIPipe.totalReward();
+  el.textContent=arr.length
+    ? '🗂 คลังที่ขุดแล้ว (nx_mined_kb): '+arr.length+' การ์ด · +'+total+' NEX'
+    : '🗂 คลังที่ขุดแล้ว (nx_mined_kb): ยังไม่มี — ขุดแรกได้เลย (+NEX จาก Mining Pool 300M)';
+}
+async function landingMine(offline){
+  const btn=document.getElementById('lmBtn');
+  const res=document.getElementById('lmResult');
+  const title=document.getElementById('lmTitle').value;
+  const text=document.getElementById('lmText').value;
+  if(!res) return;
+  res.classList.remove('ok','err'); res.style.color='';
+  if(offline){
+    const card=AIPipe.offlineMine({title,text});
+    if(!card){ res.classList.add('err'); res.textContent='ความรู้สั้นไป'; return; }
+    btn&&(btn.disabled=true);
+    try{
+      const gate=AIPipe.lv3Status(); if(!gate.ok){ res.classList.add('err'); res.textContent=gate.msg; return; }
+      AIPipe._pushMined(card);
+      res.classList.add('ok'); res.textContent='🛠 ออฟไลน์ mint +'+card.reward_nex+' NEX — การ์ด: "'+card.title+'"';
+    } finally{ btn&&(btn.disabled=false); }
+    renderLandingMined(); return;
+  }
+  btn&&(btn.disabled=true);
+  try{
+    res.textContent=(LMode==='ai'?'🤖 AI ตรวจ 3 เสียง (Gemini ×3)…':'✋ โหมดคน ขุดเอง…');
+    const r=LMode==='ai' ? await AIPipe.mineAI({title,text}) : await AIPipe.mineHuman({title,text});
+    res.classList.toggle('ok',!!r.ok); res.classList.toggle('err',!r.ok);
+    res.textContent=r.msg;
+    if(r.card){ renderLandingMined(); }
+  }catch(e){ res.classList.add('err'); res.textContent='❌ '+(e.message||e); }
+  finally{ btn&&(btn.disabled=false); }
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  renderMineGate(); landingMode(LMode); renderGemSet(); renderLandingMined();
+});
 </script>
 
 </body>
