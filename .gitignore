@@ -27,3 +27,12 @@ models/
 # Android machine-specific (SDK path — per developer)
 mobile/NexusApp/local.properties
 mobile/NexusApp/.idea/
+
+# Local Netlify folder
+.netlify
+
+# Netlify CLI (local tooling only — not part of the site)
+node_modules/
+dist/
+package.json
+package-lock.json

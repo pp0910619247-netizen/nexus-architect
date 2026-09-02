@@ -1,0 +1,25 @@
+# Netlify config — nexusarchitect.online (magenta-wisp-92413b)
+# Publish from dist/ (built by: node scripts/stage-dist.js — copies only web assets)
+# Root / serves the reworked marketing landing; /app/ is the full dashboard
+# (Mining v2, Mountain, Jobs, Twin).
+
+[build]
+  publish = "dist"
+  ignore = "git diff --quiet HEAD^ HEAD"
+
+# Clean URLs / SPA fallback for client-side pages
+[[redirects]]
+  from = "/"
+  to = "/landing.html"
+  status = 200
+
+[[redirects]]
+  from = "/app"
+  to = "/app/"
+  status = 301
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
