@@ -8,4 +8,18 @@
         android:id="@+id/web"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:src="@drawable/ic_ai"
+        android:contentDescription="ดาวน์โหลด AI model"
+        app:backgroundTint="#F59E0B"
+        app:tint="#0A0E17"
+        android:onClick="onDownloadAiClicked"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
+
 </FrameLayout>

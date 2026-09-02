@@ -23,3 +23,7 @@ Thumbs.db
 # Model binaries (large GGUF files — never push to GitHub, soft-limit 100MB)
 models/
 *.gguf
+
+# Android machine-specific (SDK path — per developer)
+mobile/NexusApp/local.properties
+mobile/NexusApp/.idea/

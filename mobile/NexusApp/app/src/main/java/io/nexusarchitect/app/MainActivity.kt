@@ -57,6 +57,10 @@ class MainActivity : AppCompatActivity() {
         else web.loadUrl(SITE)
     }
 
+    fun onDownloadAiClicked(v: android.view.View) {
+        startActivity(Intent(this, DownloadModelActivity::class.java))
+    }
+
     private fun askMicIfNeeded() {
         val ok = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==
                  PackageManager.PERMISSION_GRANTED
