@@ -19,3 +19,7 @@ contracts/lib/
 Thumbs.db
 .DS_Store
 .vscode/
+
+# Model binaries (large GGUF files — never push to GitHub, soft-limit 100MB)
+models/
+*.gguf

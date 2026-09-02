@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nexus Architect — AI บนอุปกรณ์ของคุณ</title>
+<title>Nexus Architect — AI ที่เป็นของคุณจริงๆ ไม่ใช่ AI ของบริษัท</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🏔</text></svg>">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src *; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
-<meta name="description" content="Nexus Architect — AI Twin ที่ทำงานบนอุปกรณ์ของคุณเอง ไม่ต้องพึ่ง Cloud ไม่มีค่า API ไม่มีข้อมูลรั่ว">
-<meta property="og:title" content="Nexus Architect — AI บนอุปกรณ์ของคุณ">
-<meta property="og:description" content="AI บนอุปกรณ์ของคุณ · Digital Twin · ไม่ต้องพึ่ง Cloud · ข้อมูลไม่รั่ว">
+<meta name="description" content="Nexus Architect — AI Twin ที่รันบนอุปกรณ์คุณจริงๆ (ไฟล์โมเดล 378MB อยู่ในเครื่อง) ไม่พึ่ง Cloud ไม่มีค่า API และขุดความรู้ของคุณมินต์เป็นเหรียญ NEX32 ได้จริงบน Polygon Mainnet">
+<meta property="og:title" content="Nexus Architect — AI ที่เป็นของคุณจริงๆ">
+<meta property="og:description" content="AI บนอุปกรณ์คุณจริงๆ (offline, ไม่มี key) · ขุดความรู้ → มินต์ NEX32 · presale LIVE บน Polygon Mainnet">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://nexusarchitect.online">
 <style>
@@ -52,13 +52,15 @@ nav .links a:hover{color:var(--txt);text-decoration:none}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .hero h1{font-size:clamp(2.5rem,6vw,4.2rem);font-weight:900;line-height:1.15;margin-bottom:1.5rem;letter-spacing:-.02em}
 .hero h1 .g{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero-desc{font-size:1.1rem;color:var(--txt2);max-width:620px;margin:0 auto 2.5rem;line-height:1.9}
+.hero-desc{font-size:1.1rem;color:var(--txt2);max-width:640px;margin:0 auto 2.5rem;line-height:1.9}
 .hero-desc strong{color:var(--txt);font-weight:600}
 .hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
 .btn{display:inline-flex;align-items:center;gap:.6rem;padding:.85rem 2rem;border-radius:14px;font-weight:700;font-size:1rem;border:none;cursor:pointer;transition:all .2s;font-family:inherit}
 .btn:hover{transform:translateY(-2px);text-decoration:none}
 .btn-p{background:var(--grad);color:#fff;box-shadow:0 4px 25px rgba(124,58,237,0.35)}
 .btn-p:hover{box-shadow:0 8px 40px rgba(124,58,237,0.5);color:#fff}
+.btn-g{background:linear-gradient(135deg,#f59e0b,#f97316);color:#1a1206;box-shadow:0 4px 25px rgba(245,158,11,0.35)}
+.btn-g:hover{box-shadow:0 8px 40px rgba(245,158,11,0.5);color:#1a1206}
 .btn-s{background:var(--panel2);color:var(--txt);border:1px solid var(--line2)}
 .btn-s:hover{border-color:var(--acc);color:var(--txt)}
 .hero-stats{display:flex;gap:3rem;justify-content:center;margin-top:3rem;flex-wrap:wrap}
@@ -69,29 +71,75 @@ nav .links a:hover{color:var(--txt);text-decoration:none}
 /* ═══ SECTION ═══ */
 section{padding:6rem 0;position:relative}
 .sec-badge{display:inline-flex;align-items:center;gap:.4rem;background:var(--panel2);border:1px solid var(--line);padding:.3rem .9rem;border-radius:20px;font-size:.72rem;color:var(--acc2);margin-bottom:1rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.sec-badge.gold{color:#fbbf24;border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.08)}
 .sec-title{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:900;margin-bottom:.5rem;line-height:1.2}
 .sec-title .g{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sec-sub{color:var(--txt2);font-size:1rem;margin-bottom:3rem;max-width:580px;line-height:1.8}
+.sec-title .go{background:linear-gradient(135deg,#fbbf24,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sec-sub{color:var(--txt2);font-size:1rem;margin-bottom:3rem;max-width:620px;line-height:1.8}
 
-/* ═══ ABOUT ═══ */
-.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start}
-.about-left p{color:var(--txt2);margin-bottom:1.2rem;font-size:.95rem;line-height:1.9}
-.about-left strong{color:var(--txt)}
-.about-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:2rem;position:relative;overflow:hidden}
-.about-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad)}
-.about-card h4{font-weight:700;margin-bottom:1rem;font-size:1rem;display:flex;align-items:center;gap:.5rem}
-.about-card ul{list-style:none;padding:0}
-.about-card li{color:var(--txt2);font-size:.88rem;padding:.4rem 0;padding-left:1.3rem;position:relative;line-height:1.7}
-.about-card li::before{content:'✦';position:absolute;left:0;color:var(--acc);font-size:.7rem;top:.55rem}
-.about-card li strong{color:var(--txt)}
+/* ═══ BAR (live pill strip) ═══ */
+.bar{display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap;margin:0 auto 3rem;max-width:760px}
+.bar .pill{display:inline-flex;align-items:center;gap:.45rem;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:.35rem 1rem;font-size:.8rem;color:var(--txt2)}
+.bar .pill .dot{width:7px;height:7px;border-radius:50%;background:var(--warn);animation:pulse 1.8s infinite}
+.bar .pill.ok .dot{background:var(--good);animation:none}
+.bar .pill b{color:var(--txt);font-weight:700}
 
-/* ═══ FEATURES ═══ */
-.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
-.feat{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:2rem;transition:all .3s}
-.feat:hover{border-color:var(--acc);transform:translateY(-4px)}
-.feat .icon{font-size:2rem;margin-bottom:1rem}
-.feat h4{font-weight:700;margin-bottom:.5rem;font-size:1rem}
-.feat p{color:var(--txt2);font-size:.85rem;line-height:1.7}
+/* ═══ ON-DEVICE (the "real" proof) ═══ */
+.on-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
+.on-left .kicker{color:var(--good);font-weight:700;font-size:.8rem;letter-spacing:.5px;margin-bottom:.6rem}
+.on-left p{color:var(--txt2);margin-bottom:1rem;font-size:.95rem;line-height:1.9}
+.on-left strong{color:var(--txt)}
+.on-cards{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.on-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:1.3rem}
+.on-card .ic{font-size:1.6rem}
+.on-card h4{font-weight:700;font-size:.92rem;margin:.5rem 0 .3rem}
+.on-card p{color:var(--txt3);font-size:.78rem;line-height:1.6}
+.on-card .tag{display:inline-block;margin-top:.4rem;font-size:.68rem;font-weight:700;color:var(--good);background:rgba(16,185,129,.1);padding:.15rem .5rem;border-radius:8px}
+
+/* ═══ VS GRID (the "เหนือกว่า" counterpoint) ═══ */
+.vs-wrap{overflow-x:auto}
+.vs{width:100%;border-collapse:collapse;min-width:640px}
+.vs th,.vs td{padding:.9rem 1.1rem;text-align:left;border-bottom:1px solid var(--line);font-size:.88rem}
+.vs thead th{font-weight:800;background:var(--panel)}
+.vs .col-us{width:18%}
+.vs .col-nx{width:38%;background:linear-gradient(180deg,rgba(124,58,237,.12),transparent)}
+.vs th.col-nx{color:var(--acc2);background:rgba(124,58,237,.18)}
+.vs td.col-nx{color:var(--txt)}
+.vs td .yes{color:var(--good);font-weight:700}
+.vs td .no{color:var(--txt3);opacity:.45}
+.vs td .tag{font-size:.68rem;font-weight:700;color:#fff;background:var(--good);padding:.12rem .5rem;border-radius:8px;margin-left:.4rem}
+.vs .row-hl{background:rgba(124,58,237,.05)}
+.vs td b{color:var(--txt)}
+
+/* ═══ PRESALE (hero) ═══ */
+.presale{background:linear-gradient(180deg,rgba(124,58,237,.06),transparent 60%)}
+.presale-box{background:var(--glass);border:1px solid rgba(124,58,237,.35);border-radius:24px;padding:2.5rem;position:relative;overflow:hidden;text-align:center}
+.presale-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad)}
+.presale-box .big{font-size:2rem;font-weight:900;background:linear-gradient(135deg,#fbbf24,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:.4rem 0 .2rem}
+.presale-box .live{display:inline-flex;align-items:center;gap:.5rem;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#fbbf24;font-weight:700;font-size:.78rem;padding:.35rem 1rem;border-radius:999px;margin-bottom:1.2rem}
+.presale-box .live .dot{width:8px;height:8px;border-radius:50%;background:#f59e0b;animation:pulse 1.5s infinite}
+.gauge{max-width:420px;margin:1.6rem auto 1rem}
+.gauge .gtop{display:flex;justify-content:space-between;font-size:.8rem;color:var(--txt2);margin-bottom:.4rem}
+.gauge .gtop b{color:var(--txt)}
+.gauge .track{height:12px;border-radius:8px;background:var(--panel2);overflow:hidden;border:1px solid var(--line)}
+.gauge .fill{height:100%;border-radius:8px;background:linear-gradient(90deg,#7c3aed,#e879f9);transition:width 1s ease}
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;max-width:620px;margin:0 auto 1.6rem}
+.price-cell{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.9rem}
+.price-cell .p{font-size:1.15rem;font-weight:800;color:var(--txt)}
+.price-cell .p.g{background:linear-gradient(135deg,#fbbf24,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.price-cell .l{color:var(--txt3);font-size:.7rem}
+.presale-box .addr{font-family:ui-monospace,SFMono-Regular,monospace;font-size:.72rem;color:var(--txt3);word-break:break-all;margin-top:1.2rem;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.5rem .8rem;display:inline-block}
+
+/* ═══ PILLARS ═══ */
+.pil-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.pil{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:2rem;transition:all .3s;position:relative;overflow:hidden}
+.pil:hover{border-color:var(--acc);transform:translateY(-4px)}
+.pil::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad)}
+.pil.gold::before{background:linear-gradient(135deg,#fbbf24,#f97316)}
+.pil .icon{font-size:2rem;margin-bottom:1rem}
+.pil h4{font-weight:700;margin-bottom:.5rem;font-size:1rem}
+.pil p{color:var(--txt2);font-size:.85rem;line-height:1.7}
+.pil .step{font-size:.72rem;font-weight:700;color:var(--acc2);background:rgba(124,58,237,.12);display:inline-block;padding:.15rem .6rem;border-radius:8px;margin-bottom:.8rem}
 
 /* ═══ ROADMAP ═══ */
 .road{position:relative;padding-left:2.5rem}
@@ -117,7 +165,7 @@ section{padding:6rem 0;position:relative}
 /* ═══ CTA ═══ */
 .cta-section{text-align:center;padding:5rem 0}
 .cta-section h2{font-size:2rem;font-weight:900;margin-bottom:1rem}
-.cta-section p{color:var(--txt2);margin-bottom:2rem;max-width:500px;margin-left:auto;margin-right:auto}
+.cta-section p{color:var(--txt2);margin-bottom:2rem;max-width:560px;margin-left:auto;margin-right:auto}
 
 /* ═══ FOOTER ═══ */
 footer{text-align:center;padding:3rem 0;border-top:1px solid var(--line)}
@@ -128,8 +176,10 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:900px){
-  .about-grid{grid-template-columns:1fr}
-  .feat-grid{grid-template-columns:1fr}
+  .on-grid{grid-template-columns:1fr}
+  .on-cards{grid-template-columns:1fr 1fr}
+  .pil-grid{grid-template-columns:1fr}
+  .price-grid{grid-template-columns:1fr}
   nav .links{display:none}
   .hero-stats{gap:1.5rem}
 }
@@ -137,6 +187,7 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
   .hero h1{font-size:2rem}
   .container{padding:0 1.2rem}
   section{padding:4rem 0}
+  .on-cards{grid-template-columns:1fr}
 }
 
 /* ═══ SCROLL ANIM ═══ */
@@ -152,8 +203,9 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
     <div class="logo"><span class="icon">🏔</span> <span>Nexus</span> Architect</div>
     <div class="links">
       <a href="index.html">💬 แชต Yuri</a>
-      <a href="#about">Whitepaper</a>
-      <a href="#features">คุณสมบัติ</a>
+      <a href="#ondevice">On-Device</a>
+      <a href="#vs">เหนือกว่า AI ยักษ์</a>
+      <a href="#presale">NEX32 ฟรีเซล</a>
       <a href="#roadmap">Roadmap</a>
       <a href="#faq">FAQ</a>
     </div>
@@ -170,122 +222,180 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 <!-- ═══════ HERO ═══════ -->
 <section class="hero">
   <div>
-    <div class="hero-badge"><span class="dot"></span> เปิดให้ใช้งานแล้ว · AI บนอุปกรณ์ของคุณ</div>
-    <h1>สร้าง <span class="g">AI คู่ชีวิต</span><br>บนอุปกรณ์ของคุณเอง</h1>
+    <div class="hero-badge"><span class="dot"></span> AI ของคุณจริงๆ · โมเดล 378MB รันในเครื่อง · ใช้งานได้แล้ว</div>
+    <h1>ให้ AI มหาศาลในสมองของคุณ<br>ไม่ใช่ <span class="g">AI ของบริษัท</span></h1>
     <p class="hero-desc">
-      Nexus Architect คือระบบนิเวศที่ให้ทุกคนมี <strong>AI คู่ชีวิต</strong> ที่ทำงานบนอุปกรณ์ของคุณเอง — ไม่ต้องพึ่ง Cloud ไม่ต้องเสียค่า API ไม่ต้องกลัวข้อมูลรั่ว
+      Nexus Architect คือ AI <strong> Digital Twin</strong> ที่ฝังโมเดลไว้ในอุปกรณ์ของคุณจริงๆ — <strong>offline</strong> ไม่ต้องใช้ Cloud ไม่มี API key ไม่มีข้อมูลรั่ว และความรู้ที่คุณขุดได้กลายเป็นเหรียญ <strong>NEX32</strong> ได้จริงบน Polygon Mainnet
     </p>
+    <div class="bar">
+      <span class="pill ok"><span class="dot"></span> โมเดล on-device 378MB <b>ฝังใน APK</b></span>
+      <span class="pill ok"><span class="dot"></span> ใช้งานได้แล้ว</span>
+      <span class="pill"><span class="dot"></span> NEX32 ฟรีเซล <b>LIVE</b></span>
+    </div>
     <div class="hero-btns">
-      <a class="btn btn-p" href="index.html">💬 คุยกับ Yuri — AI คู่ชีวิต</a>
-      <a class="btn btn-s" href="#features">⚙️ ดูคุณสมบัติ</a>
-      <a class="btn btn-s" href="#roadmap">🗺️ ดู Roadmap</a>
+      <a class="btn btn-p" href="index.html">💬 คุยกับ Yuri — AI บนเครื่องคุณ</a>
+      <a class="btn btn-g" href="#presale">🪙 ไปฟรีเซล NEX32</a>
+      <a class="btn btn-s" href="#vs">⚡ ทำไมเหนือกว่า AI ยักษ์</a>
     </div>
     <div class="hero-stats">
-      <div class="hero-stat"><div class="num">On-Device</div><div class="lbl">AI รันบนเครื่องคุณ</div></div>
-      <div class="hero-stat"><div class="num">Open Source</div><div class="lbl">ตรวจสอบได้ทุกบรรทัด</div></div>
-      <div class="hero-stat"><div class="num">Private</div><div class="lbl">ข้อมูลไม่ไปไหนเลย</div></div>
-      <div class="hero-stat"><div class="num">ฟรี</div><div class="lbl">ไม่เสียค่า API</div></div>
+      <div class="hero-stat"><div class="num">378MB</div><div class="lbl">โมเดลในเครื่อง ไม่ต้อง Cloud</div></div>
+      <div class="hero-stat"><div class="num">0 ฿/เดือน</div><div class="lbl">ไม่มีค่า API ตลอดชีพ</div></div>
+      <div class="hero-stat"><div class="num">100%</div><div class="lbl">ข้อมูลของคุณ อยู่ในเครื่องคุณ</div></div>
+      <div class="hero-stat"><div class="num">NEX32</div><div class="lbl">ขุดความรู้ → ได้เหรียญจริง</div></div>
     </div>
   </div>
 </section>
 
-<!-- ═══════ WHITEPAPER ═══════ -->
-<section id="about">
+<!-- ═══════ ON-DEVICE: หลักฐานของจริง ═══════ -->
+<section id="ondevice">
   <div class="container">
-    <div class="sec-badge">📄 Whitepaper</div>
-    <div class="sec-title">Nexus Architect <span class="g">คืออะไร</span></div>
-    <p class="sec-sub">ทำความเข้าใจโปรเจกต์ทั้งหมดใน 3 นาที</p>
-    <div class="about-grid">
-      <div class="about-left">
-        <p><strong>Nexus Architect</strong> คือระบบนิเวศที่สร้าง "AI คู่ชีวิต" ที่ทำงานบนอุปกรณ์ของคุณเอง — ไม่ต้องพึ่ง Cloud ไม่ต้องเสียค่า API ไม่ต้องกลัวข้อมูลรั่ว</p>
-        <p>ทุกคนมี <strong>Digital Twin</strong> — AI ที่เรียนรู้จากข้อความสนทนาของคุณ จดจำความชอบ ความสนใจ และช่วยคิด ช่วยทำในแบบที่คุณต้องการ ทั้งหมดทำงานบนเบราว์เซอร์ของคุณเอง</p>
-        <p>ระบบ <strong>The Mountain</strong> ให้ชุมชนเสนอและโหวตปัญหาที่อยากให้ AI ช่วยแก้ — งานแบบ <strong>เจ้าและลูกจ้าง</strong> สร้างระบบนิเวศที่ทุกคนมีส่วนร่วมได้จริง</p>
-        <p><strong>เป้าหมายของเรา:</strong> สร้างระบบนิเวศที่ทุกคนมี AI คู่ชีวิตส่วนตัว และมีส่วนร่วมในชุมชนที่โปร่งใส — เริ่มจากชุมชนเล็กๆ สู่การเปลี่ยนแปลงระดับโลก</p>
-        <p>ทุกอย่างเป็น <strong>Open Source</strong> ภายใต้ MIT License — ใครก็สามารถตรวจสอบ แก้ไข และสร้างต่อได้</p>
+    <div class="sec-badge">🧠 On-Device · ของจริง</div>
+    <div class="sec-title">AI ตัวนี้ <span class="g">อยู่ในเครื่องคุณ</span> ไม่ได้อยู่บนเซิร์ฟเวอร์</div>
+    <p class="sec-sub">คนอื่นขาย "AI บนอุปกรณ์" ด้วยการฝากข้อมูลไว้บน Cloud เฉพาะหน้า. เราไปไกลกว่า: โมเดลทั้งหมดถูกฝังอยู่ในแอป Android ของคุณ</p>
+    <div class="on-grid">
+      <div class="on-left">
+        <div class="kicker">✔ ไม่ต้องใช้ internet</div>
+        <p><strong>Yuri</strong> คือ AI companion ที่รันด้วยเอนจิน <strong>llama.cpp (native)</strong> ฝังในแอป — ไฟล์โมเดล GGUF ขนาด 378MB ถูก bundle เข้าไปใน APK เลย ไม่โหลดจากที่ไหน</p>
+        <p>ปิด Wi-Fi, อยู่ในรถใต้ดิน, นอกประเทศ — <strong>Yuri ยังตอบได้</strong> เพราะสมองอยู่กับคุณ</p>
+        <p>อยากใช้สมองใหญ่ขึ้น? สลับไป <strong>llama-server / Ollama / Gemini / OpenAI / Claude</strong> ได้ แต่ละค่ายตั้ง key เอง เก็บด้วย <strong>AES-GCM ในเครื่อง</strong> ไม่มีการส่ง key ไป server ใคร</p>
       </div>
-      <div class="about-card">
-        <h4>💡 คุณสมบัติหลัก</h4>
-        <ul>
-          <li><strong>AI Twin</strong> — AI ที่ทำงานบนเบราว์เซอร์ ไม่ต้องติดตั้ง ไม่ต้องมี API key</li>
-          <li><strong>The Mountain</strong> — เสนอและโหวตปัญหาชุมชน</li>
-          <li><strong>Escrow Jobs</strong> — จ้างงานปลอดภัย ปลดล็อกเมื่องานเสร็จ</li>
-          <li><strong>KYC On-Device</strong> — ยืนยันตัวตนบนอุปกรณ์ของคุณ ข้อมูลไม่ไปไหน</li>
-          <li><strong>Private by Design</strong> — ไม่มี server กลาง ไม่มีโฆษณา</li>
-          <li><strong>Open Source</strong> — MIT License ตรวจสอบได้ทุกอย่าง</li>
-        </ul>
+      <div class="on-cards">
+        <div class="on-card">
+          <div class="ic">📦</div>
+          <h4>โมเดลในเครื่อง</h4>
+          <p>yuri-nexus-Q4_K_M.gguf 378MB บรรจุใน APK</p>
+          <span class="tag">OFFLINE</span>
+        </div>
+        <div class="on-card">
+          <div class="ic">🔌</div>
+          <h4>เอนจิน native</h4>
+          <p>llama.cpp ผ่าน JNI — เร็ว ไม่ส่งข้อมูลออก</p>
+          <span class="tag">NATIVE</span>
+        </div>
+        <div class="on-card">
+          <div class="ic">🔑</div>
+          <h4>Key ไม่ต้องมี</h4>
+          <p>โหมด on-device ใช้ได้ทันที ไม่เสียค่า API</p>
+          <span class="tag">FREE</span>
+        </div>
+        <div class="on-card">
+          <div class="ic">🔐</div>
+          <h4>ข้อมูลไม่ไปไหน</h4>
+          <p>บทสนทนา + key เก็บในเครื่อง เข้ารหัส AES-GCM</p>
+          <span class="tag">PRIVATE</span>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══════ FEATURES ═══════ -->
-<section id="features">
+<!-- ═══════ VS CLOUD GIANTS ═══════ -->
+<section id="vs">
   <div class="container">
-    <div class="sec-badge">⚙️ คุณสมบัติ</div>
-    <div class="sec-title">ระบบนิเวศ <span class="g">ทั้งหมด</span></div>
-    <p class="sec-sub">ทุกฟีเจอร์ถูกออกแบบมาเพื่อทำงานร่วมกัน</p>
-    <div class="feat-grid">
-      <div class="feat reveal">
+    <div class="sec-badge">⚔️ ภาพเทียบ</div>
+    <div class="sec-title">ทำไม <span class="g">เราถึงเหนือกว่า</span> AI ระดับยักษ์</div>
+    <p class="sec-sub">ลองเทียบกับสิ่งที่คนทั่วไปใช้อยู่ทุกวัน — แล้วตอบตัวเองได้ว่าใครเห็นคุณค่าของ "ข้อมูลของคุณ" จริงๆ</p>
+    <div class="vs-wrap">
+      <table class="vs">
+        <thead>
+          <tr>
+            <th class="col-us">หัวข้อ</th>
+            <th class="col-nx">Nexus Architect</th>
+            <th>AI Cloud ยักษ์</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>โมเดลรันที่ไหน</b></td>
+            <td class="col-nx"><span class="yes">✓ ในเครื่องคุณ</span> <span class="tag">จริง</span></td>
+            <td><span class="no">✗ ในเซิร์ฟเวอร์บริษัท</span></td>
+          </tr>
+          <tr>
+            <td><b>ต้องเชื่อมเน็ตไหม</b></td>
+            <td class="col-nx"><span class="yes">✓ ไม่ต้อง (offline)</span></td>
+            <td><span class="no">✗ ต้องเชื่อมตลอด</span></td>
+          </tr>
+          <tr class="row-hl">
+            <td><b>ค่า API รายเดือน</b></td>
+            <td class="col-nx" style="background:rgba(124,58,237,.05)"><span class="yes">✓ 0 ฿ ฟรีตลอด</span></td>
+            <td><span class="no">✗ จ่ายตามการใช้งาน</span></td>
+          </tr>
+          <tr>
+            <td><b>ข้อมูลสนทนาอยู่ไหน</b></td>
+            <td class="col-nx"><span class="yes">✓ เครื่องของคุณ</span></td>
+            <td><span class="no">✗ อย่ในบริษัท (ถูกนำไปเทรนได้)</span></td>
+          </tr>
+          <tr>
+            <td><b>เป็นเจ้าของเหรียญได้ไหม</b></td>
+            <td class="col-nx"><span class="yes">✓ ขุดความรู้ → ได้ NEX32</span> <span class="tag">ใหม่</span></td>
+            <td><span class="no">✗ บริการล้วน รับแต่เงิน</span></td>
+          </tr>
+          <tr>
+            <td><b>ตรวจสอบโค้ดได้</b></td>
+            <td class="col-nx"><span class="yes">✓ Open Source (MIT)</span></td>
+            <td><span class="no">✗ กล่องดำ</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ NEX32 PRESALE LIVE (hero) ═══════ -->
+<section id="presale" class="presale">
+  <div class="container">
+    <div class="sec-badge gold">🪙 NEX32 ฟรีเซล LIVE</div>
+    <div class="sec-title">ใช้ความรู้ของคุณ <span class="go">กลายเป็นเจ้าของ</span>ด้วย NEX32</div>
+    <p class="sec-sub">AI ไม่ได้มีไว้แค่คุย — มันมีไว้สร้างมูลค่า. ขุดความรู้ของคุณเป็น "การ์ด" มินต์เหรียญได้จริง บน Polygon Mainnet ฟรีเซลเปิดอยู่แล้ว</p>
+
+    <div class="presale-box">
+      <div class="live"><span class="dot"></span> เปิดขายอยู่ตอนนี้ · Polygon Mainnet · ราคาจาก Chainlink Oracle</div>
+      <div class="big">NEX32 Presale</div>
+      <p style="color:var(--txt2);font-size:.9rem">ราคาเริ่มต้น $0.0001 / NEX · วางขาย 500,000,000 NEX · ฟรีเซลถึง 31 ต.ค. 2026</p>
+
+      <div class="gauge">
+        <div class="gtop"><span>ยอดที่วางขายไป</span><b id="gSold">…</b></div>
+        <div class="track"><div class="fill" id="gFill" style="width:0%"></div></div>
+        <div class="gtop" style="margin-top:.4rem;justify-content:center"><span id="gPct">—</span></div>
+      </div>
+
+      <div class="price-grid">
+        <div class="price-cell"><div class="p">$0.0001</div><div class="l">ราคาเริ่มต้น / NEX</div></div>
+        <div class="price-cell"><div class="p g" id="pUsd">—</div><div class="l">ราคา Chainlink ปัจจุบัน</div></div>
+        <div class="price-cell"><div class="p" id="pPol">—</div><div class="l">POL / 1,000 NEX</div></div>
+      </div>
+
+      <a class="btn btn-g" href="app/index.html#presale" style="font-size:1.05rem;padding:1rem 2.4rem">🚀 ไปซื้อ NEX32 เช็กราคาเรียลไทม์ในเว็บ</a>
+
+      <div class="addr">PublicSale: 0xB1293Ed631e4bDf568e91727F78fAd170cC58304</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ PILLARS: 3 เสาหลัก ═══════ -->
+<section id="ecosystem">
+  <div class="container">
+    <div class="sec-badge">🏛️ นิเวศ</div>
+    <div class="sec-title">3 เสาหลัก <span class="g">ที่ทำงานร่วมกัน</span></div>
+    <p class="sec-sub">แต่ละส่วนต่อกันเป็นวงจรเดียว — เล่นแล้วได้จริง</p>
+    <div class="pil-grid">
+      <div class="pil reveal">
+        <span class="step">1 · ใช้งาน</span>
         <div class="icon">🧠</div>
-        <h4>AI Twin บนอุปกรณ์ของคุณ</h4>
-        <p>ใช้ WebGPU/WASM รันโมเดล AI บนเบราว์เซอร์ของคุณเอง — ไม่ต้องส่งข้อมูลไป Cloud ใดๆ เรียนรู้จากบทสนทนาและปรับตัวตามคุณ</p>
+        <h4>AI บนเครื่องคุณ</h4>
+        <p>Yuri รันตรงในเครื่อง ไม่พึ่ง Cloud. สลับสมองใหญ่ได้ทุกค่าย key เก็บในเครื่องแบบเข้ารหัส</p>
       </div>
-      <div class="feat reveal">
-        <div class="icon">🏔</div>
-        <h4>The Mountain — เสนอปัญหา</h4>
-        <p>ทุกคนเสนอปัญหาให้ชุมชนโหวตได้ ข้อมูลเปิดเผย ตรวจสอบได้ทุกขั้นตอน — ปัญหาที่มีคะแนนสูงสุดจะอยู่รอด</p>
+      <div class="pil reveal">
+        <span class="step">2 · ขุดความรู้</span>
+        <div class="icon">⛏️</div>
+        <h4>ขุดความรู้ → มินต์เป็นเหรียญ</h4>
+        <p>เขียนวิธีแก้ปัญหาจริง ผ่าน KYC Lv.3 แล้ว AI จัดทำเป็นการ์ดความรู้ พร้อม <strong>reward NEX32</strong> ตามระดับความยาก (มากถึง 1,000+ NEX)</p>
       </div>
-      <div class="feat reveal">
-        <div class="icon">💼</div>
-        <h4>งาน Escrow ปลอดภัย</h4>
-        <p>จ้างงานแบบมีสัญญาผูกพัน — เงินถูกล็อกไว้จนกว่างานจะเสร็จ ค่าธรรมเนียม 10% กระจายให้ชุมชนอัตโนมัติ</p>
-      </div>
-      <div class="feat reveal">
-        <div class="icon">🔐</div>
-        <h4>ยืนยันตัวตนแบบปลอดภัย</h4>
-        <p>KYC ทั้งหมดทำงานบนอุปกรณ์ของคุณ — ตรวจบัตรประชาชน หนังสือเดินทาง ตรวจจับการกะพริบตา ไม่มีข้อมูลไหนถูกส่งไป server ภายนอก</p>
-      </div>
-      <div class="feat reveal">
-        <div class="icon">📱</div>
-        <h4>แอปบนมือถือ (เร็วๆ นี้)</h4>
-        <p>AI Twin จะมาในรูปแบบ APK สำหรับ Android ก่อน — ติดตั้งตรง ไม่ต้องผ่าน Play Store เมื่อมีงบประมาณจะลง Play Store ต่อไป</p>
-      </div>
-      <div class="feat reveal">
-        <div class="icon">🌍</div>
-        <h4>ขยายเป็นภาษาต่างๆ</h4>
-        <p>มีระบบจำแนกวิชาความรู้ให้ Gemini ประกอบคำตอบ อัปเดตวิชาใหม่ได้ตลอดจากบิลด์ของแต่ละรุ่น</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ NEX32 PRESALE LIVE ═══════ -->
-<section id="presale">
-  <div class="container">
-    <div class="sec-badge">🪙 NEX32 ฟรีเซล LIVE</div>
-    <div class="sec-title">NEX32 <span class="g">ฟรีเซล</span> — Polygon Mainnet</div>
-    <p class="sec-sub">ซื้อ NEX32 ได้เลยตอนนี้บน Polygon Mainnet — ราคาอิง POL/USD ด้วย Oracle Chainlink ฟรีเซลเปิดถึง 31 ต.ค. 2026</p>
-    <div class="about-grid">
-      <div class="about-card">
-        <h4>🪙 รายละเอียด Presale</h4>
-        <ul>
-          <li><strong>โทเคน:</strong> NEX32 (18 decimals, Supply 1,000,000,000)</li>
-          <li><strong>วางขาย:</strong> 500,000,000 NEX (ครึ่งหนึ่งของ supply)</li>
-          <li><strong>จ่ายด้วย:</strong> POL เท่านั้น · ราคาอิง Chainlink Oracle</li>
-          <li><strong>ซื้อขั้นต่ำ:</strong> 1,000 NEX (<span id="lMinNex">…</span> POL ≈ <span id="lMinUsd">…</span>)</li>
-          <li><strong>ราคาเริ่มต้น:</strong> $0.0001 / NEX</li>
-          <li><strong>หน้าต่างบัดนี้:</strong> 1 ก.ย. 2026 → 31 ต.ค. 2026 (UTC)</li>
-        </ul>
-        <a class="btn btn-p" href="app/index.html#presale" style="margin-top:1rem">🚀 ไปซื้อเลย (เช็กราคาแบบเรียลไทม์ในเว็บ)</a>
-      </div>
-      <div class="about-card">
-        <h4>🔗 Smart Contracts (ตรวจสอบได้บน Polygonscan)</h4>
-        <ul>
-          <li><strong>NEX32 Token:</strong><br><code>0x770AFC829e87d9A3467b20d6f3E5122BBa9BA0af</code></li>
-          <li><strong>PublicSale:</strong><br><code>0xB1293Ed631e4bDf568e91727F78fAd170cC58304</code></li>
-          <li><strong>MiningRewards:</strong><br><code>0x9B3eDdd22210861D5b24aEBB392dcd47876Aa08C</code></li>
-          <li><strong>TeamVesting:</strong><br><code>0xf596558e93Ca6d1e9A873389b50D1ccfae8cA796</code></li>
-        </ul>
+      <div class="pil gold reveal">
+        <span class="step">3 · เป็นเจ้าของ</span>
+        <div class="icon">🪙</div>
+        <h4>NEX32 — เติบโตด้วยกัน</h4>
+        <p>ฟรีเซล live บน Polygon. เหรียญผูกกับระบบนิเวศ — ยิ่งมีคนใช้และขุดความรู้มากขึ้น คุณค่าก็ยิ่งโต</p>
       </div>
     </div>
   </div>
@@ -303,43 +413,41 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
         <div class="road-when">Phase 1 · Q3 2025</div>
         <h4>✅ สร้างรากฐาน — Genesis</h4>
         <ul>
-          <li>AI Twin v6 Quantum Hybrid ทำงานบน WebGPU/WASM</li>
+          <li>AI Twin ทำงานบน WebGPU/WASM บนเบราว์เซอร์</li>
           <li>ระบบ Brain จำแนก 12,795 วิชาทดสอบผ่าน</li>
           <li>เว็บ Landing Page + Whitepaper</li>
           <li>Android Studio project พร้อม</li>
         </ul>
       </div>
-      <div class="road-item">
-        <div class="road-dot">2</div>
-        <div class="road-when">Phase 2 · Q4 2025</div>
-        <h4>🌐 ขยายชุมชน — Growth</h4>
+      <div class="road-item done">
+        <div class="road-dot">✓</div>
+        <div class="road-when">Phase 2 · Q4 2025 – Q1 2026</div>
+        <h4>🌐 ขยายชุมชน + AI บนเครื่อง</h4>
         <ul>
-          <li>Genesis 100 early adopters</li>
-          <li>AI Twin APK สำหรับ Android</li>
-          <li>Grant applications (Questbook, Gitcoin)</li>
+          <li>AI Twin APK สำหรับ Android พร้อมเอนจิน llama.cpp native</li>
+          <li><strong>โมเดล 378MB ฝังใน APK รัน offline ได้จริง</strong></li>
+          <li>ฟรีเซล NEX32 เปิดขายบน Polygon Mainnet</li>
           <li>สร้างชุมชน Telegram + X</li>
         </ul>
       </div>
       <div class="road-item">
         <div class="road-dot">3</div>
-        <div class="road-when">Phase 3 · Q1 2026</div>
+        <div class="road-when">Phase 3 · Q2 2026</div>
         <h4>📈 ขยายระบบ — Scale</h4>
         <ul>
+          <li>ขุดความรู้ + มินต์ NEX32 สู่เต็มระบบ</li>
           <li>Job Board — งาน Escrow จริง</li>
-          <li>Verified Human — ยืนยันว่าเป็นคนจริง</li>
-          <li>ขยายระบบเป็นโมดูลและ API ที่ใช้ร่วมกันได้</li>
           <li>ลง Play Store เมื่อมีงบประมาณ</li>
         </ul>
       </div>
       <div class="road-item">
         <div class="road-dot">4</div>
-        <div class="road-when">Phase 4 · Q2 2026</div>
+        <div class="road-when">Phase 4 · Q3 2026</div>
         <h4>🏛️ DAO Governance — Decentralize</h4>
         <ul>
           <li>DAO governance activation</li>
           <li>AI model marketplace</li>
           <li>Community treasury management</li>
-          <li>การปกครองโดยชุมชนอย่างสมบูรณ์</li>
         </ul>
       </div>
     </div>
@@ -349,33 +457,33 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 <!-- ═══════ FAQ ═══════ -->
 <section id="faq">
   <div class="container">
-    <div class="sec-badge">❓ คำถามที่พบบ่อย</div>
-    <div class="sec-title">FAQ</div>
+    <div class="sec-badge">❓ FAQ</div>
+    <div class="sec-title">ข้อมูลน่ารู้</div>
     <p class="sec-sub">คำตอบสำหรับคำถามที่คนมักถามบ่อย</p>
     <div class="faq-list">
       <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>Nexus Architect คืออะไร? <span class="arrow">▾</span></h4>
-        <p>ระบบ AI ที่ทำงานบนอุปกรณ์ของคุณเอง (ไม่พึ่ง Cloud) — รวมการโหวตปัญหา จ้างงาน และการมีส่วนร่วมในชุมชนไว้ที่เดียว</p>
+        <h4>AI ของคุณ offline จริงไหม? ต้องใช้เน็ตไหม? <span class="arrow">▾</span></h4>
+        <p>ใช่ offline จริง. โมเดล GGUF 378MB ถูกฝังใน APK แอป Android — เมื่อติดตั้งแล้ว Yuri รันด้วยเอนจิน llama.cpp บนเครื่องคุณ ไม่ต้องเชื่อม internet ไม่มีค่า API ไม่ต้องทำอะไรเพิ่ม</p>
       </div>
       <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>AI Twin ทำงานยังไง? ต้องมี API key ไหม? <span class="arrow">▾</span></h4>
-        <p>AI ทำงานบนเบราว์เซอร์ของคุณเองผ่าน WebGPU/WASM ไม่ต้องมี API key ไม่ต้องเสียค่า Cloud ข้อมูลไม่ถูกส่งไปไหนเลย</p>
+        <h4>แล้วจะใช้ AI ที่ฉลาดกว่า / สมองใหญ่ได้ไหม? <span class="arrow">▾</span></h4>
+        <p>ได้มากเลย. ระบบสนับสนุนหลายค่าย: สลับไป llama-server / Ollama /.llama-server ในเครื่อง / Gemini / OpenAI / Claude / OpenRouter ได้ ดั้งนี้ตั้ง API key เองได้ เก็บด้วยเข้ารหัส AES-GCM ในเครื่อง ไม่มี server กลาง</p>
       </div>
       <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>The Mountain คืออะไร? <span class="arrow">▾</span></h4>
-        <p>ระบบเสนอปัญหาของชุมชน — ทุกคนเสนอปัญหา ผู้อื่นโหวตได้ ปัญหาที่มีคะแนนสูงสุดจะอยู่รอด ปัญหาที่ไม่ผ่านจะถูกคัดออก</p>
+        <h4>NEX32 ฟรีเซลเป็นยังไง? อยู่บนไหน? <span class="arrow">▾</span></h4>
+        <p>NEX32 presale เปิดขายบน Polygon Mainnet จ่ายด้วย POL ราคาอิง Chainlink Oracle. วางขาย 500,000,000 NEX (ครึ่งหนึ่งของ total supply 1,000,000,000) ฟรีเซลถึง 31 ต.ค. 2026. เช็กราคาเรียลไทม์แล้วซื้อได้เลยในหน้า app/index.html#presale</p>
       </div>
       <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>AI Twin APK จะมีเมื่อไหร่? <span class="arrow">▾</span></h4>
-        <p>แผน Q4 2025 — สร้าง Android APK ก่อน (ติดตั้งตรง ไม่ผ่าน Play Store) เมื่อมีงบประมาณจาก grant จะลง Play Store ต่อไป</p>
+        <h4>ขุดความรู้แล้วได้เหรียญจริงไหม? <span class="arrow">▾</span></h4>
+        <p>ระบบ reward ตาม Whitepaper v1.1: การ์ดความรู้ของคุณจะบันทึก reward_nex (difficulty 1–10 ≈ 10 ถึง 1,000+ NEX) จาก Mining Pool 300M. บันทึกในคลังที่เว็บและแอปใช้ร่วมกัน ลิงก์กับเหรียญ NEX32 บน Polygon</p>
       </div>
       <div class="faq-item" onclick="this.classList.toggle('open')">
         <h4>ข้อมูลของฉันปลอดภัยไหม? <span class="arrow">▾</span></h4>
-        <p>ทุกอย่างทำงานบนอุปกรณ์ของคุณ — AI ไม่ส่งข้อมูลไป Cloud, KYC ประมวลผลบนเครื่องของคุณ, ข้อมูลเก็บใน localStorage ไม่มี server กลาง</p>
+        <p>ทุกอย่างทำงานบนอุปกรณ์คุณ. KYC ประมวลผลบนเครื่อง (ไม่มีข้อมูลส่งไป server ภายนอก) บทสนทนา + key เก็บในเครื่อง เข้ารหัส AES-GCM. White-paper ให้ตรวจสอบโค้ดได้เต็มที่เพราะ open source (MIT)</p>
       </div>
       <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>ติดต่อทีมงานได้ยังไง? <span class="arrow">▾</span></h4>
-        <p>เข้าร่วม Telegram group หรือติดตามบน X/Twitter — ทุกอย่างโปร่งใสเพราะเป็น open source บน GitHub</p>
+        <h4>ติดต่อทีมได้ยังไง? <span class="arrow">▾</span></h4>
+        <p>เข้าร่วม Telegram group ติดตามบน X/Twitter หรือหน้า Facebook ได้เลย — ทุกอย่างโปร่งใส open source บน GitHub</p>
       </div>
     </div>
   </div>
@@ -384,9 +492,11 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 <!-- ═══════ CTA ═══════ -->
 <section class="cta-section">
   <div class="container">
-    <div class="sec-title">พร้อมเริ่มต้น <span class="g">ไปด้วยกัน</span>?</div>
-    <p>เข้าร่วมชุมชน Nexus Architect — ทุกคนมีส่วนร่วมได้ ทุกอย่างโปร่งใส</p>
+    <div class="sec-title">เป็นเจ้าของ <span class="go">AI และเหรียญ</span>ของคุณจริงๆ</div>
+    <p>AI Cloud ยักษ์ขอค่า API รายเดือนและเอาข้อมูลคุณไป. ตรงนี้ AI อยู่ในเครื่องคุณ และความรู้คุณกลายเป็น NEX32 — เริ่มได้แล้วตอนนี้</p>
     <div class="hero-btns" style="justify-content:center">
+      <a class="btn btn-p" href="index.html">💬 คุยกับ Yuri</a>
+      <a class="btn btn-g" href="app/index.html#presale">🪙 ฟรีเซล NEX32</a>
       <a class="btn btn-s" href="https://github.com/pp0910619247-netizen/nexus-architect" target="_blank">🐙 ดู GitHub</a>
     </div>
   </div>
@@ -401,7 +511,7 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
       <a href="https://www.facebook.com/groups/28128540746755286/" target="_blank">📘 Facebook</a>
       <a href="https://github.com/pp0910619247-netizen/nexus-architect" target="_blank">🐙 GitHub</a>
     </div>
-    <p>© 2025 Nexus Architect · MIT License</p>
+    <p>© 2026 Nexus Architect · MIT License · Cryptocurrency มีความเสี่ยง โปรดศึกษาก่อนลงทุน</p>
   </div>
 </footer>
 
@@ -409,25 +519,29 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("visible");obs.unobserve(e.target)}}),{threshold:.15});
 document.querySelectorAll(".reveal").forEach(el=>obs.observe(el));
 
-/* NEX32 free-sale live price (lightweight eth_call, no ethers needed) */
+/* ── NEX32 free-sale live price + progress (lightweight eth_call, no ethers needed) ── */
 (async()=>{
   const SALE='0xB1293Ed631e4bDf568e91727F78fAd170cC58304';
   const RPC='https://polygon-bor-rpc.publicnode.com';
   const enc=(sel,hexArg)=>{let d='0x'+sel;if(hexArg)d+=hexArg.replace(/^0x/,'').padStart(64,'0');return d;};
   try{
-    const r=await fetch(RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_call',params:[{to:SALE,data:enc('c8603fce','00')},'latest']})});
-    const j=await r.json();
-    if(j.result){
-      const usd=Number(j.result)/1e6;
-      const nex=1000;
-      const saleR=await fetch(RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:2,method:'eth_call',params:[{to:SALE,data:enc('c49034a3','00')},'latest']})});
-      const j2=await saleR.json();
-      if(j2.result){
-        const pol=Number(j2.result)/1e18*nex;
-        const e1=document.getElementById('lMinNex'); if(e1)e1.textContent=pol.toFixed(3);
-        const e2=document.getElementById('lMinUsd'); if(e2)e2.textContent='$'+(usd*nex).toFixed(2);
-      }
-    }
+    const [r1,r2,r3,r4]=await Promise.all([
+      fetch(RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method:'eth_call',params:[{to:SALE,data:enc('c8603fce','00')},'latest']})}),
+      fetch(RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:2,method:'eth_call',params:[{to:SALE,data:enc('c49034a3','00')},'latest']})}),
+      fetch(RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:3,method:'eth_call',params:[{to:SALE,data:enc('6e7e6558','00')},'latest']})}),   // roundSold()
+      fetch(RPC,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:4,method:'eth_call',params:[{to:SALE,data:enc('1eec71fb','00')},'latest']})}), // TOTAL_FOR_SALE()
+    ]);
+    const [j1,j2,j3,j4]=await Promise.all([r1.json(),r2.json(),r3.json(),r4.json()]);
+    const usd=Number(j1.result||0)/1e6;          /* usdtPriceOfRound(uint8) */
+    const polPerNex=Number(j2.result||0)/1e18;   /* polPerNex(uint8) */
+    const sold=Number(j3.result||0);             /* roundSold() */
+    const total=Number(j4.result||0)||500000000; /* TOTAL_FOR_SALE() */
+    const eUsd=document.getElementById('pUsd'); if(eUsd&&usd)eUsd.textContent='$'+usd.toFixed(6)+' / NEX';
+    const ePol=document.getElementById('pPol'); if(ePol&&polPerNex)ePol.textContent=(1000*polPerNex).toFixed(3)+' POL';
+    const pct=Math.min(100,(sold/total*100));
+    const g=document.getElementById('gFill'); if(g)g.style.width=pct.toFixed(1)+'%';
+    const gs=document.getElementById('gSold'); if(gs)gs.textContent=sold>=1e6?(sold/1e6).toFixed(2)+'M / '+(total/1e6).toFixed(0)+'M NEX':sold.toLocaleString()+' NEX';
+    if(pct>0){const gsub=document.getElementById('gPct'); if(gsub)gsub.textContent=pct.toFixed(1)+'% ยอดขาย';}
   }catch(e){}
 })();
 </script>
