@@ -1,0 +1,13 @@
+# Deploy artifacts / tooling — not part of the static site
+node_modules/
+dist/
+package.json
+package-lock.json
+
+# Android / model binaries — not served on the web
+mobile/
+models/
+*.gguf
+
+# Local Netlify folder
+.netlify
