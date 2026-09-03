@@ -1,14 +1,14 @@
 ﻿<!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nexus Architect — AI ที่เป็นของคุณจริงๆ ไม่ใช่ AI ของบริษัท</title>
+<title>Nexus Architect — Your own AI, on your device</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>🏔</text></svg>">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src *; object-src 'none'; base-uri 'self'; frame-ancestors 'none'">
-<meta name="description" content="Nexus Architect — AI Twin ที่รันบนอุปกรณ์คุณจริงๆ (ไฟล์โมเดล 378MB อยู่ในเครื่อง) ไม่พึ่ง Cloud ไม่มีค่า API และขุดความรู้ของคุณมินต์เป็นเหรียญ NEX32 ได้จริงบน Polygon Mainnet">
-<meta property="og:title" content="Nexus Architect — AI ที่เป็นของคุณจริงๆ">
-<meta property="og:description" content="AI บนอุปกรณ์คุณจริงๆ (offline, ไม่มี key) · ขุดความรู้ → มินต์ NEX32 · presale LIVE บน Polygon Mainnet">
+<meta name="description" content="Nexus Architect — a personal AI that runs on your own device (378MB model on-device). No cloud, no API fees, and your mined knowledge can become NEX32 on Polygon Mainnet">
+<meta property="og:title" content="Nexus Architect — Your own AI">
+<meta property="og:description" content="On-device AI (offline, no key needed) · Mine knowledge into NEX32 · Presale live on Polygon Mainnet">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://nexusarchitect.online">
 <style>
@@ -47,6 +47,10 @@ nav .links a:hover{color:var(--txt);text-decoration:none}
 .nav-wallet #walletBtn{cursor:pointer;border:1px solid var(--acc);color:#fff;background:linear-gradient(135deg,#7c3aed,#6d28d9);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;font-weight:600;transition:all .2s}
 .nav-wallet #walletBtn:hover{filter:brightness(1.15)}
 .nav-wallet #walletBtn.connected{background:var(--good);border-color:var(--good)}
+/* language toggle */
+.lang-toggle{display:flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.lang-toggle button{cursor:pointer;background:var(--panel2);border:none;color:var(--txt3);font-size:.75rem;font-weight:700;padding:.4rem .6rem;transition:all .2s}
+.lang-toggle button.on{background:var(--acc);color:#fff}
 /* wallet status hint */
 .wallet-hint{position:fixed;top:64px;right:1rem;z-index:101;background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:1rem;max-width:340px;font-size:.85rem;box-shadow:0 10px 40px rgba(0,0,0,.5)}
 .wallet-hint a{color:var(--acc2)}
@@ -125,21 +129,6 @@ section{padding:6rem 0;position:relative}
 .on-card h4{font-weight:700;font-size:.92rem;margin:.5rem 0 .3rem}
 .on-card p{color:var(--txt3);font-size:.78rem;line-height:1.6}
 .on-card .tag{display:inline-block;margin-top:.4rem;font-size:.68rem;font-weight:700;color:var(--good);background:rgba(16,185,129,.1);padding:.15rem .5rem;border-radius:8px}
-
-/* ═══ VS GRID (the "เหนือกว่า" counterpoint) ═══ */
-.vs-wrap{overflow-x:auto}
-.vs{width:100%;border-collapse:collapse;min-width:640px}
-.vs th,.vs td{padding:.9rem 1.1rem;text-align:left;border-bottom:1px solid var(--line);font-size:.88rem}
-.vs thead th{font-weight:800;background:var(--panel)}
-.vs .col-us{width:18%}
-.vs .col-nx{width:38%;background:linear-gradient(180deg,rgba(124,58,237,.12),transparent)}
-.vs th.col-nx{color:var(--acc2);background:rgba(124,58,237,.18)}
-.vs td.col-nx{color:var(--txt)}
-.vs td .yes{color:var(--good);font-weight:700}
-.vs td .no{color:var(--txt3);opacity:.45}
-.vs td .tag{font-size:.68rem;font-weight:700;color:#fff;background:var(--good);padding:.12rem .5rem;border-radius:8px;margin-left:.4rem}
-.vs .row-hl{background:rgba(124,58,237,.05)}
-.vs td b{color:var(--txt)}
 
 /* ═══ PRESALE (hero) ═══ */
 .presale{background:linear-gradient(180deg,rgba(124,58,237,.06),transparent 60%)}
@@ -232,14 +221,17 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
   <div class="inner">
     <div class="logo"><span class="icon">🏔</span> <span>Nexus</span> Architect</div>
     <div class="links">
-      <a href="#mine">⛏️ ขุดความรู้</a>
-      <a href="#ondevice">On-Device</a>
-      <a href="#vs">เหนือกว่า AI ยักษ์</a>
-      <a href="#presale">NEX32 ฟรีเซล</a>
-      <a href="#roadmap">Roadmap</a>
-      <a href="#faq">FAQ</a>
+      <a href="#mine" data-th="⛏️ ขุดความรู้">⛏️ Mine</a>
+      <a href="#ondevice" data-th="On-Device">On-Device</a>
+      <a href="#presale" data-th="NEX32 พรีเซล">NEX32 Presale</a>
+      <a href="#roadmap" data-th="แผนงาน">Roadmap</a>
+      <a href="#faq" data-th="คำถาม">FAQ</a>
     </div>
     <div class="nav-right">
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button id="langEn" class="on" onclick="setLang('en')">EN</button>
+        <button id="langTh" onclick="setLang('th')">TH</button>
+      </div>
       <div class="nav-wallet">
         <span class="wbal" id="wPol">— POL</span>
         <span class="wbal" id="wNex">— NEX</span>
@@ -257,26 +249,26 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 <!-- ═══════ HERO ═══════ -->
 <section class="hero">
   <div>
-    <div class="hero-badge"><span class="dot"></span> AI ของคุณจริงๆ · โมเดล 378MB รันในเครื่อง · ใช้งานได้แล้ว</div>
-    <h1>ให้ AI มหาศาลในสมองของคุณ<br>ไม่ใช่ <span class="g">AI ของบริษัท</span></h1>
-    <p class="hero-desc">
-      Nexus Architect คือ AI <strong> Digital Twin</strong> ที่ฝังโมเดลไว้ในอุปกรณ์ของคุณจริงๆ — <strong>offline</strong> ไม่ต้องใช้ Cloud ไม่มี API key ไม่มีข้อมูลรั่ว และความรู้ที่คุณขุดได้กลายเป็นเหรียญ <strong>NEX32</strong> ได้จริงบน Polygon Mainnet
+    <div class="hero-badge"><span class="dot"></span> <span data-th="AI ของคุณจริงๆ · โมเดล 378MB รันในเครื่อง · ใช้งานได้แล้ว">Your own AI · 378MB model on your device · Ready to use</span></div>
+    <h1 data-th="AI ส่วนตัวในเครื่องของคุณ">A quiet AI that lives<br>on <span class="g">your own device</span></h1>
+    <p class="hero-desc" data-th="Nexus Architect คือ Digital Twin ที่ฝังโมเดลไว้ในอุปกรณ์ของคุณจริงๆ — offline ไม่ต้องใช้ Cloud ไม่มี API key ไม่มีข้อมูลรั่ว และความรู้ที่คุณขุดได้กลายเป็นเหรียญ NEX32 ได้จริงบน Polygon Mainnet">
+      Nexus Architect is a personal <strong>Digital Twin</strong> with the model inside your own device — <strong>offline</strong>, no cloud, no API key, nothing leaves your hands. And the knowledge you mine can become <strong>NEX32</strong> on Polygon Mainnet.
     </p>
     <div class="bar">
-      <span class="pill ok"><span class="dot"></span> โมเดล on-device 378MB <b>ฝังใน APK</b></span>
-      <span class="pill ok"><span class="dot"></span> ใช้งานได้แล้ว</span>
-      <span class="pill"><span class="dot"></span> NEX32 ฟรีเซล <b>LIVE</b></span>
+      <span class="pill ok"><span class="dot"></span> <span data-th="โมเดล on-device 378MB ฝังในแอป">On-device 378MB model <b>in the app</b></span></span>
+      <span class="pill ok"><span class="dot"></span> <span data-th="ใช้งานได้แล้ว">Ready today</span></span>
+      <span class="pill"><span class="dot"></span> <span data-th="NEX32 พรีเซล LIVE">NEX32 presale <b>LIVE</b></span></span>
     </div>
     <div class="hero-btns">
-      <a class="btn btn-p" href="app/index.html">🛠 แดชบอร์ด — ขุดความรู้ + ฟรีเซล</a>
-      <a class="btn btn-g" href="#presale">🪙 ไปฟรีเซล NEX32</a>
-      <a class="btn btn-s" href="#vs">⚡ ทำไมเหนือกว่า AI ยักษ์</a>
+      <a class="btn btn-p" href="app/index.html" data-th="🛠 แดชบอร์ด — ขุดความรู้ + พรีเซล">🛠 Dashboard — mine & presale</a>
+      <a class="btn btn-g" href="#presale" data-th="🪙 ไปพรีเซล NEX32">🪙 Get NEX32</a>
+      <a class="btn btn-s" href="#mine" data-th="⛏️ เริ่มขุดความรู้">⛏️ Start mining</a>
     </div>
     <div class="hero-stats">
-      <div class="hero-stat"><div class="num">378MB</div><div class="lbl">โมเดลในเครื่อง ไม่ต้อง Cloud</div></div>
-      <div class="hero-stat"><div class="num">0 ฿/เดือน</div><div class="lbl">ไม่มีค่า API ตลอดชีพ</div></div>
-      <div class="hero-stat"><div class="num">100%</div><div class="lbl">ข้อมูลของคุณ อยู่ในเครื่องคุณ</div></div>
-      <div class="hero-stat"><div class="num">NEX32</div><div class="lbl">ขุดความรู้ → ได้เหรียญจริง</div></div>
+      <div class="hero-stat"><div class="num">378MB</div><div class="lbl" data-th="โมเดลในเครื่อง ไม่ต้อง Cloud">On-device model, no cloud</div></div>
+      <div class="hero-stat"><div class="num">$0/mo</div><div class="lbl" data-th="ไม่มีค่า API ตลอดชีพ">No API fees, ever</div></div>
+      <div class="hero-stat"><div class="num">100%</div><div class="lbl" data-th="ข้อมูลของคุณ อยู่ในเครื่องคุณ">Your data stays with you</div></div>
+      <div class="hero-stat"><div class="num">NEX32</div><div class="lbl" data-th="ขุดความรู้ → ได้เหรียญจริง">Mined knowledge → real tokens</div></div>
     </div>
   </div>
 </section>
@@ -284,33 +276,33 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 <!-- ═══════ ขุดความรู้ v2 ═══════ -->
 <section id="mine">
   <div class="container" style="max-width:820px">
-    <div class="sec-badge">⛏️ ขุดความรู้ v2</div>
-    <div class="sec-title">ขุดความรู้ของคุณ <span class="g">→ มินต์เป็น NEX32</span></div>
-    <p class="sec-sub">2 โหมด · ต้อง <b>Lv.3 อธิปไตย (Sovereign)</b> ถึงจะขุดได้</p>
+    <div class="sec-badge" data-th="⛏️ ขุดความรู้">⛏️ Mining</div>
+    <div class="sec-title" data-th="ขุดความรู้ของคุณ → เป็น NEX32">Your knowledge, <span class="g">becoming NEX32</span></div>
+    <p class="sec-sub" data-th="2 โหมด · ต้อง Lv.3 Sovereign ก่อนถึงจะขุดได้">Two ways to mine · Requires <b>Lv.3 Sovereign</b> to begin</p>
     <div class="mine-card">
-      <div class="mine-gate" id="mineGate">กำลังตรวจสถานะ…</div>
+      <div class="mine-gate" id="mineGate">Checking status…</div>
       <div class="mine-modes">
-        <button id="lmAi" class="ghost" style="flex:1" onclick="landingMode('ai')">🤖 โหมด AI — 3 ผู้ตรวจ (Gemini ×3)</button>
-        <button id="lmHum" class="ghost" style="flex:1" onclick="landingMode('human')">✋ โหมดคน — เห็นด้วยอย่างเดียว</button>
+        <button id="lmAi" class="ghost" style="flex:1" onclick="landingMode('ai')" data-th="🤖 โหมด AI — ผู้ตรวจ 3 เสียง">🤖 AI review — 3 reviewers</button>
+        <button id="lmHum" class="ghost" style="flex:1" onclick="landingMode('human')" data-th="✋ โหมดคน — ขุดด้วยตัวเอง">✋ Human mode — mine it yourself</button>
       </div>
       <div id="lmGemKeys" style="display:none;margin-top:8px;border:1px dashed var(--line);border-radius:9px;padding:8px">
-        <div style="font-size:.75rem;color:var(--txt3);margin-bottom:4px">🔑 Gemini 3 API — ตรวจความถูกต้อง 3 เสียง (เสียงข้างมาก ≥2/3 = mint)</div>
-        <input id="lgK1" type="password" autocomplete="off" placeholder="Gemini API key #1" style="width:100%;margin-bottom:4px">
-        <input id="lgK2" type="password" autocomplete="off" placeholder="Gemini API key #2" style="width:100%;margin-bottom:4px">
-        <input id="lgK3" type="password" autocomplete="off" placeholder="Gemini API key #3" style="width:100%;margin-bottom:4px">
-        <button onclick="landingSaveGemKeys()">🔐 บันทึก Gemini keys</button>
+        <div style="font-size:.75rem;color:var(--txt3);margin-bottom:4px" data-th="🔑 คีย์ AI ภายนอก (ไม่บังคับ) — ตรวจ 3 เสียง เสียงข้างมาก ≥2/3 = mint">🔑 External AI keys (optional) — 3 reviews, majority ≥2/3 = mint</div>
+        <input id="lgK1" type="password" autocomplete="off" placeholder="External AI key #1" data-th-ph="คีย์ AI ภายนอก #1" style="width:100%;margin-bottom:4px">
+        <input id="lgK2" type="password" autocomplete="off" placeholder="External AI key #2" data-th-ph="คีย์ AI ภายนอก #2" style="width:100%;margin-bottom:4px">
+        <input id="lgK3" type="password" autocomplete="off" placeholder="External AI key #3" data-th-ph="คีย์ AI ภายนอก #3" style="width:100%;margin-bottom:4px">
+        <button onclick="landingSaveGemKeys()" data-th="🔐 บันทึกคีย์">🔐 Save keys</button>
         <span id="lgKSet" style="font-size:.75rem;color:var(--txt3)"></span>
       </div>
-      <label>ชื่องาน / ความรู้ของคุณ</label>
-      <input id="lmTitle" placeholder="เช่น วิธีเทรดหุ้นไทยให้กำไรในตลาดผันผวน">
-      <label>ความรู้ที่อยาก "ขุด" เป็นการ์ด (ขั้นตอน/ผลลัพธ์จริง)</label>
-      <textarea id="lmText" style="min-height:92px" placeholder="เช่น ผมเจอว่าการใช้ RSI + EMA200 + stop-loss แบบ ATR ช่วยให้..."></textarea>
+      <label data-th="ชื่องาน / ความรู้ของคุณ">Title of your knowledge</label>
+      <input id="lmTitle" placeholder="e.g. How I trade calmly in volatile markets" data-th-ph="เช่น วิธีเทรดอย่างใจเย็นในตลาดผันผวน">
+      <label data-th="ความรู้ที่อยาก “ขุด” เป็นการ์ด (ขั้นตอน/ผลลัพธ์จริง)">The knowledge to mint as a card (real steps and results)</label>
+      <textarea id="lmText" style="min-height:92px" placeholder="e.g. I found that combining RSI with EMA200 and ATR stop-loss helps me…" data-th-ph="เช่น ผมพบว่าการใช้ RSI ร่วมกับ EMA200 และ stop-loss แบบ ATR ช่วยให้…"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px">
-        <button style="flex:1" id="lmBtn" onclick="landingMine()">⛏️ ขุดความรู้</button>
-        <button class="ghost" onclick="landingMine(true)">🛠 ออฟไลน์</button>
+        <button style="flex:1" id="lmBtn" onclick="landingMine()" data-th="⛏️ ขุดความรู้">⛏️ Mine knowledge</button>
+        <button class="ghost" onclick="landingMine(true)" data-th="🛠 ออฟไลน์">🛠 Offline</button>
       </div>
       <p class="muted" id="lmResult" style="font-size:.85rem;margin-top:8px;min-height:1.2em"></p>
-      <div id="lmMined" class="muted" style="font-size:.8rem;margin-top:6px">🗂 คลังที่ขุดแล้ว (nx_mined_kb): ยังไม่มี — ขุดแรกได้เลย (+NEX จาก Mining Pool 300M)</div>
+      <div id="lmMined" class="muted" style="font-size:.8rem;margin-top:6px">🗂 Mined vault: empty — mine your first one (+NEX from the 300M Mining Pool)</div>
     </div>
   </div>
 </section>
@@ -318,39 +310,39 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 <!-- ═══════ ON-DEVICE: หลักฐานของจริง ═══════ -->
 <section id="ondevice">
   <div class="container">
-    <div class="sec-badge">🧠 On-Device · ของจริง</div>
-    <div class="sec-title">AI ตัวนี้ <span class="g">อยู่ในเครื่องคุณ</span> ไม่ได้อยู่บนเซิร์ฟเวอร์</div>
-    <p class="sec-sub">คนอื่นขาย "AI บนอุปกรณ์" ด้วยการฝากข้อมูลไว้บน Cloud เฉพาะหน้า. เราไปไกลกว่า: โมเดลทั้งหมดถูกฝังอยู่ในแอป Android ของคุณ</p>
+    <div class="sec-badge" data-th="🧠 On-Device · ของจริง">🧠 On-device · Truly local</div>
+    <div class="sec-title" data-th="AI อยู่ในเครื่องคุณ ไม่ได้อยู่บนเซิร์ฟเวอร์">It runs <span class="g">on your device</span>, not on a server</div>
+    <p class="sec-sub" data-th="โมเดลทั้งหมดอยู่ในแอป Android ของคุณ — เปิดมาก็ใช้ได้เลย">The whole model lives inside your Android app — open it and it works</p>
     <div class="on-grid">
       <div class="on-left">
-        <div class="kicker">✔ ไม่ต้องใช้ internet</div>
-        <p><strong>Yuri</strong> คือ AI companion ที่รันด้วยเอนจิน <strong>llama.cpp (native)</strong> ฝังในแอป — ไฟล์โมเดล GGUF ขนาด 378MB ถูก bundle เข้าไปใน APK เลย ไม่โหลดจากที่ไหน</p>
-        <p>ปิด Wi-Fi, อยู่ในรถใต้ดิน, นอกประเทศ — <strong>Yuri ยังตอบได้</strong> เพราะสมองอยู่กับคุณ</p>
-        <p>อยากใช้สมองใหญ่ขึ้น? สลับไป <strong>llama-server / Ollama / Gemini / OpenAI / Claude</strong> ได้ แต่ละค่ายตั้ง key เอง เก็บด้วย <strong>AES-GCM ในเครื่อง</strong> ไม่มีการส่ง key ไป server ใคร</p>
+        <div class="kicker" data-th="✔ ไม่ต้องใช้ internet">✔ No internet needed</div>
+        <p data-th="Yuri คือ AI companion ที่รันในแอป — ไฟล์โมเดล 378MB มากับแอปเลย ไม่ต้องโหลดจากที่ไหน"><strong>Yuri</strong> is a companion AI that runs inside the app — the 378MB model file comes with it, nothing to download later</p>
+        <p data-th="ปิด Wi-Fi อยู่ใต้ดิน อยู่ต่างประเทศ — Yuri ยังตอบได้ เพราะสมองอยู่กับคุณ">No Wi-Fi, underground, abroad — <strong>Yuri still answers</strong>, because the mind is with you</p>
+        <p data-th="อยากใช้สมองใหญ่ขึ้น? เชื่อม AI ภายนอกได้ด้วยคีย์ของคุณเอง เก็บแบบเข้ารหัสในเครื่อง ไม่ส่งคีย์ไปให้ใคร">Want a bigger mind? You can connect an external AI with your own key — stored encrypted on your device, never sent anywhere</p>
       </div>
       <div class="on-cards">
         <div class="on-card">
           <div class="ic">📦</div>
-          <h4>โมเดลในเครื่อง</h4>
-          <p>yuri-nexus-Q4_K_M.gguf 378MB บรรจุใน APK</p>
+          <h4 data-th="โมเดลในเครื่อง">On-device model</h4>
+          <p data-th="โมเดล 378MB มากับแอป">378MB model bundled with the app</p>
           <span class="tag">OFFLINE</span>
         </div>
         <div class="on-card">
           <div class="ic">🔌</div>
-          <h4>เอนจิน native</h4>
-          <p>llama.cpp ผ่าน JNI — เร็ว ไม่ส่งข้อมูลออก</p>
+          <h4 data-th="เอนจิน native">Native engine</h4>
+          <p data-th="รันตรงในเครื่อง ไม่ส่งข้อมูลออก">Runs locally, sends nothing out</p>
           <span class="tag">NATIVE</span>
         </div>
         <div class="on-card">
           <div class="ic">🔑</div>
-          <h4>Key ไม่ต้องมี</h4>
-          <p>โหมด on-device ใช้ได้ทันที ไม่เสียค่า API</p>
+          <h4 data-th="ไม่ต้องมี key">No key needed</h4>
+          <p data-th="โหมด on-device ใช้ได้ทันที ไม่เสียค่า API">On-device mode works at once, no API fees</p>
           <span class="tag">FREE</span>
         </div>
         <div class="on-card">
           <div class="ic">🔐</div>
-          <h4>ข้อมูลไม่ไปไหน</h4>
-          <p>บทสนทนา + key เก็บในเครื่อง เข้ารหัส AES-GCM</p>
+          <h4 data-th="ข้อมูลไม่ไปไหน">Stays with you</h4>
+          <p data-th="บทสนทนา + key เก็บในเครื่องแบบเข้ารหัส">Chats and keys stored encrypted on-device</p>
           <span class="tag">PRIVATE</span>
         </div>
       </div>
@@ -358,102 +350,50 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
   </div>
 </section>
 
-<!-- ═══════ VS CLOUD GIANTS ═══════ -->
-<section id="vs">
-  <div class="container">
-    <div class="sec-badge">⚔️ ภาพเทียบ</div>
-    <div class="sec-title">ทำไม <span class="g">เราถึงเหนือกว่า</span> AI ระดับยักษ์</div>
-    <p class="sec-sub">ลองเทียบกับสิ่งที่คนทั่วไปใช้อยู่ทุกวัน — แล้วตอบตัวเองได้ว่าใครเห็นคุณค่าของ "ข้อมูลของคุณ" จริงๆ</p>
-    <div class="vs-wrap">
-      <table class="vs">
-        <thead>
-          <tr>
-            <th class="col-us">หัวข้อ</th>
-            <th class="col-nx">Nexus Architect</th>
-            <th>AI Cloud ยักษ์</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><b>โมเดลรันที่ไหน</b></td>
-            <td class="col-nx"><span class="yes">✓ ในเครื่องคุณ</span> <span class="tag">จริง</span></td>
-            <td><span class="no">✗ ในเซิร์ฟเวอร์บริษัท</span></td>
-          </tr>
-          <tr>
-            <td><b>ต้องเชื่อมเน็ตไหม</b></td>
-            <td class="col-nx"><span class="yes">✓ ไม่ต้อง (offline)</span></td>
-            <td><span class="no">✗ ต้องเชื่อมตลอด</span></td>
-          </tr>
-          <tr class="row-hl">
-            <td><b>ค่า API รายเดือน</b></td>
-            <td class="col-nx" style="background:rgba(124,58,237,.05)"><span class="yes">✓ 0 ฿ ฟรีตลอด</span></td>
-            <td><span class="no">✗ จ่ายตามการใช้งาน</span></td>
-          </tr>
-          <tr>
-            <td><b>ข้อมูลสนทนาอยู่ไหน</b></td>
-            <td class="col-nx"><span class="yes">✓ เครื่องของคุณ</span></td>
-            <td><span class="no">✗ อย่ในบริษัท (ถูกนำไปเทรนได้)</span></td>
-          </tr>
-          <tr>
-            <td><b>เป็นเจ้าของเหรียญได้ไหม</b></td>
-            <td class="col-nx"><span class="yes">✓ ขุดความรู้ → ได้ NEX32</span> <span class="tag">ใหม่</span></td>
-            <td><span class="no">✗ บริการล้วน รับแต่เงิน</span></td>
-          </tr>
-          <tr>
-            <td><b>ตรวจสอบโค้ดได้</b></td>
-            <td class="col-nx"><span class="yes">✓ Open Source (MIT)</span></td>
-            <td><span class="no">✗ กล่องดำ</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
 <!-- ═══════ NEX32 PRESALE LIVE (hero) ═══════ -->
 <section id="presale" class="presale">
   <div class="container">
-    <div class="sec-badge gold">🪙 NEX32 ฟรีเซล LIVE</div>
-    <div class="sec-title">ใช้ความรู้ของคุณ <span class="go">กลายเป็นเจ้าของ</span>ด้วย NEX32</div>
-    <p class="sec-sub">AI ไม่ได้มีไว้แค่คุย — มันมีไว้สร้างมูลค่า. ขุดความรู้ของคุณเป็น "การ์ด" มินต์เหรียญได้จริง บน Polygon Mainnet ฟรีเซลเปิดอยู่แล้ว</p>
+    <div class="sec-badge gold" data-th="🪙 NEX32 พรีเซล LIVE">🪙 NEX32 presale · LIVE</div>
+    <div class="sec-title" data-th="ความรู้ของคุณ มีค่าของมัน">Your knowledge <span class="go">has its own value</span></div>
+    <p class="sec-sub" data-th="AI ไม่ได้มีไว้แค่คุย — ความรู้ที่คุณขุดเป็นการ์ด มินต์เป็นเหรียญได้จริงบน Polygon Mainnet พรีเซลเปิดอยู่แล้ว">AI is not only for chatting — the knowledge you mine as cards can truly become tokens on Polygon Mainnet. The presale is open now.</p>
 
     <div class="presale-box">
-      <div class="live"><span class="dot"></span> เปิดขายอยู่ตอนนี้ · Polygon Mainnet · ราคาจาก Chainlink Oracle</div>
+      <div class="live" data-th="เปิดขายอยู่ตอนนี้ · Polygon Mainnet · ราคาจาก Chainlink Oracle"><span class="dot"></span> On sale now · Polygon Mainnet · Chainlink oracle price</div>
       <div class="big">NEX32 Presale</div>
-      <p style="color:var(--txt2);font-size:.9rem">ราคาเริ่มต้น $0.0001 / NEX · วางขาย 500,000,000 NEX · ฟรีเซลถึง 31 ต.ค. 2026</p>
+      <p style="color:var(--txt2);font-size:.9rem" data-th="ราคาเริ่มต้น $0.0001 / NEX · วางขาย 500,000,000 NEX · พรีเซลถึง 31 ต.ค. 2026">Starting at $0.0001 / NEX · 500,000,000 NEX offered · Presale until Oct 31, 2026</p>
 
       <div class="gauge">
-        <div class="gtop"><span>ยอดที่วางขายไป</span><b id="gSold">…</b></div>
+        <div class="gtop"><span data-th="ยอดที่วางขายไป">Sold so far</span><b id="gSold">…</b></div>
         <div class="track"><div class="fill" id="gFill" style="width:0%"></div></div>
         <div class="gtop" style="margin-top:.4rem;justify-content:center"><span id="gPct">—</span></div>
       </div>
 
       <div class="price-grid">
-        <div class="price-cell"><div class="p">$0.0001</div><div class="l">ราคาเริ่มต้น / NEX</div></div>
-        <div class="price-cell"><div class="p g" id="pUsd">—</div><div class="l">ราคา Chainlink ปัจจุบัน</div></div>
-        <div class="price-cell"><div class="p" id="pPol">—</div><div class="l">POL / 1,000 NEX</div></div>
+        <div class="price-cell"><div class="p">$0.0001</div><div class="l" data-th="ราคาเริ่มต้น / NEX">Starting price / NEX</div></div>
+        <div class="price-cell"><div class="p g" id="pUsd">—</div><div class="l" data-th="ราคา Chainlink ปัจจุบัน">Current Chainlink price</div></div>
+        <div class="price-cell"><div class="p" id="pPol">—</div><div class="l" data-th="POL / 1,000 NEX">POL / 1,000 NEX</div></div>
       </div>
 
-      <a class="btn btn-g" href="#buyNex" style="font-size:1.05rem;padding:1rem 2.4rem">🪙 ซื้อ NEX32 ได้เลยที่นี่ (POL)</a>
+      <a class="btn btn-g" href="#buyNex" style="font-size:1.05rem;padding:1rem 2.4rem" data-th="🪙 ซื้อ NEX32 ได้เลยที่นี่ (POL)">🪙 Get NEX32 here (POL)</a>
 
       <!-- Inline buy widget — MetaMask + Polygon Mainnet -->
       <div class="buy-widget" id="buyNex">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap">
-          <b style="color:var(--acc)">🪙 ซื้อ NEX32 &nbsp;·&nbsp; ราคา Chainlink สดอัตโนมัติ</b>
-          <span style="font-size:.78rem;color:var(--txt3)" id="buyPerNex">ราคา: — POL / NEX</span>
+          <b style="color:var(--acc)" data-th="🪙 ซื้อ NEX32 · ราคา Chainlink สดอัตโนมัติ">🪙 Buy NEX32 · live Chainlink price</b>
+          <span style="font-size:.78rem;color:var(--txt3)" id="buyPerNex">Price: — POL / NEX</span>
         </div>
         <div class="buy-row">
           <div style="flex:1;display:flex;flex-direction:column">
-            <label>จำนวน NEX ที่อยากได้</label>
-            <input id="landBuyAmt" type="number" min="1" step="10" value="1000" placeholder="เช่น 1000">
+            <label data-th="จำนวน NEX ที่อยากได้">How much NEX</label>
+            <input id="landBuyAmt" type="number" min="1" step="10" value="1000" placeholder="e.g. 1000">
           </div>
           <div style="flex:0;display:flex;align-items:flex-end">
             <button class="buy-btn" onclick="landingBuy()">🛒 Buy NEX</button>
           </div>
         </div>
-        <div class="buy-cost">คุณจะจ่าย <b id="landBuyCost">—</b> POL &nbsp;<span style="color:var(--txt3)">(เช็คความคุ้มค่าจากราคาสดก่อนกดซื้อ)</span></div>
+        <div class="buy-cost"><span data-th="คุณจะจ่าย">You pay</span> <b id="landBuyCost">—</b> POL &nbsp;<span style="color:var(--txt3)" data-th="(ดูราคาสดก่อนกดซื้อ)">(check the live price before buying)</span></div>
         <div class="buy-msg" id="landBuyMsg"></div>
-        <div class="muted" style="font-size:.75rem;margin-top:.4rem">ต้องมี MetaMask + อยู่บน <b>Polygon Mainnet</b> · ถ้ายังไม่มี MetaMask กด "Connect MetaMask" ด้านขวาบน · POL เท่านั้น</div>
+        <div class="muted" style="font-size:.75rem;margin-top:.4rem" data-th="ต้องมี MetaMask + อยู่บน Polygon Mainnet · ถ้ายังไม่มี กด “Connect MetaMask” ด้านขวาบน · รับเฉพาะ POL">Needs MetaMask on <b>Polygon Mainnet</b> · new here? press “Connect MetaMask” at the top right · POL only</div>
       </div>
 
       <div class="addr">PublicSale: 0xB1293Ed631e4bDf568e91727F78fAd170cC58304</div>
@@ -464,27 +404,27 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 <!-- ═══════ PILLARS: 3 เสาหลัก ═══════ -->
 <section id="ecosystem">
   <div class="container">
-    <div class="sec-badge">🏛️ นิเวศ</div>
-    <div class="sec-title">3 เสาหลัก <span class="g">ที่ทำงานร่วมกัน</span></div>
-    <p class="sec-sub">แต่ละส่วนต่อกันเป็นวงจรเดียว — เล่นแล้วได้จริง</p>
+    <div class="sec-badge" data-th="🏛️ ภาพรวม">🏛️ How it fits together</div>
+    <div class="sec-title" data-th="3 ส่วน ที่เดินไปด้วยกัน">Three parts, <span class="g">one circle</span></div>
+    <p class="sec-sub" data-th="แต่ละส่วนต่อกันเป็นวงจรเดียว — เริ่มตรงไหนก็ได้">Each part connects into one circle — start anywhere</p>
     <div class="pil-grid">
       <div class="pil reveal">
-        <span class="step">1 · ใช้งาน</span>
+        <span class="step" data-th="1 · ใช้งาน">1 · Use</span>
         <div class="icon">🧠</div>
-        <h4>AI บนเครื่องคุณ</h4>
-        <p>Yuri รันตรงในเครื่อง ไม่พึ่ง Cloud. สลับสมองใหญ่ได้ทุกค่าย key เก็บในเครื่องแบบเข้ารหัส</p>
+        <h4 data-th="AI บนเครื่องคุณ">AI on your device</h4>
+        <p data-th="Yuri รันตรงในเครื่อง ไม่พึ่ง Cloud อยากใช้สมองใหญ่ก็เชื่อมคีย์ของคุณเองแบบเข้ารหัส">Yuri runs on your device, no cloud. Want a bigger mind? Connect your own key, encrypted</p>
       </div>
       <div class="pil reveal">
-        <span class="step">2 · ขุดความรู้</span>
+        <span class="step" data-th="2 · ขุดความรู้">2 · Mine</span>
         <div class="icon">⛏️</div>
-        <h4>ขุดความรู้ → มินต์เป็นเหรียญ</h4>
-        <p>เขียนวิธีแก้ปัญหาจริง ผ่าน KYC Lv.3 แล้ว AI จัดทำเป็นการ์ดความรู้ พร้อม <strong>reward NEX32</strong> ตามระดับความยาก (มากถึง 1,000+ NEX)</p>
+        <h4 data-th="ขุดความรู้ → เป็นเหรียญ">Knowledge → tokens</h4>
+        <p data-th="เขียนวิธีแก้ปัญหาจริง ผ่าน Lv.3 แล้วจัดทำเป็นการ์ด พร้อม reward NEX32 ตามระดับความยาก (มากถึง 1,000+ NEX)">Write down real solutions. After Lv.3 they become knowledge cards with <strong>NEX32 rewards</strong> by difficulty (up to 1,000+ NEX)</p>
       </div>
       <div class="pil gold reveal">
-        <span class="step">3 · เป็นเจ้าของ</span>
+        <span class="step" data-th="3 · เป็นเจ้าของ">3 · Own</span>
         <div class="icon">🪙</div>
-        <h4>NEX32 — เติบโตด้วยกัน</h4>
-        <p>ฟรีเซล live บน Polygon. เหรียญผูกกับระบบนิเวศ — ยิ่งมีคนใช้และขุดความรู้มากขึ้น คุณค่าก็ยิ่งโต</p>
+        <h4 data-th="NEX32 — เติบโตด้วยกัน">NEX32 — grow together</h4>
+        <p data-th="พรีเซลเปิดบน Polygon เหรียญผูกกับระบบนิเวศ — ยิ่งมีคนใช้และขุดความรู้ คุณค่าก็ยิ่งเดินหน้า">Presale open on Polygon. The token follows the ecosystem — as more people use and mine, value follows</p>
       </div>
     </div>
   </div>
@@ -494,45 +434,45 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 <section id="roadmap">
   <div class="container">
     <div class="sec-badge">🗺️ Roadmap</div>
-    <div class="sec-title">แผนงาน <span class="g">2025 – 2026</span></div>
-    <p class="sec-sub">จาก Prototype สู่ Production สู่ระบบนิเวศที่ทุกคนมีส่วนร่วม</p>
+    <div class="sec-title" data-th="แผนงาน 2025 – 2026">The road <span class="g">2025 – 2026</span></div>
+    <p class="sec-sub" data-th="จากต้นแบบ สู่ของที่ใช้ได้จริง สู่ระบบนิเวศที่ทุกคนร่วมเดิน">From prototype, to something usable, to an ecosystem everyone walks together</p>
     <div class="road">
       <div class="road-item done">
         <div class="road-dot">✓</div>
         <div class="road-when">Phase 1 · Q3 2025</div>
-        <h4>✅ สร้างรากฐาน — Genesis</h4>
+        <h4 data-th="✅ วางรากฐาน — Genesis">✅ Foundations — Genesis</h4>
         <ul>
-          <li>AI Twin ทำงานบน WebGPU/WASM บนเบราว์เซอร์</li>
-          <li>ระบบ Brain จำแนก 12,795 วิชาทดสอบผ่าน</li>
-          <li>เว็บ Landing Page + Whitepaper</li>
-          <li>Android Studio project พร้อม</li>
+          <li data-th="AI Twin ทำงานบนเบราว์เซอร์">AI Twin running in the browser</li>
+          <li data-th="ระบบ Brain จำแนก 12,795 วิชาทดสอบผ่าน">Brain classifier passing 12,795 subjects</li>
+          <li data-th="เว็บ Landing Page + Whitepaper">Landing page + whitepaper</li>
+          <li data-th="โปรเจกต์ Android พร้อม">Android project ready</li>
         </ul>
       </div>
       <div class="road-item done">
         <div class="road-dot">✓</div>
         <div class="road-when">Phase 2 · Q4 2025 – Q1 2026</div>
-        <h4>🌐 ขยายชุมชน + AI บนเครื่อง</h4>
+        <h4 data-th="🌐 ชุมชน + AI บนเครื่อง">🌐 Community + on-device AI</h4>
         <ul>
-          <li>AI Twin APK สำหรับ Android พร้อมเอนจิน llama.cpp native</li>
-          <li><strong>โมเดล 378MB ฝังใน APK รัน offline ได้จริง</strong></li>
-          <li>ฟรีเซล NEX32 เปิดขายบน Polygon Mainnet</li>
-          <li>สร้างชุมชน Telegram + X</li>
+          <li data-th="แอป AI Twin สำหรับ Android พร้อมเอนจิน native">AI Twin Android app with native engine</li>
+          <li data-th="โมเดล 378MB มากับแอป ใช้ offline ได้จริง"><strong>378MB model bundled, truly offline</strong></li>
+          <li data-th="พรีเซล NEX32 เปิดบน Polygon Mainnet">NEX32 presale open on Polygon Mainnet</li>
+          <li data-th="ชุมชน Telegram + X">Telegram + X community</li>
         </ul>
       </div>
       <div class="road-item">
         <div class="road-dot">3</div>
         <div class="road-when">Phase 3 · Q2 2026</div>
-        <h4>📈 ขยายระบบ — Scale</h4>
+        <h4 data-th="📈 ขยายระบบ">📈 Growing the system</h4>
         <ul>
-          <li>ขุดความรู้ + มินต์ NEX32 สู่เต็มระบบ</li>
-          <li>Job Board — งาน Escrow จริง</li>
-          <li>ลง Play Store เมื่อมีงบประมาณ</li>
+          <li data-th="ขุดความรู้ + มินต์ NEX32 เต็มระบบ">Full knowledge mining + NEX32 minting</li>
+          <li data-th="Job Board — งาน Escrow จริง">Job Board — real escrow work</li>
+          <li data-th="ลง Play Store เมื่อพร้อม">Play Store when ready</li>
         </ul>
       </div>
       <div class="road-item">
         <div class="road-dot">4</div>
         <div class="road-when">Phase 4 · Q3 2026</div>
-        <h4>🏛️ DAO Governance — Decentralize</h4>
+        <h4 data-th="🏛️ DAO — ส่งต่อให้ชุมชน">🏛️ DAO — handed to the community</h4>
         <ul>
           <li>DAO governance activation</li>
           <li>AI model marketplace</li>
@@ -547,32 +487,32 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 <section id="faq">
   <div class="container">
     <div class="sec-badge">❓ FAQ</div>
-    <div class="sec-title">ข้อมูลน่ารู้</div>
-    <p class="sec-sub">คำตอบสำหรับคำถามที่คนมักถามบ่อย</p>
+    <div class="sec-title" data-th="คำถามที่พบบ่อย">Simple questions</div>
+    <p class="sec-sub" data-th="คำตอบสั้นๆ สำหรับเรื่องที่คนถามบ่อย">Short answers to things people often ask</p>
     <div class="faq-list">
       <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>AI ของคุณ offline จริงไหม? ต้องใช้เน็ตไหม? <span class="arrow">▾</span></h4>
-        <p>ใช่ offline จริง. โมเดล GGUF 378MB ถูกฝังใน APK แอป Android — เมื่อติดตั้งแล้ว Yuri รันด้วยเอนจิน llama.cpp บนเครื่องคุณ ไม่ต้องเชื่อม internet ไม่มีค่า API ไม่ต้องทำอะไรเพิ่ม</p>
+        <h4><span data-th="AI ทำงาน offline ได้จริงไหม? ต้องใช้เน็ตไหม?">Does it really work offline? Any internet needed?</span> <span class="arrow">▾</span></h4>
+        <p data-th="ได้จริง โมเดล 378MB มากับแอป Android — ติดตั้งแล้ว Yuri รันในเครื่องคุณ ไม่ต้องต่อเน็ต ไม่มีค่า API ไม่ต้องตั้งค่าอะไรเพิ่ม">Yes, truly. The 378MB model comes with the Android app — once installed, Yuri runs on your device. No internet, no API fees, nothing to set up.</p>
       </div>
       <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>แล้วจะใช้ AI ที่ฉลาดกว่า / สมองใหญ่ได้ไหม? <span class="arrow">▾</span></h4>
-        <p>ได้มากเลย. ระบบสนับสนุนหลายค่าย: สลับไป llama-server / Ollama /.llama-server ในเครื่อง / Gemini / OpenAI / Claude / OpenRouter ได้ ดั้งนี้ตั้ง API key เองได้ เก็บด้วยเข้ารหัส AES-GCM ในเครื่อง ไม่มี server กลาง</p>
+        <h4><span data-th="ใช้ AI ที่เก่งกว่านี้ / สมองใหญ่กว่านี้ได้ไหม?">Can I use a stronger mind when I need one?</span> <span class="arrow">▾</span></h4>
+        <p data-th="ได้ เชื่อม AI ภายนอกด้วยคีย์ของคุณเองได้ เก็บแบบเข้ารหัสในเครื่อง ไม่มีเซิร์ฟเวอร์กลาง">Yes. You can connect an external AI with your own key, stored encrypted on your device. No middleman server.</p>
       </div>
       <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>NEX32 ฟรีเซลเป็นยังไง? อยู่บนไหน? <span class="arrow">▾</span></h4>
-        <p>NEX32 presale เปิดขายบน Polygon Mainnet จ่ายด้วย POL ราคาอิง Chainlink Oracle. วางขาย 500,000,000 NEX (ครึ่งหนึ่งของ total supply 1,000,000,000) ฟรีเซลถึง 31 ต.ค. 2026. เช็กราคาเรียลไทม์แล้วซื้อได้เลยในหน้า app/index.html#presale</p>
+        <h4><span data-th="พรีเซล NEX32 คืออะไร? อยู่บนไหน?">What is the NEX32 presale? Where is it?</span> <span class="arrow">▾</span></h4>
+        <p data-th="พรีเซล NEX32 เปิดบน Polygon Mainnet จ่ายด้วย POL ราคาอิง Chainlink วางขาย 500,000,000 NEX (ครึ่งหนึ่งของ supply ทั้งหมด 1,000,000,000) ถึง 31 ต.ค. 2026 เช็กราคาสดแล้วซื้อได้เลยในหน้านี้">The NEX32 presale is open on Polygon Mainnet, paid in POL at Chainlink prices. 500,000,000 NEX offered (half of the 1,000,000,000 total supply) until Oct 31, 2026. Check the live price and buy right on this page.</p>
       </div>
       <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>ขุดความรู้แล้วได้เหรียญจริงไหม? <span class="arrow">▾</span></h4>
-        <p>ระบบ reward ตาม Whitepaper v1.1: การ์ดความรู้ของคุณจะบันทึก reward_nex (difficulty 1–10 ≈ 10 ถึง 1,000+ NEX) จาก Mining Pool 300M. บันทึกในคลังที่เว็บและแอปใช้ร่วมกัน ลิงก์กับเหรียญ NEX32 บน Polygon</p>
+        <h4><span data-th="ขุดความรู้แล้วได้เหรียญจริงไหม?">Do I really get tokens for mining knowledge?</span> <span class="arrow">▾</span></h4>
+        <p data-th="ได้จริง การ์ดความรู้ของคุณบันทึก reward (ระดับ 1–10 ≈ 10 ถึง 1,000+ NEX) จาก Mining Pool 300M เก็บในคลังที่เว็บและแอปใช้ร่วมกัน ผูกกับ NEX32 บน Polygon">Yes. Your knowledge cards record a reward (difficulty 1–10 ≈ 10 to 1,000+ NEX) from the 300M Mining Pool, kept in a vault shared by the site and the app, tied to NEX32 on Polygon.</p>
       </div>
       <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>ข้อมูลของฉันปลอดภัยไหม? <span class="arrow">▾</span></h4>
-        <p>ทุกอย่างทำงานบนอุปกรณ์คุณ. KYC ประมวลผลบนเครื่อง (ไม่มีข้อมูลส่งไป server ภายนอก) บทสนทนา + key เก็บในเครื่อง เข้ารหัส AES-GCM. White-paper ให้ตรวจสอบโค้ดได้เต็มที่เพราะ open source (MIT)</p>
+        <h4><span data-th="ข้อมูลของฉันปลอดภัยไหม?">Is my data safe?</span> <span class="arrow">▾</span></h4>
+        <p data-th="ทุกอย่างทำงานบนอุปกรณ์ของคุณ บทสนทนาและคีย์เก็บในเครื่องแบบเข้ารหัส และโค้ดเปิดให้ตรวจสอบได้ (open source, MIT)">Everything runs on your device. Chats and keys stay encrypted on-device, and the code is open for anyone to read (open source, MIT).</p>
       </div>
       <div class="faq-item" onclick="this.classList.toggle('open')">
-        <h4>ติดต่อทีมได้ยังไง? <span class="arrow">▾</span></h4>
-        <p>เข้าร่วม Telegram group ติดตามบน X/Twitter หรือหน้า Facebook ได้เลย — ทุกอย่างโปร่งใส open source บน GitHub</p>
+        <h4><span data-th="ติดต่อทีมได้ยังไง?">How do I reach the team?</span> <span class="arrow">▾</span></h4>
+        <p data-th="เข้ากลุ่ม Telegram ติดตามบน X หรือหน้า Facebook ได้เลย — ทุกอย่างโปร่งใสบน GitHub">Join the Telegram group, follow on X, or visit the Facebook page — everything is open on GitHub.</p>
       </div>
     </div>
   </div>
@@ -581,12 +521,12 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 <!-- ═══════ CTA ═══════ -->
 <section class="cta-section">
   <div class="container">
-    <div class="sec-title">เป็นเจ้าของ <span class="go">AI และเหรียญ</span>ของคุณจริงๆ</div>
-    <p>AI Cloud ยักษ์ขอค่า API รายเดือนและเอาข้อมูลคุณไป. ตรงนี้ AI อยู่ในเครื่องคุณ และความรู้คุณกลายเป็น NEX32 — เริ่มได้แล้วตอนนี้</p>
+    <div class="sec-title" data-th="เริ่มต้นอย่างเงียบๆ วันนี้">Begin quietly, <span class="go">today</span></div>
+    <p data-th="AI อยู่ในเครื่องคุณ และความรู้ของคุณกลายเป็น NEX32 — ค่อยๆ เริ่มได้เลยตอนนี้">Your AI lives with you, and your knowledge becomes NEX32 — take the first small step now</p>
     <div class="hero-btns" style="justify-content:center">
-      <a class="btn btn-p" href="#mine">⛏️ เริ่มขุดความรู้</a>
-      <a class="btn btn-g" href="app/index.html#presale">🪙 ฟรีเซล NEX32</a>
-      <a class="btn btn-s" href="https://github.com/pp0910619247-netizen/nexus-architect" target="_blank">🐙 ดู GitHub</a>
+      <a class="btn btn-p" href="#mine" data-th="⛏️ เริ่มขุดความรู้">⛏️ Start mining</a>
+      <a class="btn btn-g" href="app/index.html#presale" data-th="🪙 พรีเซล NEX32">🪙 NEX32 presale</a>
+      <a class="btn btn-s" href="https://github.com/pp0910619247-netizen/nexus-architect" target="_blank" data-th="🐙 ดู GitHub">🐙 GitHub</a>
     </div>
   </div>
 </section>
@@ -600,7 +540,7 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
       <a href="https://www.facebook.com/groups/28128540746755286/" target="_blank">📘 Facebook</a>
       <a href="https://github.com/pp0910619247-netizen/nexus-architect" target="_blank">🐙 GitHub</a>
     </div>
-    <p>© 2026 Nexus Architect · MIT License · Cryptocurrency มีความเสี่ยง โปรดศึกษาก่อนลงทุน</p>
+    <p data-th="© 2026 Nexus Architect · MIT License · คริปโทมีความเสี่ยง โปรดศึกษาก่อนตัดสินใจ">© 2026 Nexus Architect · MIT License · Crypto carries risk — please learn before deciding</p>
   </div>
 </footer>
 
@@ -609,6 +549,41 @@ footer p{color:var(--txt3);font-size:.78rem;line-height:1.7}
 <script>
 const obs=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("visible");obs.unobserve(e.target)}}),{threshold:.15});
 document.querySelectorAll(".reveal").forEach(el=>obs.observe(el));
+
+/* ── Language: EN default, TH toggle (persisted nx_lang) ── */
+let LANG=localStorage.getItem('nx_lang')||'en';
+function t(en,th){ return LANG==='th'?th:en; }
+function setLang(l){
+  LANG=l; localStorage.setItem('nx_lang',l);
+  document.documentElement.lang=l;
+  document.title=(l==='th')?'Nexus Architect — AI ของคุณจริงๆ ในเครื่องคุณ':'Nexus Architect — Your own AI, on your device';
+  document.querySelectorAll('[data-th]').forEach(el=>{
+    if(el.dataset.en===undefined) el.dataset.en=el.innerHTML;
+    el.innerHTML=(l==='th')?el.getAttribute('data-th'):el.dataset.en;
+  });
+  document.querySelectorAll('[data-th-ph]').forEach(el=>{
+    if(el.dataset.enPh===undefined) el.dataset.enPh=el.getAttribute('placeholder')||'';
+    el.setAttribute('placeholder',(l==='th')?el.getAttribute('data-th-ph'):el.dataset.enPh);
+  });
+  const e=document.getElementById('langEn'),h=document.getElementById('langTh');
+  if(e)e.classList.toggle('on',l==='en'); if(h)h.classList.toggle('on',l==='th');
+  try{ landingMode(LMode); }catch(_e){}
+  renderMineGate(); renderGemSet(); renderLandingMined(); refreshDynLabels();
+}
+function refreshDynLabels(){
+  const bpn=document.getElementById('buyPerNex');
+  if(bpn&&window._polPerNex) bpn.textContent=t('Price: ','ราคา: ')+(1000*window._polPerNex).toFixed(3)+' POL / 1,000 NEX';
+  const gsub=document.getElementById('gPct');
+  if(gsub&&window._soldPct!=null) gsub.textContent=window._soldPct.toFixed(1)+t('% sold','% ยอดขาย');
+}
+/* Lv.3 gate message in current language (AIPipe speaks Thai) */
+function gateMsg(s){
+  if(LANG==='th'||!s) return s?s.msg:'';
+  if(s.ok) return 'Lv.3 Sovereign — ready to mine';
+  if(/ยืนยันตัวตน|Lv\.1/.test(s.msg)) return '⛔ First verify yourself: sign in with Passkey / Google (Lv.1) in the app';
+  if(/2\/3/.test(s.msg)) return '⛔ Step 2/3 left: sign with your real wallet (Lv.2) in the app to prove ownership';
+  return '⛔ Final step 3/3: pass card + face KYC (score ≥ 70) to become Sovereign';
+}
 
 /* ── NEX32 free-sale live price + progress (lightweight eth_call, no ethers needed) ── */
 (async()=>{
@@ -632,11 +607,11 @@ document.querySelectorAll(".reveal").forEach(el=>obs.observe(el));
     const pct=Math.min(100,(sold/total*100));
     const g=document.getElementById('gFill'); if(g)g.style.width=pct.toFixed(1)+'%';
     const gs=document.getElementById('gSold'); if(gs)gs.textContent=sold>=1e6?(sold/1e6).toFixed(2)+'M / '+(total/1e6).toFixed(0)+'M NEX':sold.toLocaleString()+' NEX';
-    if(pct>0){const gsub=document.getElementById('gPct'); if(gsub)gsub.textContent=pct.toFixed(1)+'% ยอดขาย';}
+    if(pct>0){const gsub=document.getElementById('gPct'); if(gsub){ window._soldPct=pct; gsub.textContent=pct.toFixed(1)+t('% sold','% ยอดขาย'); }}
     /* keep buy widget's per-NEX cost in sync */
     window._polPerNex = polPerNex;
     const bpn=document.getElementById('buyPerNex');
-    if(bpn&&polPerNex) bpn.textContent='ราคา: '+(1000*polPerNex).toFixed(3)+' POL / 1,000 NEX';
+    if(bpn&&polPerNex) bpn.textContent=t('Price: ','ราคา: ')+(1000*polPerNex).toFixed(3)+' POL / 1,000 NEX';
     if(polPerNex) refreshBuyCost();
   }catch(e){}
 })();
@@ -669,13 +644,13 @@ async function landingConnect(showToast=true){
   if(typeof window.ethereum==='undefined'){
     const hint=document.createElement('div');
     hint.className='wallet-hint';
-    hint.innerHTML='🧰 ยังตรวจไม่พบ MetaMask <br>ติดตั้ง MetaMask แล้วกลับมาเพื่อเชื่อมต่อและซื้อ NEX32 · <a href="https://metamask.io/download/" target="_blank" rel="noopener">⬇️ ดาวน์โหลด MetaMask</a><br><br><button class="buy-btn" style="background:var(--acc2)" onclick="this.parentElement.remove()">ปิด</button>';
+    hint.innerHTML=t('🧰 MetaMask not found <br>Install MetaMask, then come back to connect and get NEX32 · <a href="https://metamask.io/download/" target="_blank" rel="noopener">⬇️ Download MetaMask</a><br><br><button class="buy-btn" style="background:var(--acc2)" onclick="this.parentElement.remove()">Close</button>','🧰 ยังตรวจไม่พบ MetaMask <br>ติดตั้ง MetaMask แล้วกลับมาเพื่อเชื่อมต่อและซื้อ NEX32 · <a href="https://metamask.io/download/" target="_blank" rel="noopener">⬇️ ดาวน์โหลด MetaMask</a><br><br><button class="buy-btn" style="background:var(--acc2)" onclick="this.parentElement.remove()">ปิด</button>');
     document.body.appendChild(hint);
-    if(msg) msg.innerHTML='ยังไม่มี MetaMask — โหมดอ่านราคาสดยังใช้ได้ แต่ต้องมี MetaMask ถึงจะซื้อ';
+    if(msg) msg.innerHTML=t('No MetaMask yet — live prices still work, but buying needs MetaMask','ยังไม่มี MetaMask — โหมดอ่านราคาสดยังใช้ได้ แต่ต้องมี MetaMask ถึงจะซื้อ');
     return;
   }
   try{
-    if(showToast && msg) msg.textContent='กำลังเชื่อมต่อ MetaMask…';
+    if(showToast && msg) msg.textContent=t('Connecting MetaMask…','กำลังเชื่อมต่อ MetaMask…');
     const accs=await window.ethereum.request({method:'eth_requestAccounts'});
     Laddr=accs[0];
     localStorage.setItem('nx_wallet_addr',Laddr);
@@ -691,9 +666,9 @@ async function landingConnect(showToast=true){
     }
     await renderLandingBalances();
     if(btn){ btn.textContent='🔗 '+Laddr.slice(0,6)+'…'+Laddr.slice(-4); btn.classList.add('connected'); }
-    if(msg){ msg.classList.remove('err'); msg.classList.add('ok'); msg.textContent='✅ เชื่อมแล้ว: '+Laddr.slice(0,10)+'… · '+await netName(); }
+    if(msg){ msg.classList.remove('err'); msg.classList.add('ok'); msg.textContent=t('✅ Connected: ','✅ เชื่อมแล้ว: ')+Laddr.slice(0,10)+'… · '+await netName(); }
   }catch(err){
-    if(msg){ msg.classList.add('err'); msg.textContent='❌ ยกเลิก/ไม่สำเร็จ: '+err.message; }
+    if(msg){ msg.classList.add('err'); msg.textContent=t('❌ Cancelled/failed: ','❌ ยกเลิก/ไม่สำเร็จ: ')+err.message; }
   }
 }
 async function landingDisconnect(){
@@ -733,27 +708,27 @@ async function landingBuy(){
   const msg=document.getElementById('landBuyMsg');
   msg.classList.remove('ok','err');
   const amt=parseFloat(document.getElementById('landBuyAmt').value);
-  if(!amt||amt<=0){ msg.classList.add('err'); msg.textContent='❌ ใส่จำนวน NEX ให้ถูกต้องก่อน'; return; }
-  if(!Laddr){ msg.classList.add('err'); msg.textContent='🔗 กด Connect MetaMask ก่อน (ด้านขวาบน)'; return; }
-  if(typeof window.ethereum==='undefined'){ msg.classList.add('err'); msg.textContent='❌ ไม่พบ MetaMask'; return; }
+  if(!amt||amt<=0){ msg.classList.add('err'); msg.textContent=t('❌ Enter a valid NEX amount first','❌ ใส่จำนวน NEX ให้ถูกต้องก่อน'); return; }
+  if(!Laddr){ msg.classList.add('err'); msg.textContent=t('🔗 Press Connect MetaMask first (top right)','🔗 กด Connect MetaMask ก่อน (ด้านขวาบน)'); return; }
+  if(typeof window.ethereum==='undefined'){ msg.classList.add('err'); msg.textContent=t('❌ MetaMask not found','❌ ไม่พบ MetaMask'); return; }
   try{
     const prov=Lprovider(); const signer=await prov.getSigner();
     const cid=await window.ethereum.request({method:'eth_chainId'});
-    if(cid!=='0x89'){ msg.classList.add('err'); msg.textContent='⚠️ ต้องสลับไป Polygon Mainnet ก่อน (ใน MetaMask)'; return; }
+    if(cid!=='0x89'){ msg.classList.add('err'); msg.textContent=t('⚠️ Switch to Polygon Mainnet first (in MetaMask)','⚠️ ต้องสลับไป Polygon Mainnet ก่อน (ใน MetaMask)'); return; }
     const c=new ethers.Contract(L_SALE,PRESALE_ABI,signer);
     let cur=0; try{ cur=Number(await c.currentRound()); }catch(e){ cur=0; }
     let ppn=window._polPerNex;
     if(!ppn) ppn=Number(ethers.formatEther(await c.polPerNex(cur)));
     const costWei=ethers.parseUnits((amt*ppn).toFixed(18),'ether');
-    msg.textContent='กำลังยืนยันการซื้อ '+amt.toLocaleString()+' NEX = '+costWei.toString()+' wei POL…';
+    msg.textContent=t('Confirming ','กำลังยืนยันการซื้อ ')+amt.toLocaleString()+' NEX = '+costWei.toString()+t(' wei POL…',' wei POL…');
     const tx=await c.buyNex(cur,ethers.parseUnits(String(amt),'ether'),{value:costWei});
-    msg.textContent='⏳ รอแต้ม tx: '+tx.hash.slice(0,10)+'…';
+    msg.textContent=t('⏳ Waiting for tx: ','⏳ รอ tx: ')+tx.hash.slice(0,10)+'…';
     await tx.wait();
-    msg.classList.add('ok'); msg.textContent='🎉 ซื้อสำเร็จ '+amt.toLocaleString()+' NEX! (tx '+tx.hash.slice(0,10)+'…)— เปิด MetaMask/โอนลากเข้าหน้าอื่นเพื่อสะท้อนยอด';
+    msg.classList.add('ok'); msg.textContent=t('🎉 Bought ','🎉 ซื้อสำเร็จ ')+amt.toLocaleString()+t(' NEX! (tx ',' NEX! (tx ')+tx.hash.slice(0,10)+t('…) — balances update shortly','…) — เปิด MetaMask/โอนลากเข้าหน้าอื่นเพื่อสะท้อนยอด');
     await renderLandingBalances();
   }catch(err){
     msg.classList.add('err');
-    msg.textContent='❌ '+((err&&err.message)||'การซื้อล้มเหลว');
+    msg.textContent='❌ '+((err&&err.message)||t('buy failed','การซื้อล้มเหลว'));
   }
 }
 document.getElementById('landBuyAmt').addEventListener('input',polPerNexForWidget);
@@ -767,7 +742,7 @@ function renderMineGate(){
   const g=document.getElementById('lmGate')||document.getElementById('mineGate');
   if(!g) return;
   const s=AIPipe.lv3Status();
-  g.textContent=s.msg;
+  g.textContent=gateMsg(s);
   g.className='mine-gate '+(s.ok?'ok':'bad');
 }
 function landingMode(m){
@@ -786,20 +761,20 @@ async function landingSaveGemKeys(){
     if(k1) await AIPipe.saveGemKey(1,k1);
     if(k2) await AIPipe.saveGemKey(2,k2);
     if(k3) await AIPipe.saveGemKey(3,k3);
-    renderGemSet(); if(r){ r.textContent='🔐 บันทึก Gemini keys แล้ว (เข้ารหัสบนเครื่อง)'; }
+    renderGemSet(); if(r){ r.textContent=t('🔐 Keys saved (encrypted on this device)','🔐 บันทึกคีย์แล้ว (เข้ารหัสบนเครื่อง)'); }
   }catch(e){ if(r)r.textContent='❌ '+(e.message||e); }
 }
 function renderGemSet(){
   const n=AIPipe.gemKeySet();
-  const el=document.getElementById('lgKSet'); if(el) el.textContent=' · ตั้งค่าแล้ว '+n+'/3 key';
+  const el=document.getElementById('lgKSet'); if(el) el.textContent=t(' · set ',' · ตั้งค่าแล้ว ')+n+t('/3 keys','/3 key');
 }
 function renderLandingMined(){
   const el=document.getElementById('lmMined'); if(!el) return;
   const arr=AIPipe.mined();
   const total=AIPipe.totalReward();
   el.textContent=arr.length
-    ? '🗂 คลังที่ขุดแล้ว (nx_mined_kb): '+arr.length+' การ์ด · +'+total+' NEX'
-    : '🗂 คลังที่ขุดแล้ว (nx_mined_kb): ยังไม่มี — ขุดแรกได้เลย (+NEX จาก Mining Pool 300M)';
+    ? t('🗂 Mined vault: ','🗂 คลังที่ขุดแล้ว: ')+arr.length+t(' cards · +',' การ์ด · +')+total+' NEX'
+    : t('🗂 Mined vault: empty — mine your first one (+NEX from the 300M Mining Pool)','🗂 คลังที่ขุดแล้ว: ยังไม่มี — ขุดแรกได้เลย (+NEX จาก Mining Pool 300M)');
 }
 async function landingMine(offline){
   const btn=document.getElementById('lmBtn');
@@ -810,18 +785,18 @@ async function landingMine(offline){
   res.classList.remove('ok','err'); res.style.color='';
   if(offline){
     const card=AIPipe.offlineMine({title,text});
-    if(!card){ res.classList.add('err'); res.textContent='ความรู้สั้นไป'; return; }
+    if(!card){ res.classList.add('err'); res.textContent=t('Too short — write a little more','ความรู้สั้นไป'); return; }
     btn&&(btn.disabled=true);
     try{
-      const gate=AIPipe.lv3Status(); if(!gate.ok){ res.classList.add('err'); res.textContent=gate.msg; return; }
+      const gate=AIPipe.lv3Status(); if(!gate.ok){ res.classList.add('err'); res.textContent=gateMsg(gate); return; }
       AIPipe._pushMined(card);
-      res.classList.add('ok'); res.textContent='🛠 ออฟไลน์ mint +'+card.reward_nex+' NEX — การ์ด: "'+card.title+'"';
+      res.classList.add('ok'); res.textContent=t('🛠 Offline mint +','🛠 ออฟไลน์ mint +')+card.reward_nex+t(' NEX — card: “',' NEX — การ์ด: “')+card.title+'”';
     } finally{ btn&&(btn.disabled=false); }
     renderLandingMined(); return;
   }
   btn&&(btn.disabled=true);
   try{
-    res.textContent=(LMode==='ai'?'🤖 AI ตรวจ 3 เสียง (Gemini ×3)…':'✋ โหมดคน ขุดเอง…');
+    res.textContent=(LMode==='ai'?t('🤖 AI review (3 reviewers)…','🤖 AI ตรวจ 3 เสียง…'):t('✋ Human mode, mining…','✋ โหมดคน ขุดเอง…'));
     const r=LMode==='ai' ? await AIPipe.mineAI({title,text}) : await AIPipe.mineHuman({title,text});
     res.classList.toggle('ok',!!r.ok); res.classList.toggle('err',!r.ok);
     res.textContent=r.msg;
@@ -830,7 +805,7 @@ async function landingMine(offline){
   finally{ btn&&(btn.disabled=false); }
 }
 document.addEventListener('DOMContentLoaded',()=>{
-  renderMineGate(); landingMode(LMode); renderGemSet(); renderLandingMined();
+  setLang(LANG);
 });
 </script>
 
